@@ -1,8 +1,8 @@
-import Vue from "./node_modules/vue";
-import VueRouter from "./node_modules/vue-router";
-import Main from "../BrandiService/Main.vue";
-import Detail from "../BrandiService/Detail.vue";
-import SignIn from "../BrandiService/SignIn/SignIn.vue";
+import Vue from "../../node_modules/vue";
+import VueRouter from "../../node_modules/vue-router";
+import Main from "../BrandiService/Main/Main.vue";
+import Detail from "../BrandiService/Detail/Detail.vue";
+import Login from "../BrandiService/Login/Login.vue";
 
 Vue.use(VueRouter);
 
@@ -19,9 +19,10 @@ export const router = new VueRouter({
     },
     {
       path: "/login",
-      component: SignIn,
+      component: Login,
     },
     {
+      //초기 url을 main으로 적용
       path: "/",
       redirect: "/main",
     },
