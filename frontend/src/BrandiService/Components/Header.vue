@@ -1,7 +1,7 @@
 <template>
   <div>
     <header class="mainHeader">
-      <div class="headerBanner" @click="linkToMain">
+      <div class="headerBanner">
         <img
           class="bannerImg"
           src="https://image.brandi.me/home/banner/bannerImage_173997_1596420402.jpg"
@@ -10,7 +10,7 @@
       </div>
       <div class="searchContainer">
         <div class="searchBar">
-          <h1 class="mainLogo">
+          <h1 class="mainLogo" @click="linkToMain">
             <img class="logoImg" src="/Images/brandi-logo.png" alt="BRANDI" />
           </h1>
           <div>
