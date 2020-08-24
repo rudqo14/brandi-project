@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import detail from "./BrandiService/Detail/Detail.vue";
+
 export default {
   components: {},
 };
