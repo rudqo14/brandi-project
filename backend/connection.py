@@ -24,6 +24,7 @@ def get_connection():
         user        = DATABASE["user"],
         password    = DATABASE["password"],
         database    = DATABASE["database"],
-        charset     = DATABASE["charset"]
+        charset     = DATABASE["charset"],
+        cursorclass = pymysql.cursors.DictCursor
     )
 
