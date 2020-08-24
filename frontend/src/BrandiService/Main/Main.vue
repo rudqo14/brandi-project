@@ -39,7 +39,6 @@ export default {
       product: [],
     };
   },
-  computed: {},
   methods: {
     getProductData() {
       axios.get("http://localhost:8080/Data/ProductList.json").then((res) => {
@@ -56,6 +55,7 @@ export default {
   },
 };
 </script>
+
 <style lang="scss" scoped>
 .mainProducts {
   display: flex;
@@ -136,4 +136,3 @@ export default {
   }
 }
 </style>
-
