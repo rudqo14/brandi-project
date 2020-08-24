@@ -8,9 +8,7 @@
 import detail from "./BrandiService/Detail/Detail.vue";
 
 export default {
-  components: {
-    detail,
-  },
+  components: {},
 };
 </script>
 

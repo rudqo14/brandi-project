@@ -22,6 +22,7 @@ export const router = new VueRouter({
       component: Login,
     },
     {
+      //초기 url을 main으로 적용
       path: "/",
       redirect: "/main",
     },

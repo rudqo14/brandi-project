@@ -15,15 +15,10 @@
         </div>
         <div></div>
         <h3 class="socialTitle">간편 로그인 / 가입</h3>
-        <GoogleLogin
-          class="googleLogin"
-          :params="params"
-          :onSuccess="onSuccess"
-        >
+        <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
           <div class="imgContainer">
             <img src="/Images/google-logo.png" />
-          </div>
-          Google 계정으로 계속하기
+          </div>Google 계정으로 계속하기
         </GoogleLogin>
       </div>
     </main>
@@ -55,17 +50,18 @@ export default {
   },
   methods: {
     onSuccess(googleUser) {
-      //body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
+      //axios 사용함에 있어 body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
       const data = {};
       const headers = {
         headers: { Authorization: googleUser.wc.id_token },
       };
-
       axios.post(`${ip}/user/google-signin`, data, headers).then((res) => {
-        console.log(res.data);
-        // if (res.data.access_token) {
-        //   this.$router.push("/main");
-        // }
+        if (res.data.access_token) {
+          localStorage.setItem("access_token", res.data.access_token);
+          this.$router.push("/main");
+        } else {
+          alert("로그인 정보가 맞지 않습니다. 다시 시도해주세요.");
+        }
       });
     },
   },
