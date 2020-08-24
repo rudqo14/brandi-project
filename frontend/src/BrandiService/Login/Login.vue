@@ -1,37 +1,45 @@
 <template>
-  <section class="main">
-    <main class="article">
-      <h1 class="title">오늘 사면 내일 도착!</h1>
-      <h2 class="subTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
-      <div class="loginContainer">
-        <input class="loginInput" placeholder="아이디 입력" />
-        <input class="loginInput" placeholder="비밀번호 입력" />
-        <a class="loginBtn">로그인</a>
-        <a class="JoinBtn">회원가입</a>
-        <div class="loginFind">
-          <span class="findId">아이디 찾기</span>
-          <span class="border" />
-          <span class="findPw">비밀번호 찾기</span>
+  <div>
+    <Header />
+    <section class="main">
+      <main class="article">
+        <h1 class="title">오늘 사면 내일 도착!</h1>
+        <h2 class="subTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
+        <div class="loginContainer">
+          <input class="loginInput" placeholder="아이디 입력" />
+          <input class="loginInput" placeholder="비밀번호 입력" />
+          <a class="loginBtn">로그인</a>
+          <a class="JoinBtn">회원가입</a>
+          <div class="loginFind">
+            <span class="findId">아이디 찾기</span>
+            <span class="border" />
+            <span class="findPw">비밀번호 찾기</span>
+          </div>
+          <div></div>
+          <h3 class="socialTitle">간편 로그인 / 가입</h3>
+          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
+            <div class="imgContainer">
+              <img src="/Images/google-logo.png" />
+            </div>Google 계정으로 계속하기
+          </GoogleLogin>
         </div>
-        <div></div>
-        <h3 class="socialTitle">간편 로그인 / 가입</h3>
-        <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
-          <div class="imgContainer">
-            <img src="/Images/google-logo.png" />
-          </div>Google 계정으로 계속하기
-        </GoogleLogin>
-      </div>
-    </main>
-  </section>
+      </main>
+    </section>
+  </div>
 </template>
 
 <script>
+import Header from "../Components/Header";
 import { ClientId } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
 import axios from "axios";
 
 export default {
+  components: {
+    Header,
+    GoogleLogin,
+  },
   data() {
     return {
       //구글 로그인 하기
@@ -44,9 +52,6 @@ export default {
         longtitle: true,
       },
     };
-  },
-  components: {
-    GoogleLogin,
   },
   methods: {
     onSuccess(googleUser) {
@@ -70,10 +75,10 @@ export default {
 
 <style lang="scss" scoped>
 .main {
-  display: flex;
+  /* display: flex; */
 
   .article {
-    height: 100%;
+    /* height: 100%; */
     width: 1300px;
     margin: 200px auto 0;
     display: flex;
