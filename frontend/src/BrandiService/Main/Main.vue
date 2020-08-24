@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <main class="mainProducts">
+  <main>
+    <div class="mainProducts">
       <section class="productContainer">
         <div class="productTitle">
           <h1>
@@ -24,8 +24,8 @@
           </div>
         </article>
       </section>
-    </main>
-  </div>
+    </div>
+  </main>
 </template>
 
 <script>
@@ -57,78 +57,79 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.mainProducts {
+main {
   display: flex;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 0 30px;
 
-  .productContainer {
-    max-width: 1300px;
-    width: 100%;
+  .mainProducts {
+    max-width: 1275px;
 
-    .productTitle {
-      margin-top: 100px;
-      margin-bottom: 15px;
+    .productContainer {
+      display: flex;
+      flex-direction: column;
 
-      .mainTitle {
-        font-size: 26px;
-        font-weight: bold;
-      }
+      .productTitle {
+        margin-top: 100px;
+        margin-bottom: 15px;
 
-      .subTitle {
-        font-size: 20px;
-        margin-left: 5px;
-        color: #4a4a4a;
-      }
-    }
-
-    .productList {
-      .product {
-        display: inline-block;
-        width: 236px;
-        padding: 0 0.5% 30px 0.5%;
-
-        .productImage {
-          height: 254px;
-          cursor: pointer;
-
-          img {
-            width: 100%;
-            height: 100%;
-          }
+        .mainTitle {
+          font-size: 26px;
+          font-weight: bold;
         }
 
-        .productName {
-          margin-top: 15px;
-          font-size: 16px;
-          font-weight: 500;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          white-space: nowrap;
+        .subTitle {
+          font-size: 20px;
+          margin-left: 5px;
+          color: #4a4a4a;
         }
+      }
 
-        .productPrice {
-          margin-top: 5px;
+      .productList {
+        .product {
+          display: inline-block;
+          width: 255px;
+          padding: 0 0.5% 30px 0.5%;
 
-          .discountRate {
-            font-size: 20px;
-            font-weight: 600;
-            padding-right: 6px;
-            color: #ff204b;
+          .productImage {
+            height: 254px;
+            cursor: pointer;
+
+            img {
+              width: 100%;
+              height: 100%;
+            }
           }
 
-          .price {
-            font-size: 20px;
-            font-weight: 600;
-            padding-right: 6px;
+          .productName {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
           }
 
-          .discountPrice {
-            font-size: 15px;
-            color: #757575;
-            text-decoration: line-through;
+          .productPrice {
+            margin-top: 5px;
+
+            .discountRate {
+              font-size: 20px;
+              font-weight: 600;
+              padding-right: 6px;
+              color: #ff204b;
+            }
+
+            .price {
+              font-size: 20px;
+              font-weight: 600;
+              padding-right: 6px;
+            }
+
+            .discountPrice {
+              font-size: 15px;
+              color: #757575;
+              text-decoration: line-through;
+            }
           }
         }
       }
