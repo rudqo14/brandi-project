@@ -3,8 +3,7 @@ from flask_cors import CORS
 
 from model      import UserDao
 from service    import UserService
-from view       import create_user_endpoints
-from connection import get_connection
+from view       import create_user_endpoints, create_admin_user_endpoints
 
 def create_app():
     """
@@ -21,15 +20,16 @@ def create_app():
     """
 
     app = Flask(__name__)
+    #CORS 설정
     CORS(app)
+    #config 설정
     app.config.from_pyfile("config.py")
-
-    database = get_connection()
-
-    user_dao = UserDao(database)
-
+    # DAO 생성
+    user_dao = UserDao()
+    # Service 생성
     user_service = UserService(user_dao)
-
+    # view blueprint 등록
     app.register_blueprint(create_user_endpoints(user_service))
+    app.register_blueprint(create_admin_user_endpoints(user_service))
 
     return app
