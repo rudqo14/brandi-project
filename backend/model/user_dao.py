@@ -217,12 +217,15 @@ class UserDao:
         except KeyError:
             return jsonify({"message" : "KEY_ERROR"}), 400
 
-    def get_user_list(self, db_connection):
+    def get_user_list(self, pagination, db_connection):
         """
 
         유저 리스트를 표출합니다.
 
         Args:
+            pagination :
+                limit : 가져올 row 개수
+                offset : 앞의 생략할 row의 개수
             db_connection : 연결된 db 객체
 
         Returns:
@@ -233,6 +236,7 @@ class UserDao:
 
         History:
             2020-08-21 (tnwjd060124@gmail.com) : 초기 생성
+            2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
 
         """
 
@@ -255,9 +259,13 @@ class UserDao:
                 users.user_no = user_shipping_details.user_id
             WHERE
                 users.is_deleted = 0
+            LIMIT
+                %(limit)s
+            OFFSET
+                %(offset)s
             """
 
-            cursor.execute(select_users)
+            cursor.execute(select_users, pagination)
             users = cursor.fetchall()
 
             return users

@@ -64,8 +64,10 @@ def create_admin_user_endpoints(user_service):
     def user_list():
         try:
             db_connection = get_connection()
+            page    = request.args.get('page', default=1, type=int)
+            limit   = request.args.get('limit', default=10, type=int)
 
-            result = user_service.get_user_list(db_connection)
+            result = user_service.get_user_list(page, limit, db_connection)
 
             return jsonify({"data" : result}), 200
 
