@@ -122,12 +122,14 @@ class UserService:
 
         return user
 
-    def get_user_list(self, db_connection):
+    def get_user_list(self, page, limit, db_connection):
 
         """
 
         회원 관리에서 회원리스트를 보여줍니다.
         Args:
+            page : 현재 페이지
+            limit : page에 보여질 유저 수
             db_connection : 연결된 db 객체
 
         Returns:
@@ -140,9 +142,13 @@ class UserService:
             2020-08-21 (tnwjd060124@gmail.com) : 초기 생성
             2020-08-22 (tnwjd060124@gmail.com) : 수정
                 dao 메소드 실행 시 db_connection을 parameter로 전달
+            2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
 
         """
-
-        users = self.user_dao.get_user_list(db_connection)
+        offset = (page*limit) - limit
+        users = self.user_dao.get_user_list({
+            "offset"    : offset,
+            "limit"     : limit
+        }, db_connection)
 
         return users
