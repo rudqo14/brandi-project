@@ -44,7 +44,7 @@ class UserService:
         # 일치하는 유저가 있으면 해당 유저의 password 가져옴
         password = self.user_dao.get_user_password(user, db_connection)
 
-        # request로 들어온 password와 db에 있는 password가 일치한지 확
+        # request로 들어온 password와 db에 있는 password가 일치한지 확인
         if int(password['password']) != user_info['password']:
             return None
 
@@ -77,6 +77,7 @@ class UserService:
 
         """
 
+        # token 생성
         access_token = jwt.encode({'user_no' : user_no}, SECRET['secret_key'], SECRET['algorithm']).decode('utf-8')
         return access_token
 
@@ -107,13 +108,17 @@ class UserService:
                 dao 메소드 실행 시 db_connection을 parameter로 전달
 
         """
+        # social_network 테이블의 구글pk 설정
         user_info['social_id'] = 1
 
+        # db에 해당 소셜_id의 유저가 있는지 확인
         user = self.user_dao.check_social_user(user_info, db_connection)
 
+        # 유저가 없으면 db에 유저 정보 저장
         if not user:
             user = self.user_dao.signup_user(user_info, db_connection)
 
+        # 유저의 최종 접속시간 update
         current_time = time.strftime('%Y-%m-%d %H:%M:%S')
         self.user_dao.update_user_last_access({
             'user_no'       : user['user_no'],
@@ -145,10 +150,39 @@ class UserService:
             2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
 
         """
+
+        # offset 설정
         offset = (page*limit) - limit
+
+        # 유저 리스트 가져오는 메소드 실행
         users = self.user_dao.get_user_list({
             "offset"    : offset,
             "limit"     : limit
         }, db_connection)
 
         return users
+
+    def get_total_user_number(self, db_connection):
+
+        """
+
+        총 유저의 수를 보여줍니다.
+
+        Args:
+            db_connection : 연결된 db 객체
+
+        Returns:
+            총 유저의 수
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        # 총 유저의 수를 가져오는 메소드 실행
+        total_number = self.user_dao.get_total_user(db_connection)
+
+        return total_number

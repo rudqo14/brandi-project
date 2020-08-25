@@ -1,4 +1,5 @@
 import decimal
+import datetime
 
 from flask      import Flask
 from flask.json import JSONEncoder
@@ -41,6 +42,9 @@ class CustomJSONEncoder(JSONEncoder):
 
         if isinstance(obj, decimal.Decimal):
             return float(obj)
+
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
 
         return JSONEncoder.default(self, obj)
 

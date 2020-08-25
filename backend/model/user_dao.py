@@ -27,31 +27,27 @@ class UserDao:
             2020-08-20 (tnwjd060124@gmail.com) : 초기 생성
 
         """
-        try:
-            cursor = db_connection.cursor()
-            create_user = """
-            INSERT INTO users
-            (
-            name,
-            email,
-            social_id,
-            user_social_id
-            ) VALUES (
-            %(name)s,
-            %(email)s,
-            %(social_id)s,
-            %(user_social_id)s
-            )
-            """
+        cursor = db_connection.cursor()
+        create_user = """
+        INSERT INTO users
+        (
+        name,
+        email,
+        social_id,
+        user_social_id
+        ) VALUES (
+        %(name)s,
+        %(email)s,
+        %(social_id)s,
+        %(user_social_id)s
+        )
+        """
 
-            cursor.execute(create_user, user_info)
-            db_connection.commit()
+        cursor.execute(create_user, user_info)
+        db_connection.commit()
 
-            user = cursor.lastrowid
-            return user
-
-        except KeyError:
-            return jsonify({"message" : "KEY_ERROR"}), 400
+        user = cursor.lastrowid
+        return user
 
     def check_user(self, user_info, db_connection):
         """
@@ -76,24 +72,20 @@ class UserDao:
 
         """
 
-        try:
-            cursor = db_connection.cursor()
+        cursor = db_connection.cursor()
 
-            select_user = """
-            SELECT
-                user_no
-            FROM
-                users
-            WHERE
-                email = %(email)s
-            """
+        select_user = """
+        SELECT
+            user_no
+        FROM
+            users
+        WHERE
+            email = %(email)s
+        """
 
-            cursor.execute(select_user, user_info)
-            user = cursor.fetchone()
-            return user
-
-        except KeyError:
-            return jsonify({"message" : "KEY_ERROR"}), 400
+        cursor.execute(select_user, user_info)
+        user = cursor.fetchone()
+        return user
 
     def check_social_user(self, user_info, db_connection):
         """
@@ -119,24 +111,20 @@ class UserDao:
 
         """
 
-        try:
-            cursor = db_connection.cursor()
+        cursor = db_connection.cursor()
 
-            select_user = """
-            SELECT
-                user_no
-            FROM
-                users
-            WHERE
-                social_id = %(social_id)s
-                AND user_social_id = %(user_social_id)s
-            """
-            cursor.execute(select_user, user_info)
-            user = cursor.fetchone()
-            return user
-
-        except KeyError:
-            return jsonify({"message" : 'KEY_ERROR'}), 400
+        select_user = """
+        SELECT
+            user_no
+        FROM
+            users
+        WHERE
+            social_id = %(social_id)s
+            AND user_social_id = %(user_social_id)s
+        """
+        cursor.execute(select_user, user_info)
+        user = cursor.fetchone()
+        return user
 
     def get_user_password(self, user_info, db_connection):
         """
@@ -161,23 +149,19 @@ class UserDao:
 
         """
 
-        try:
-            cursor = db_connection.cursor()
+        cursor = db_connection.cursor()
 
-            select_password = """
-            SELECT
-                password
-            FROM
-                users
-            WHERE
-                user_no = %(user_no)s
-            """
-            cursor.execute(select_password, user_info)
-            password = cursor.fetchone()
-            return password
-
-        except KeyError:
-            return jsonify({"message" : "KEY_ERROR"}), 400
+        select_password = """
+        SELECT
+            password
+        FROM
+            users
+        WHERE
+            user_no = %(user_no)s
+        """
+        cursor.execute(select_password, user_info)
+        password = cursor.fetchone()
+        return password
 
     def update_user_last_access(self, user_info, db_connection):
         """
@@ -200,22 +184,18 @@ class UserDao:
 
         """
 
-        try:
-            cursor = db_connection.cursor()
+        cursor = db_connection.cursor()
 
-            update_user = """
-            UPDATE
-                users
-            SET
-                last_access = %(current_time)s
-            WHERE
-                user_no = %(user_no)s
-            """
-            cursor.execute(update_user, user_info)
-            db_connection.commit()
-
-        except KeyError:
-            return jsonify({"message" : "KEY_ERROR"}), 400
+        update_user = """
+        UPDATE
+            users
+        SET
+            last_access = %(current_time)s
+        WHERE
+            user_no = %(user_no)s
+        """
+        cursor.execute(update_user, user_info)
+        db_connection.commit()
 
     def get_user_list(self, pagination, db_connection):
         """
@@ -240,35 +220,66 @@ class UserDao:
 
         """
 
-        try:
-            cursor = db_connection.cursor()
+        cursor = db_connection.cursor()
 
-            select_users = """
-            SELECT
-                users.user_no,
-                users.name,
-                users.email,
-                users.last_access,
-                users.created_at,
-                user_shipping_details.phone_number
-            FROM
-                users
-            LEFT JOIN
-                user_shipping_details
-            ON
-                users.user_no = user_shipping_details.user_id
-            WHERE
-                users.is_deleted = 0
-            LIMIT
-                %(limit)s
-            OFFSET
-                %(offset)s
-            """
+        select_users = """
+        SELECT
+            users.user_no,
+            users.name,
+            users.email,
+            users.last_access,
+            users.created_at,
+            user_shipping_details.phone_number
+        FROM
+            users
+        LEFT JOIN
+            user_shipping_details
+        ON
+            users.user_no = user_shipping_details.user_id
+        WHERE
+            users.is_deleted = 0
+        LIMIT
+            %(limit)s
+        OFFSET
+            %(offset)s
+        """
 
-            cursor.execute(select_users, pagination)
-            users = cursor.fetchall()
+        cursor.execute(select_users, pagination)
+        users = cursor.fetchall()
 
-            return users
+        return users
 
-        except Exception as e:
-            print(e)
+    def get_total_user(self, db_connection):
+        """
+
+        총 유저의 수를 보여줍니다.
+
+        Args:
+            db_connection : 연결된 db 객체
+
+        Returns:
+            총 유저의 수
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        cursor = db_connection.cursor()
+
+        get_number = """
+        SELECT
+            COUNT(*) AS total_number
+        FROM
+            users
+        WHERE
+            users.is_deleted = 0
+        """
+
+        cursor.execute(get_number)
+        total_number = cursor.fetchone()
+
+        return total_number
