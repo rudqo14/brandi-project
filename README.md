@@ -28,9 +28,9 @@
 ### Back End
 
 - Python
-- Django
+- Flask
 - MYSQL
 - CORS headers
 - Git, Github
-- AWS(ec2,RDS), Docker
+- AWS(ec2,RDS)
 - RESTful API
