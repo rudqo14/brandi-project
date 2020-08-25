@@ -25,7 +25,9 @@ def get_connection():
         password    = DATABASE["password"],
         database    = DATABASE["database"],
         charset     = DATABASE["charset"],
-        cursorclass = pymysql.cursors.DictCursor
+        cursorclass = pymysql.cursors.DictCursor,
+        timezone    = '+9:00',
+        autocommit  = False
     )
     connection.cursor().execute("""SET time_zone='Asia/Seoul'""")
 

@@ -70,3 +70,41 @@ class ProductDao:
         db_connection.commit()
 
         return jsonify({'message' : 'SUCCESS'}), 200
+
+    def select_product_list(self, db_connection):
+
+        cursor = db_connection.cursor()
+
+        SQL = """
+
+        SELECT
+            P.product_no,
+            I.image,
+            PD.name,
+            PD.price,
+            PD.discount_rate
+
+        FROM products as P
+
+        LEFT JOIN product_images as PI
+        ON P.product_no = PI.product_id
+
+        LEFT JOIN images as I
+        ON PI.image_id = I.image_no
+
+        LEFT JOIN product_details as PD
+        ON P.product_no = PD.product_id
+
+        WHERE
+            P.is_deleted = False AND
+            PI.is_main = True AND
+            I.is_deleted = False AND
+            PD.is_activated = True AND
+            PD.is_displayed = True
+
+        """
+
+        cursor.execute(SQL)
+        products = cursor.fetchall()
+
+        return products
