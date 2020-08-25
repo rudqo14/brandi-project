@@ -23,10 +23,14 @@
   .menu {
     display: flex;
     align-items: center;
+    cursor: pointer;
     width: 45px;
     height: 40px;
     padding: 0 15px;
     border-bottom: 1px solid #414247;
+    &:hover {
+      background-color: #2b2b30;
+    }
   }
 }
 </style>

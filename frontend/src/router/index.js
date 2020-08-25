@@ -8,10 +8,12 @@ import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import Header from "../BrandiService/Components/Header.vue";
 
+
 Vue.use(VueAgile);
 Vue.use(VueRouter);
 
 export const router = new VueRouter({
+
   mode: "history",
   routes: [
     {

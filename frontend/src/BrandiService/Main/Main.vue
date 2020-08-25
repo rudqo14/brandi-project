@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <Banner />
+    <!-- <Banner /> -->
     <main>
       <div class="mainProducts">
         <section class="productContainer">
@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import Header from "../Components/Header";
 import Banner from "../Components/Banner";
 export default {
@@ -59,9 +60,8 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://localhost:8080/Data/ProductList.json").then((res) => {
+      axios.get("http://10.58.3.90:5000/product").then((res) => {
         this.product = res.data;
-        console.log("priceType: ", typeof parseInt(this.product.data[0].price));
       });
     },
     numberWithCommas(x) {
