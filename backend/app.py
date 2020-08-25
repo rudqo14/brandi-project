@@ -4,9 +4,22 @@ from flask      import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
 
-from model      import UserDao, OrderDao
-from service    import UserService, OrderService
-from view       import create_user_endpoints, create_admin_user_endpoints, create_admin_order_endpoints
+from model      import (
+    UserDao,
+    OrderDao,
+    ProductDao
+)
+from service    import (
+    UserService,
+    OrderService,
+    ProductService
+)
+from view       import (
+    create_user_endpoints,
+    create_admin_user_endpoints,
+    create_admin_order_endpoints,
+    AdminProductView
+)
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -38,11 +51,12 @@ def create_app():
         생성된 플라스크 앱 객체
 
     Authors :
-        tnwjd060124@gmail.com (손수정)
+        tnwjd060124@gmail.com  (손수정)
+        sincerity410@gmail.com (이곤호)
 
     History :
-        2020-08-19 (tnwjd060124@gmail.com) : 초기 생성
-
+        2020-08-19 (tnwjd060124@gmail.com)  : 초기 생성
+        2020-08-25 (sincerity410@gmail.com) : AdminProduct 관련 추가
     """
 
     app = Flask(__name__)
@@ -50,17 +64,24 @@ def create_app():
 
     #CORS 설정
     CORS(app)
+
     #config 설정
     app.config.from_pyfile("config.py")
+
     # DAO 생성
     user_dao = UserDao()
     order_dao = OrderDao()
+    product_dao = ProductDao()
+
     # Service 생성
     user_service = UserService(user_dao)
     order_service = OrderService(order_dao)
+    product_service = ProductService()
+
     # view blueprint 등록
     app.register_blueprint(create_user_endpoints(user_service))
     app.register_blueprint(create_admin_user_endpoints(user_service))
     app.register_blueprint(create_admin_order_endpoints(order_service))
+    app.register_blueprint(AdminProductView.product_app)
 
     return app
