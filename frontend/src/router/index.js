@@ -15,22 +15,16 @@ export const router = new VueRouter({
   mode: "history",
   routes: [
     {
-      path: "/header",
-      component: Header,
-      children: [
-        {
-          path: "/main",
-          component: Main,
-        },
-        {
-          path: "/detail",
-          component: Detail,
-        },
-        {
-          path: "/login",
-          component: Login,
-        },
-      ],
+      path: "/main",
+      component: Main,
+    },
+    {
+      path: "/detail",
+      component: Detail,
+    },
+    {
+      path: "/login",
+      component: Login,
     },
 
     {
