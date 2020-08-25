@@ -5,6 +5,8 @@ import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
 import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
+import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
+import Header from "../BrandiService/Components/Header.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -13,17 +15,24 @@ export const router = new VueRouter({
   mode: "history",
   routes: [
     {
-      path: "/main",
-      component: Main,
+      path: "/header",
+      component: Header,
+      children: [
+        {
+          path: "/main",
+          component: Main,
+        },
+        {
+          path: "/detail",
+          component: Detail,
+        },
+        {
+          path: "/login",
+          component: Login,
+        },
+      ],
     },
-    {
-      path: "/detail",
-      component: Detail,
-    },
-    {
-      path: "/login",
-      component: Login,
-    },
+
     {
       path: "/banner",
       component: Banner,
@@ -32,6 +41,10 @@ export const router = new VueRouter({
       //초기 url을 main으로 적용
       path: "/",
       redirect: "/main",
+    },
+    {
+      path: "/admin",
+      component: AdminFrame,
     },
   ],
 });
