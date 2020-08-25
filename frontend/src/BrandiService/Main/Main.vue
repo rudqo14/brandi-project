@@ -12,26 +12,26 @@
             </h1>
           </div>
           <article class="productList">
-            <div
-              class="product"
-              v-for="product in product.data"
-              v-bind:key="product.product_id"
-            >
+            <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
               <div class="productImage" @click="linkToDetail">
                 <img :src="product.thumbnail_image" alt="jpg" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
                 <span class="discountRate">{{ product.discount_rate }}%</span>
-                <span class="price">{{
+                <span class="price">
+                  {{
                   numberWithCommas(Math.floor(product.price))
-                }}</span>
-                <span class="discountPrice">{{
+                  }}
+                </span>
+                <span class="discountPrice">
+                  {{
                   numberWithCommas(
-                    parseInt(product.price) *
-                      ((100 - product.discount_rate) / 100)
+                  parseInt(product.price) *
+                  ((100 - product.discount_rate) / 100)
                   )
-                }}</span>
+                  }}
+                </span>
               </div>
             </div>
           </article>
@@ -42,7 +42,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import Header from "../Components/Header";
 import Banner from "../Components/Banner";
 export default {
