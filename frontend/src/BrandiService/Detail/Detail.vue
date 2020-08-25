@@ -1,57 +1,118 @@
 <template>
   <main>
     <article class="ProductInfo">
-      <div class="slideImgContainer">
-        <img
-          alt="product  image"
-          src="https://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_L.jpg"
-        />
-      </div>
+      <agile class="agile" :dots="false">
+        <div class="imgContainer" v-for="(item, index) in detailData.image_list" v-bind:key="index">
+          <img alt="product  image" :src="item" />
+        </div>
+        <div class="prevBtn" slot="prevButton"></div>
+        <div class="nextBtn" slot="nextButton"></div>
+      </agile>
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.product_name }}</p>
         <div class="priceContainer">
-          <span class="percent">{{detailData.discount_rate}}%</span>
-          <span
-            class="price"
-          >{{detailData.price -((detailData.price) * (detailData.discount_rate/100))+"원"}}</span>
-          <span class="cost">{{Math.floor(detailData.price).toLocaleString(5) + "원"}}</span>
+          <span class="percent">{{ detailData.discount_rate }}%</span>
+          <span class="price">
+            {{
+            (detailData.price -
+            detailData.price * (detailData.discount_rate / 100)).toLocaleString(5) +
+            "원"
+            }}
+          </span>
+          <span class="cost">
+            {{
+            Math.floor(detailData.price).toLocaleString(5) + "원"
+            }}
+          </span>
         </div>
         <hr />
-        <div v-on:click="onColorClick" class="optionColor">
-          <div>[색상]을 선택하세요.</div>
+        <div v-on:click="onColorClick" class="option">
+          <div>{{colorToggleData}}</div>
           <div class="imgContainer">
             <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
           </div>
-          <div v-bind:class="{'toggleOn':isColorToggle, 'toggleOff':!isColorToggle}">
+          <div
+            v-bind:class="{
+              toggleOn: isColorToggle,
+              toggleOff: !isColorToggle,
+            }"
+          >
             <div class="defaultToggle">[색상]을 선택하세요.</div>
             <div
-              v-for="(item,index) in detailData.option_colors"
+              v-for="(item, index) in detailData.option_colors"
               class="colorToggle"
               v-bind:key="index"
-            >{{item}}</div>
+              @click="colorToggleData = detailData.option_colors[index]"
+            >{{ item }}</div>
           </div>
         </div>
-        <div class="optionColor">
-          <div>[사이즈]를 선택하세요.</div>
+        <!-- 사이즈 옵션 -->
+        <div v-on:click="onSizeClick" class="option">
+          <div
+            v-bind:class="{
+              title: disabledSizeToggle,
+              none: !disabledSizeToggle,
+            }"
+          >{{sizeToggleData}}</div>
           <div class="imgContainer">
             <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
+          </div>
+          <div
+            v-bind:class="{
+              toggleOn: isSizeToggle,
+              toggleOff: !isSizeToggle,
+            }"
+          >
+            <div class="defaultToggle">[사이즈]를 선택하세요.</div>
+            <div
+              v-for="(item, index) in detailData.option_sizes"
+              class="colorToggle"
+              v-bind:key="index"
+              @click="optionSizeHandler(detailData, index)"
+            >{{ item }}</div>
+          </div>
+        </div>
+
+        <div v-bind:class="{selectedOptions: isPurchaseBox,
+        noneOptions: !isPurchaseBox}">
+          <div class="selectTitle">
+            <p>{{purchaseColor}} / {{purchaseSize}}</p>
+            <div @click="removeSelectHandler()" class="imgContainer">
+              <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
+            </div>
+          </div>
+          <div class="selectPrice">
+            <div class="caculatar">
+              <button class="numberBtn" name="minus" @click="calculationHandler">-</button>
+              <span class="border"></span>
+              <input class="productNumber" :value="input" readonly />
+              <span class="border"></span>
+              <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
+            </div>
+            <p>
+              {{((detailData.price -
+              detailData.price * (detailData.discount_rate / 100))*input).toLocaleString(5)+ "원"}}
+            </p>
           </div>
         </div>
         <div class="detailpriceContainer">
-          <p>총 0개의 상품</p>
+          <p>총 {{input}}개의 상품</p>
           <p class="totalPrice">
             총 금액
-            <strong>0 원</strong>
+            <strong>
+              {{((detailData.price -
+              detailData.price * (detailData.discount_rate / 100))*input).toLocaleString(5)+ "원"}}
+            </strong>
           </p>
         </div>
-        <button class="purchase">바로 구매하기</button>
+        <button @click="buyNowHandler()" class="purchaseBtn">바로 구매하기</button>
       </div>
     </article>
     <article class="detailProduct">
       <div class="categoryContainer">
         <div class="productDetail">상품정보</div>
+        <div v-html="detailHtml" />
       </div>
-      <div></div>
     </article>
   </main>
 </template>
@@ -60,45 +121,138 @@
 import { ip } from "../../../config.js";
 import axios from "axios";
 import detailData from "../../../Data/Detail.json";
+import detailOption from "../../../Data/DetailOption.json";
+import { VueAgile } from "vue-agile";
+
+console.log(detailOption);
 
 export default {
   data() {
     return {
+      colorToggleData: "[색상]을 선택하세요.",
       isColorToggle: false,
-
-      message:
-        "[키작녀추천] 허리끈 찰랑 데일리 물결 하이웨스트 와이드 팬츠 (7color) _ 미니클로젯",
+      sizeToggleData: "[사이즈]를 선택하세요.",
+      isSizeToggle: false,
+      disabledSizeToggle: false,
       detailData: detailData.data,
+      input: 0,
+      isPurchaseBox: false,
+      purchaseColor: "",
+      purchaseSize: "",
+      purchaseId: "",
+      detailHtml: detailOption.data.html,
     };
   },
+  components: {
+    //이미지 Caroucel
+    agile: VueAgile,
+  },
   methods: {
+    //컬러 인풋 클릭시 토글 박스 열리게하기
     onColorClick() {
       this.isColorToggle = !this.isColorToggle;
+
+      if (this.colorToggleData !== "[색상]을 선택하세요.") {
+        this.disabledSizeToggle = !this.disabledSizeToggle;
+      }
     },
 
-    toggleOnTop() {
-      this.isColorToggle = !this.isColorToggle;
+    //사이즈 인풋클릭시 토글 박스 열리게하기
+    onSizeClick() {
+      if (this.colorToggleData !== "[색상]을 선택하세요.") {
+        this.isSizeToggle = !this.isSizeToggle;
+      }
     },
-  },
-  computed: {
-    toggleActive() {
-      return {
-        isColorToggle: this.isColorToggle,
-        toggleOn: this.isColorToggle,
-        toggleOff: !this.isColorToggle,
-      };
+
+    //옵션 사이즈 토글에서 원하는 사이즈 선택시 적용
+    optionSizeHandler(detailData, index) {
+      this.sizeToggleData = detailData.option_sizes[index];
+      this.purchaseInputNumber = this.input;
+      this.input = 1;
+      this.purchaseColor = this.colorToggleData;
+      this.purchaseSize = this.sizeToggleData;
+      this.colorToggleData = "[색상]을 선택하세요.";
+      this.sizeToggleData = "[사이즈]를 선택하세요.";
+      this.isSizeToggle = false;
+      this.isPurchaseBox = true;
+      this.purchaseId = detailData.product_id;
+    },
+
+    //상품 수량 조절하여 갯수 띄워주기
+    //+와 - 버튼을 클릭하여 조절한다.
+    //최소,최대값 안의 input 값이라면 +, - 동작
+    calculationHandler(e) {
+      const { name } = e.target;
+      const isPlus = name === "plus";
+
+      if (!isPlus && this.input === 1)
+        return alert("최소 구매 수량은 1개 입니다.");
+
+      if (this.input === 20) return alert("최대 구매 수량은 20개 입니다.");
+
+      input: isPlus ? (this.input += 1) : (this.input -= 1);
+    },
+
+    //삭제하기 버튼 클릭시 상품 구매 박스를 안보이게 적용
+    removeSelectHandler() {
+      if (confirm("정말 삭제하시겠습니까?") == true) {
+        this.isPurchaseBox = false;
+        this.input = 0;
+      } else {
+        return;
+      }
+    },
+
+    //상품구매하기 버튼을 클릭하여 로컬스토리지 저장후 구매하기 페이지로 이동
+    //상품의 갯수가 0이라면 return
+    buyNowHandler() {
+      if (this.input === 0) {
+        alert("상품을 선택해주세요.");
+        return;
+      }
+
+      localStorage.setItem("purchaseColor", this.purchaseColor);
+      localStorage.setItem("purchaseSize", this.purchaseSize);
+      localStorage.setItem("purchaseProductNumber", this.input);
+      localStorage.setItem("purchaseId", this.purchaseId);
     },
   },
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .ProductInfo {
   width: 1235px;
-  margin: 200px auto 80px;
+  margin: 140px auto 80px;
   display: flex;
 
-  .slideImgContainer {
+  .agile {
+    width: 546px;
+    height: 546px;
+    position: relative;
+
+    .prevBtn {
+      width: 32px;
+      height: 32px;
+      background-position: 0 0;
+      left: 10px;
+      top: 240px;
+      position: absolute;
+      background-image: url(https://www.brandi.co.kr/static/3.49.1/images/controls.png);
+    }
+
+    .nextBtn {
+      width: 32px;
+      height: 32px;
+      background-position: -32px 0;
+      right: 10px;
+      top: 240px;
+      position: absolute;
+      background-image: url(https://www.brandi.co.kr/static/3.49.1/images/controls.png);
+    }
+  }
+
+  .imgContainer {
     width: 546px;
     height: 546px;
 
@@ -140,7 +294,11 @@ export default {
       }
     }
 
-    .optionColor {
+    #none {
+      cursor: default;
+    }
+
+    .option {
       height: 48px;
       border: 1px solid #e1e1e1;
       font-size: 13px;
@@ -152,12 +310,23 @@ export default {
       position: relative;
       cursor: pointer;
 
+      .none {
+        color: #929292;
+        font-size: 13px;
+        cursor: default;
+      }
+
+      .title {
+        color: black;
+        font-size: 13px;
+      }
+
       .toggleOff {
         display: none;
       }
 
       .toggleOn {
-        width: 646px;
+        width: 639px;
         top: 46.5px;
         left: -1px;
         position: absolute;
@@ -209,7 +378,81 @@ export default {
       }
     }
 
-    .purchase {
+    .noneOptions {
+      display: none;
+    }
+
+    .selectedOptions,
+    .noneOptions {
+      height: 120px;
+      border: 1px solid #f1f1f1;
+      background-color: #fafafa;
+      padding: 25px 20px 0;
+      margin-top: 20px;
+
+      .selectTitle {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+
+        .imgContainer {
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+
+          img {
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+      .selectPrice {
+        display: flex;
+        justify-content: space-between;
+
+        .caculatar {
+          height: 28px;
+          border: 1px solid #cdcdcd;
+
+          .border {
+            height: 100%;
+            border: 1px solid #cdcdcd;
+          }
+
+          .numberBtn {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 0;
+            background: #00ff0000;
+            font-size: 15px;
+            color: #5d5d5d;
+            outline: none;
+            cursor: pointer;
+            vertical-align: top;
+            margin: 0;
+            padding: 0;
+          }
+
+          .productNumber {
+            width: 35px;
+            height: 28px;
+            border: none;
+            background-color: #00ff0000;
+            border-width: 1px 0;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            outline: none;
+          }
+        }
+      }
+    }
+
+    .purchaseBtn {
       width: 180px;
       height: 50px;
       background: black;
@@ -240,6 +483,15 @@ export default {
       padding-top: 15px;
       border-bottom: 2px solid #ff204b;
       color: #ff204b;
+      text-align: center;
+    }
+
+    .detailContents {
+      margin-top: 40px;
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
       text-align: center;
     }
   }
