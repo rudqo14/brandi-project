@@ -17,10 +17,15 @@
           </div>
           <div></div>
           <h3 class="socialTitle">간편 로그인 / 가입</h3>
-          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
+          <GoogleLogin
+            class="googleLogin"
+            :params="params"
+            :onSuccess="onSuccess"
+          >
             <div class="imgContainer">
               <img src="/Images/google-logo.png" />
-            </div>Google 계정으로 계속하기
+            </div>
+            Google 계정으로 계속하기
           </GoogleLogin>
         </div>
       </main>
@@ -75,10 +80,7 @@ export default {
 
 <style lang="scss" scoped>
 .main {
-  /* display: flex; */
-
   .article {
-    /* height: 100%; */
     width: 1300px;
     margin: 200px auto 0;
     display: flex;
