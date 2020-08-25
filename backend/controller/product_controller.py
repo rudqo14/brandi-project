@@ -65,3 +65,29 @@ class AdminProductView:
         finally:
             if db_connection:
                 db_connection.close()
+
+def service_product_endpoint(product_service):
+    service_product_app = Blueprint('service_product_app', __name__, url_prefix='/product')
+
+    @service_product_app.route('', methods=['GET'])
+    def product_list():
+
+        # finally error 발생 방지
+        db_connection = None
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+                products = product_service.get_product_list(db_connection)
+
+                return jsonify({'data':products}), 200
+            return jsonify({'message':'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message':e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    return service_product_app
