@@ -15,7 +15,7 @@ from service    import (
     OrderService,
     ProductService
 )
-from view       import (
+from controller       import (
     create_user_endpoints,
     create_admin_user_endpoints,
     create_admin_order_endpoints,
