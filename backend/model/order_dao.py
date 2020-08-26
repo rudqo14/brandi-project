@@ -36,17 +36,38 @@ class OrderDao:
 
         FROM
             orders AS P1
+        """
 
-        INNER JOIN orders_details AS P3
-        ON P1.order_no = P3.order_id
-        AND P3.order_status_id=1
-        AND P3.start_time > CASE
-        WHEN %(from_date)s IS NULL THEN '1970-01-01 00:00:00' ELSE %(from_date)s END
+        # 조회 기간 필터 존재하는 경우 추가
+        if filter_info['from_date']:
+            select_list += """
+            INNER JOIN orders_details AS P3
+            ON P1.order_no = P3.order_id
+            AND P3.order_status_id=1
+            AND P3.start_time > %(from_date)s
+            """
+        else:
+            select_list += """
+            INNER JOIN orders_details AS P3
+            ON P1.order_no = P3.order_id
+            AND P3.order_status_id=1
+            """
 
-        INNER JOIN order_product AS P2
-        ON P3.order_detail_no = P2.order_id
-        AND P2.order_product_no LIKE %(order_detail_id)s
+        # 주문 상세정보 필터 존재하는 경우 추가
+        if filter_info['order_detail_id']:
+            select_list += """
+            INNER JOIN order_product AS P2
+            ON P3.order_detail_no = P2.order_id
+            AND P2.order_product_no = %(order_detail_id)s
+            """
+        else:
+            select_list += """
+            INNER JOIN order_product AS P2
+            ON P3.order_detail_no = P2.order_id
+            """
 
+        # JOIN 추가
+        select_list += """
         INNER JOIN product_options AS P8
         ON P2.product_option_id = P8.product_option_no
 
@@ -58,40 +79,83 @@ class OrderDao:
 
         INNER JOIN colors AS P5
         ON P10.color_id = P5.color_no
+        """
 
-        INNER JOIN user_shipping_details AS P7
-        ON P3.user_shipping_id = P7.user_shipping_detail_no
-        AND P7.phone_number LIKE %(phone_number)s
+        # 제품명 필터 존재하는 경우 추가
+        if filter_info['product_name']:
+            select_list += """
+            INNER JOIN product_details AS P6
+            ON P8.product_id = P6.product_id
+            AND P6.name = %(product_name)s
+            """
+        else:
+            select_list += """
+            INNER JOIN product_details AS P6
+            ON P8.product_id = P6.product_id
+            """
 
-        INNER JOIN product_details AS P6
-        ON P8.product_id = P6.product_id
-        AND P6.name LIKE %(product_name)s
-
+        # JOIN 추가
+        select_list += """
         INNER JOIN order_status AS P9
         ON P3.order_status_id = P9.order_status_no
+        """
 
-        INNER JOIN users AS P11
-        ON P1.user_id = P11.user_no
-        AND P11.name LIKE %(orderer)s
+        # 핸드폰번호 필터 존재하는 경우 추가
+        if filter_info['phone_number']:
+            select_list += """
+            INNER JOIN user_shipping_details AS P7
+            ON P3.user_shipping_id = P7.user_shipping_detail_no
+            AND P7.phone_number = %(phone_number)s
+            """
+        else:
+            select_list += """
+            INNER JOIN user_shipping_details AS P7
+            ON P3.user_shipping_id = P7.user_shipping_detail_no
+            """
 
-        WHERE order_no LIKE %(order_id)s
+        # 주문자명 필터 존재하는 경우 추가
+        if filter_info['orderer']:
+            select_list += """
+            INNER JOIN users AS P11
+            ON P1.user_id = P11.user_no
+            AND P11.name = %(orderer)s
+            """
+        else:
+            select_list +="""
+            INNER JOIN users AS P11
+            ON P1.user_id = P11.user_no
+            """
 
-        ORDER BY
-            (CASE WHEN %(sort)s = 1 THEN P3.start_time END) DESC,
-            (CASE WHEN %(sort)s <> 1 THEN P3.start_time END) ASC
+        # 주문 id 필터 존재하는 경우 추가
+        if filter_info['order_id']:
+            select_list += """
+            WHERE order_no = %(order_id)s
+            """
 
+        # 정렬 필터 존재하는 경우 주문일 오래된 순
+        if filter_info['sort']:
+            select_list += """
+            ORDER BY P3.start_time ASC
+            """
+        else:
+            select_list += """
+            ORDER BY P3.start_time DESC
+            """
+
+
+        # limit, offset 설정 추가
+        select_list += """
         LIMIT
             %(limit)s
         OFFSET
             %(offset)s
-
         """
+
         cursor.execute(select_list, filter_info)
         orders = cursor.fetchall()
-
         return orders
 
-    def get_total_num(self, filters, db_connection):
+    def get_total_num(self, filter_info, db_connection):
         """
 
         총 결제 완료 건수 표출
@@ -118,17 +182,38 @@ class OrderDao:
 
         FROM
             orders AS P1
+        """
 
-        INNER JOIN orders_details AS P3
-        ON P1.order_no = P3.order_id
-        AND P3.order_status_id=1
-        AND P3.start_time > CASE
-        WHEN %(from_date)s IS NULL THEN '1970-01-01 00:00:00' ELSE %(from_date)s END
+        # 조회 기간 필터 존재하는 경우 추가
+        if filter_info['from_date']:
+            count_num += """
+            INNER JOIN orders_details AS P3
+            ON P1.order_no = P3.order_id
+            AND P3.order_status_id=1
+            AND P3.start_time > %(from_date)s
+            """
+        else:
+            count_num += """
+            INNER JOIN orders_details AS P3
+            ON P1.order_no = P3.order_id
+            AND P3.order_status_id=1
+            """
 
-        INNER JOIN order_product AS P2
-        ON P3.order_detail_no = P2.order_id
-        AND P2.order_product_no LIKE %(order_detail_id)s
+        # 주문 상세정보 필터 존재하는 경우 추가
+        if filter_info['order_detail_id']:
+            count_num += """
+            INNER JOIN order_product AS P2
+            ON P3.order_detail_no = P2.order_id
+            AND P2.order_product_no = %(order_detail_id)s
+            """
+        else:
+            count_num += """
+            INNER JOIN order_product AS P2
+            ON P3.order_detail_no = P2.order_id
+            """
 
+        # JOIN 추가
+        count_num += """
         INNER JOIN product_options AS P8
         ON P2.product_option_id = P8.product_option_no
 
@@ -140,26 +225,59 @@ class OrderDao:
 
         INNER JOIN colors AS P5
         ON P10.color_id = P5.color_no
-
-        INNER JOIN user_shipping_details AS P7
-        ON P3.user_shipping_id = P7.user_shipping_detail_no
-        AND P7.phone_number LIKE %(phone_number)s
-
-        INNER JOIN product_details AS P6
-        ON P8.product_id = P6.product_id
-        AND P6.name LIKE %(product_name)s
-
-        INNER JOIN order_status AS P9
-        ON P3.order_status_id = P9.order_status_no
-
-        INNER JOIN users AS P11
-        ON P1.user_id = P11.user_no
-        AND P11.name LIKE %(orderer)s
-
-        WHERE order_no LIKE %(order_id)s
         """
 
-        cursor.execute(count_num, filters)
+        # 제품명 필터 존재하는 경우 추가
+        if filter_info['product_name']:
+            count_num += """
+            INNER JOIN product_details AS P6
+            ON P8.product_id = P6.product_id
+            AND P6.name = %(product_name)s
+            """
+        else:
+            count_num += """
+            INNER JOIN product_details AS P6
+            ON P8.product_id = P6.product_id
+            """
+
+        # JOIN 추가
+        count_num += """
+        INNER JOIN order_status AS P9
+        ON P3.order_status_id = P9.order_status_no
+        """
+
+        # 핸드폰번호 필터 존재하는 경우 추가
+        if filter_info['phone_number']:
+            count_num += """
+            INNER JOIN user_shipping_details AS P7
+            ON P3.user_shipping_id = P7.user_shipping_detail_no
+            AND P7.phone_number = %(phone_number)s
+            """
+        else:
+            count_num += """
+            INNER JOIN user_shipping_details AS P7
+            ON P3.user_shipping_id = P7.user_shipping_detail_no
+            """
+
+        # 주문자명 필터 존재하는 경우 추가
+        if filter_info['orderer']:
+            count_num += """
+            INNER JOIN users AS P11
+            ON P1.user_id = P11.user_no
+            AND P11.name = %(orderer)s
+            """
+        else:
+            count_num +="""
+            INNER JOIN users AS P11
+            ON P1.user_id = P11.user_no
+            """
+
+        # 주문 id 필터 존재하는 경우 추가
+        if filter_info['order_id']:
+            count_num += """
+            WHERE order_no = %(order_id)s
+            """
+        cursor.execute(count_num, filter_info)
         total_num = cursor.fetchone()
 
         return total_num

@@ -8,6 +8,27 @@ def create_user_endpoints(user_service):
 
     @user_app.route('/signin', methods=['POST'])
     def signin():
+        """
+        기본 로그인 api
+
+        Args:
+            email : 이메일
+            password : 패스워드
+
+        Returns:
+            200, {"access_token" : access_token}
+            401, {"message" : "UNAUTHORIZED"} : 로그인 실패(비밀번호or 이메일 불일치)
+            500, {"message" : "NO_DATABASE_CONNECTION"} : db 연결 실패
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-20 (tnwjd060124@gmail.com) : 초기 생성
+            2020-08-26 (tnwjd060124@gmail.com) : 수정
+                controller에서 db commit하도록 변경
+
+        """
 
         db_connection = None
         try:
@@ -24,6 +45,8 @@ def create_user_endpoints(user_service):
                 if sign_in_user:
                     #access_token 생성 메소드 실행 결과를 access_token 에 저장
                     access_token = user_service.generate_access_token(sign_in_user)
+
+                    db_connection.commit()
                     return jsonify({'access_token' : access_token}), 200
 
                 # login 실패
@@ -34,7 +57,7 @@ def create_user_endpoints(user_service):
 
         # 정의하지 않은 에러 잡아줌
         except Exception as e:
-            return jsonify({"message" : f'{e}'}), 400
+            return jsonify({"message" : f'{e}'}), 500
 
         finally:
             if db_connection:
@@ -42,6 +65,26 @@ def create_user_endpoints(user_service):
 
     @user_app.route('/google-signin', methods=['POST'])
     def googlesignin():
+        """
+        구글 소셜 로그인 api
+
+        Args:
+            Authorization : 구글에서 받은 id_token
+
+        Returns:
+            200, {"access_token" : access_token}
+            401, {"message" : "FAIL_SOCIAL_LOGIN"} : 로그인 실패
+            500, {"message" : "NO_DATABASE_CONNECTION"} : db 연결 실패
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-20 (tnwjd060124@gmail.com) : 초기 생성
+            2020-08-26 (tnwjd060124@gmail.com) : 수정
+                controller에서 db commit하도록 변경
+
+        """
 
         db_connection = None
         try:
@@ -75,6 +118,8 @@ def create_user_endpoints(user_service):
                 if sign_in_user:
                     # 소셜 로그인 성공 시 access_token 생성 메소드 실행
                     access_token = user_service.generate_access_token(sign_in_user)
+
+                    db_connection.commit()
                     return jsonify({"access_token" : access_token}), 200
 
                 # 소셜 로그인 실패
@@ -98,6 +143,35 @@ def create_admin_user_endpoints(user_service):
 
     @admin_user_app.route('/userlist', methods=['GET'])
     def user_list():
+        """
+
+        유저 리스트 표출 api
+
+        Args:
+            page : 가져올 페이지
+            limit : 가져올 갯수
+
+        Returns:
+            200, {
+                "total_user_number" : 총 유저 수,
+                "data"              : [
+                    {
+                        "created_at"    : 등록일,
+                        "email"         : 이메일,
+                        "last_access"   : 최종접속일,
+                        "name"          : 회원명,
+                        "phone_number"  : 휴대폰,
+                        "user_no"       : 회원번호
+            }]}
+            500, {"message" : "NO_DATABASE_CONNECTION"} : db 연결 실패
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-20 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
 
         db_connection = None
         try:
@@ -116,14 +190,14 @@ def create_admin_user_endpoints(user_service):
                 # 유저 리스트 가져와서 result에 저장
                 result = user_service.get_user_list(page, limit, db_connection)
 
-                return jsonify({"total_user_numer" : total_user['total_number'], "data" : result}), 200
+                return jsonify({"total_user_number" : total_user['total_number'], "data" : result}), 200
 
             # db 연결 되지 않았을 때
             return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
 
         # 정의하지 않은 모든 에러를 잡아줌
         except Exception as e:
-            return jsonify({"message" : f'{e}'}), 400
+            return jsonify({"message" : f'{e}'}), 500
 
         finally:
             if db_connection:

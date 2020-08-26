@@ -44,7 +44,6 @@ class UserDao:
         """
 
         cursor.execute(create_user, user_info)
-        db_connection.commit()
 
         user = cursor.lastrowid
         return user
@@ -171,7 +170,6 @@ class UserDao:
         Args:
             user_info :
                 user_no         : 유저의 pk
-                current_time    : 현재 시간
             db_connection : 연결된 db 객체
 
         Returns:
@@ -190,12 +188,12 @@ class UserDao:
         UPDATE
             users
         SET
-            last_access = %(current_time)s
+            last_access = CURRENT_TIMESTAMP
         WHERE
             user_no = %(user_no)s
         """
         cursor.execute(update_user, user_info)
-        db_connection.commit()
+        return cursor.lastrowid
 
     def get_user_list(self, pagination, db_connection):
         """
