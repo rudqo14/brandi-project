@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <Banner />
+    <!-- <Banner /> -->
     <main>
       <div class="mainProducts">
         <section class="productContainer">
@@ -60,9 +60,8 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://localhost:8080/Data/ProductList.json").then((res) => {
+      axios.get("http://10.58.3.90:5000/product").then((res) => {
         this.product = res.data;
-        console.log("priceType: ", typeof parseInt(this.product.data[0].price));
       });
     },
     numberWithCommas(x) {

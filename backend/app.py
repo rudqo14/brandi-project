@@ -1,4 +1,5 @@
 import decimal
+import datetime
 
 from flask      import Flask
 from flask.json import JSONEncoder
@@ -14,11 +15,12 @@ from service    import (
     OrderService,
     ProductService
 )
-from view       import (
+from controller       import (
     create_user_endpoints,
     create_admin_user_endpoints,
     create_admin_order_endpoints,
-    AdminProductView
+    service_product_endpoint,
+    create_admin_product_endpoints
 )
 
 class CustomJSONEncoder(JSONEncoder):
@@ -41,6 +43,9 @@ class CustomJSONEncoder(JSONEncoder):
 
         if isinstance(obj, decimal.Decimal):
             return float(obj)
+
+        if isinstance(obj, datetime.datetime):
+            return obj.strftime('%Y-%m-%d %H:%M:%S')
 
         return JSONEncoder.default(self, obj)
 
@@ -76,12 +81,13 @@ def create_app():
     # Service 생성
     user_service = UserService(user_dao)
     order_service = OrderService(order_dao)
-    product_service = ProductService()
+    product_service = ProductService(product_dao)
 
     # view blueprint 등록
     app.register_blueprint(create_user_endpoints(user_service))
     app.register_blueprint(create_admin_user_endpoints(user_service))
     app.register_blueprint(create_admin_order_endpoints(order_service))
-    app.register_blueprint(AdminProductView.product_app)
+    app.register_blueprint(service_product_endpoint(product_service))
+    app.register_blueprint(create_admin_product_endpoints(product_service))
 
     return app

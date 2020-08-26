@@ -8,6 +8,7 @@ import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import Header from "../BrandiService/Components/Header.vue";
 import Order from "../BrandiService/Order/order.vue";
+import Footer from "../BrandiService/Components/Footer.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);

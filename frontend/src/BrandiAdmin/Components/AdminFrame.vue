@@ -54,7 +54,6 @@ export default {
   methods: {
     sideBarActive() {
       this.isSideBar = !this.isSideBar;
-      console.log("isSideBar: ", this.isSideBar);
     },
   },
 };
@@ -146,6 +145,7 @@ header {
 
       .sideBarToggleWrapper {
         background: white;
+        cursor: pointer;
         border-top-left-radius: 5px;
         border-bottom-left-radius: 5px;
         padding: 10px 10px 10px 14px;
@@ -153,6 +153,7 @@ header {
 
       .sideBarToggleWrapperOff {
         background: white;
+        cursor: pointer;
         border-top-right-radius: 5px;
         border-bottom-right-radius: 5px;
         padding: 10px 10px 10px 14px;
