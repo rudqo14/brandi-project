@@ -1,4 +1,4 @@
-from flask      import (
+from flask import (
     request,
     Blueprint,
     jsonify,
@@ -7,12 +7,15 @@ from flask      import (
 from connection import get_connection
 
 def create_admin_product_endpoints(product_service):
+
     # 'admin/product' end point prefix 설정
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
     @admin_product_app.route('', methods=['POST'])
     def product_register():
+
         """
+
         상품등록 엔드포인트
         [POST] http://ip:5000/admin/product
 
@@ -47,6 +50,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
+
         """
 
         # finally error 발생 방지
@@ -71,6 +75,8 @@ def create_admin_product_endpoints(product_service):
     return admin_product_app
 
 def service_product_endpoint(product_service):
+
+    # 'product' end point prefix 설정
     service_product_app = Blueprint('service_product_app', __name__, url_prefix='/product')
 
     @service_product_app.route('', methods=['GET'])
@@ -78,17 +84,18 @@ def service_product_endpoint(product_service):
 
         # finally error 발생 방지
         db_connection = None
+
         try:
             db_connection = get_connection()
 
             if db_connection:
                 products = product_service.get_product_list(db_connection)
+                return jsonify({'data' : products}), 200
 
-                return jsonify({'data':products}), 200
-            return jsonify({'message':'NO_DATABASE_CONNECTION'}), 500
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
         except Exception as e:
-            return jsonify({'message':e}), 400
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
