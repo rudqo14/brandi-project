@@ -89,11 +89,6 @@ export default {
   },
 
   methods: {
-    // toggleHandler(e) {
-    //   const name = e.target.getAttribute("name");
-    //   this.homeToggle;
-    //   console.log("homeToggle: ", this.homeToggle, name);
-    // },
     statisticsToggleHandler() {
       this.statisticsToggle = !this.statisticsToggle;
     },
@@ -153,6 +148,8 @@ export default {
     cursor: pointer;
     height: 40px;
     padding: 0 18px;
+
+    // 어드민 사이드바 토글 애니메이션
     animation: 200ms 1ms menuOpen linear forwards;
     transform: translateY(-100%);
     @keyframes menuOpen {

@@ -68,7 +68,7 @@ export default {
     cursor: pointer;
 
     .bannerImg {
-      width: 100vw;
+      width: 100%;
     }
   }
 

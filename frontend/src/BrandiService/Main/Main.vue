@@ -1,7 +1,7 @@
 <template>
   <div>
     <Header />
-    <!-- <Banner /> -->
+    <Banner />
     <main>
       <div class="mainProducts">
         <section class="productContainer">
@@ -60,7 +60,7 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://10.58.3.90:5000/product").then((res) => {
+      axios.get("http://52.79.197.248:5000/product").then((res) => {
         this.product = res.data;
       });
     },

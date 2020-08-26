@@ -14,7 +14,7 @@
         <span>상품 등록</span>
       </div>
     </header>
-    <section>
+    <section class="pageContents">
       <BasicInfo />
       <OptionInfo />
       <SellingInfo />
@@ -23,14 +23,19 @@
 </template>
 
 <script>
-export default {};
+import BasicInfo from "./Components/BasicInfo";
+import OptionInfo from "./Components/OptionInfo";
+import SellingInfo from "./Components/SellingInfo";
+export default {
+  components: {
+    BasicInfo,
+  },
+};
 </script>
 
-<style>
+<style lang="scss" scoped>
 header {
   width: 100%;
-  height: 100px;
-
   .pageTitle {
     margin: 25px;
 
@@ -46,9 +51,22 @@ header {
   }
 
   .pageStateBar {
+    display: flex;
+    align-items: center;
     width: 100%;
-    background-color: lightgray;
-    margin-left: 25px;
+    height: 40px;
+    padding-left: 25px;
+    font-size: 15px;
+    background-color: #eeeeee;
+
+    .fas {
+      color: gray;
+      padding: 0 8px;
+    }
   }
+}
+
+.pageContents {
+  margin: 10px 5px;
 }
 </style>

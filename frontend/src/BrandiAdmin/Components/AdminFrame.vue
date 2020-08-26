@@ -206,5 +206,9 @@ header {
       }
     }
   }
+
+  .content {
+    width: 100%;
+  }
 }
 </style>
