@@ -25,7 +25,7 @@ class OrderService:
         orders = self.order_dao.get_ordercompleted_list(filter_info, db_connection)
         return orders
 
-    def check_filter_list(self, filter_info, search_info):
+    def check_filter_list(self, filter_info):
         """
 
         filter의 유효성 체크
@@ -35,7 +35,6 @@ class OrderService:
                 page : 현재 페이지
                 limit : 가져올 row 갯수
                 from_date : 날짜 filter
-            search_info:
                 order_id : 주문_id
                 order_detail_id : 주문 상세_id
                 phone_number : 휴대폰번호
@@ -60,15 +59,8 @@ class OrderService:
 
         if not filter_info['from_date']:
             # filter에 날짜 정보가 없으면 검색 조건 정보 존재 확인
-            if not any(search_info.values()):
+            if not(filter_info['order_id'] or filter_info['order_detail_id'] or filter_info['phone_number'] or filter_info['orderer'] or filter_info['product_name']):
                 return None
-
-        # filter_info에 검색 정보들 저장
-        for key,values in search_info.items():
-            if values:
-                filter_info[key] = values
-            else:
-                filter_info[key] = '%'
 
         return filter_info
 

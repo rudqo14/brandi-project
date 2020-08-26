@@ -49,11 +49,7 @@ class UserService:
             return None
 
         # 비밀번호 일치 시 최종 접속 시간 업데이트
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S')
-        self.user_dao.update_user_last_access({
-            'user_no'       : user['user_no'],
-            'current_time'  : current_time
-        }, db_connection)
+        self.user_dao.update_user_last_access(user, db_connection)
 
 
         return user

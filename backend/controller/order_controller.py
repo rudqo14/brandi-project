@@ -18,30 +18,27 @@ def create_admin_order_endpoints(order_service):
 
             # request의 filter 정보 저장
             filter_info = {
-                'from_date'     : request.args.get('fromDate', default=None),
-                'page'          : request.args.get('page', default=1, type=int),
-                'limit'         : request.args.get('limit', default=50, type=int),
-                # 최신 주문일순 = 1 / 주문일의 역순 = 0
-                'sort'          : request.args.get('sort', default=1, type=int)
-            }
-
-            #검색 조건 정보 저장
-            search_info = {
-                'order_id'        : request.args.get('orderId', default=None, type=int),
-                'order_detail_id' : request.args.get('orderDetailId', default=None, type=int),
-                'orderer'         : request.args.get('orderer', default=None),
-                'phone_number'    : request.args.get('phoneNumber', default=None),
-                'product_name'    : request.args.get('productName', default=None)
+                'from_date'         : request.args.get('fromDate', default=None),
+                'page'              : request.args.get('page', default=1, type=int),
+                'limit'             : request.args.get('limit', default=50, type=int),
+                # 정렬 조건 존재하는경우 : 주문일 오래된 순
+                'sort'              : request.args.get('sort', default=False),
+                'order_id'          : request.args.get('orderId', default=None, type=int),
+                'order_detail_id'   : request.args.get('orderDetailId', default=None, type=int),
+                'orderer'           : request.args.get('orderer', default=None),
+                'phone_number'      : request.args.get('phoneNumber', default=None),
+                'product_name'      : request.args.get('productName', default=None)
             }
 
             if db_connection:
                 # filter 유효성 검사
-                filters = order_service.check_filter_list(filter_info, search_info)
+                filters = order_service.check_filter_list(filter_info)
 
                 if filters:
 
                     # filter 조건 정보에 해당하는 총 결제 완료 건수 조회
                     count = order_service.get_total_number(filters, db_connection)
+
 
                     # filter 정보를 전달하여 결제 완료 리스트 가져와서 result에 저장
                     result = order_service.get_order_list(filters, db_connection)
