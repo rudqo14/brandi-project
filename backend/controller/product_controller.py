@@ -1,11 +1,12 @@
+from utils      import ResizeImage
+
 from flask import (
     request,
     Blueprint,
     jsonify,
 )
 
-from connection import get_connection
-from utils      import ResizeImage
+from connection import get_connection, get_s3_connection
 
 def create_admin_product_endpoints(product_service):
 
@@ -17,29 +18,26 @@ def create_admin_product_endpoints(product_service):
 
         """
 
-        상품등록 엔드포인트
+        상품등록 - 엔드포인트 Function
         [POST] http://ip:5000/admin/product
 
-        request.body:
-            mainCategoryId    : Main Category ID
-            subCategoryId     : Sub Category ID
-            sellYn            : 상품 판매여부 (Boolean)
-            exhibitionYn      : 상품 진열여부 (Boolean)
-            productName       : 상품이름
-            simpleDescription : 상품 한 줄 설명
-            detailInformation : 상품 상세 설명
-            price             : 상품가격
-            productImage      : 상품이미지(List)
-            [
-                {
-                    imageUrl : 상품이미지 URL
-                }
-            ]
-            discountRate      : 상품 할인율
-            discountStartDate : 할인 시작일
-            discountEndDate   : 할인 종료일
-            minSalesQuantity  : 최소판매 수량
-            maxSalesQuantity  : 최대판매 수량
+        request.form:
+            mainCategoryId      : Main Category ID
+            subCategoryId       : Sub Category ID
+            sellYn              : 상품 판매여부 (Boolean)
+            exhibitionYn        : 상품 진열여부 (Boolean)
+            productName         : 상품이름
+            simpleDescription   : 상품 한 줄 설명
+            detailInformation   : 상품 상세 설명
+            price               : 상품가격
+            discountRate        : 상품 할인율
+            discountStartDate   : 할인 시작일
+            discountEndDate     : 할인 종료일
+            minSalesQuantity    : 최소판매 수량
+            maxSalesQuantity    : 최대판매 수량
+
+        request.files
+            product_image_(No.) : 상품이미지 파일(Number: 1-5)
 
         Returns:
             200 : SUCCESS, 상품등록 완료
@@ -51,6 +49,8 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
+            2020-08-26 (sincerity410@gmail.com) : controller, service, model role 재정의에 따른 함수수정
+            2020-08-28 (sincerity410@gmail.com) : product_images, images 저장 기능추가
 
         """
 
@@ -58,30 +58,37 @@ def create_admin_product_endpoints(product_service):
         db_connection = None
 
         try:
+
             db_connection = get_connection()
 
-            if db_connection:
-                product_info          = request.json
-                product_create_result = product_service.create_product(product_info, db_connection)
-                db_connection.commit()
-                return product_create_result
+            # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
+            s3_connection = get_s3_connection()
+            images        = request.files
 
-        except Exception as e:
-            return jsonify({"message" : f'{e}'}), 400
+            # 상품이미지를 사이즈 별로 S3에 저장하는 Function 실행  
+            product_image_upload_result  = product_service.upload_product_image(images, s3_connection)
+
+            if db_connection:
+
+                # form-data request를 product_info라는 Dictionary 변수에 담기
+                product_info              = request.form.to_dict(flat=False)
+
+                # 1-5번의 사이즈 별 상품이미지를 product_info에 추가
+                product_info['image_url'] = product_image_upload_result
+
+                # 상품정보를 DB에 저장하는 Function 실행
+                product_service.create_product(product_info, db_connection)
+                db_connection.commit()
+
+                return jsonify({'message' : 'SUCCESS'}), 200
+
+        #except Exception as e:
+        #    db_connection.rollback()
+        #    return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
-
-
-    # resizing 테스트
-    @admin_product_app.route('/test', methods=['POST'])
-    def test_image_resize():
-        images = request.files
-        resizing = ResizeImage(images)
-        print(resizing())
-
-        return jsonify({"data" : "resizing test"}), 200
 
     return admin_product_app
 
@@ -181,3 +188,4 @@ def service_product_endpoint(product_service):
                 db_connection.close()
 
     return service_product_app
+
