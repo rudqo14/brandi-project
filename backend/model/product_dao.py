@@ -3,6 +3,7 @@ from flask import jsonify
 class ProductDao:
 
     def insert_product(self, db_connection):
+
         """
         product table insert function
 
@@ -18,6 +19,7 @@ class ProductDao:
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
         """
+
         try:
             with db_connection.cursor() as cursor:
                 insert_product_query = """
@@ -41,7 +43,9 @@ class ProductDao:
             raise e
 
     def insert_product_detail(self, product_info, db_connection):
+
         """
+
         상품등록 Model Function
 
         Args:
@@ -56,6 +60,7 @@ class ProductDao:
 
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
+
         """
 
         try:
