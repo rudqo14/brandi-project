@@ -7,6 +7,7 @@ import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import Header from "../BrandiService/Components/Header.vue";
+import Order from "../BrandiService/Order/order.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -30,6 +31,10 @@ export const router = new VueRouter({
     {
       path: "/banner",
       component: Banner,
+    },
+    {
+      path: "/order",
+      component: Order,
     },
     {
       //초기 url을 main으로 적용
