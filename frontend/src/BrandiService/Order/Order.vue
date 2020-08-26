@@ -108,6 +108,7 @@
         <button class="paymentBtn">결제하기</button>
       </div>
     </main>
+    <Footer />
   </div>
 </template>
 
@@ -115,13 +116,14 @@
 import { ip } from "../../../config.js";
 import axios from "axios";
 import { VueAgile } from "vue-agile";
-import Header from "../Components/Header.vue";
+import Header from "../Components/Header";
+import Footer from "../Components/Footer";
 
 export default {
   data() {
     return {};
   },
-  components: { Header },
+  components: { Header, Footer },
   methods: {},
 };
 </script>

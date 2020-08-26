@@ -52,6 +52,7 @@ export default {
   components: {
     Header,
     Banner,
+    Footer,
   },
   created() {
     this.getProductData();
