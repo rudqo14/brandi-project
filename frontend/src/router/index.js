@@ -6,7 +6,6 @@ import Login from "../BrandiService/Login/Login.vue";
 import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
-import Header from "../BrandiService/Components/Header.vue";
 
 
 Vue.use(VueAgile);

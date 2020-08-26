@@ -33,7 +33,9 @@
           </div>
         </div>
       </aside>
-      <section class="content">Hello BRANDI</section>
+      <section class="content">
+        <ProductResistration />
+      </section>
     </main>
   </div>
 </template>
@@ -41,10 +43,12 @@
 <script>
 import ReductionSideBar from "./ReductionSideBar";
 import OpenSideBar from "./OpenSideBar";
+import ProductResistration from "../ProductRegistration/ProductResistration";
 export default {
   components: {
     ReductionSideBar,
     OpenSideBar,
+    ProductResistration,
   },
   data() {
     return {
