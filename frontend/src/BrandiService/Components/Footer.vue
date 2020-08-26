@@ -80,48 +80,48 @@ export default {};
     border-bottom: 0.5px solid rgba(128, 128, 128, 0.5);
     display: flex;
     justify-content: space-between;
-    width: 710px;
+    width: 1250px;
     margin-left: auto;
     margin-right: auto;
-    padding: 15px 0 20px 0;
+    padding: 30px 0 35px 0;
 
     .phoneNumber {
       color: white;
-      font-size: 17px;
+      font-size: 33px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
     .businessHour {
       color: gray;
-      font-size: 7px;
-      margin-bottom: 3px;
+      font-size: 14px;
+      margin-bottom: 5px;
     }
   }
 
   .footerBottom {
     display: flex;
     justify-content: space-between;
-    width: 710px;
+    width: 1250px;
     margin-left: auto;
     margin-right: auto;
-    padding: 20px 0 25px 0;
+    padding: 40px 0 60px 0;
 
     .bottomLeft {
       .companyInfo {
         color: gray;
-        font-size: 7px;
-        padding-bottom: 3px;
+        font-size: 14px;
+        padding-bottom: 5px;
       }
 
       .terms {
         display: flex;
-        margin-top: 5px;
+        margin-top: 10px;
 
         .divider {
           background-color: white;
           width: 0.5px;
-          margin: 0 5px;
+          margin: 0 10px;
         }
 
         #linkCenter {
@@ -132,17 +132,18 @@ export default {};
   }
   .snsLink {
     color: white;
-    font-size: 8px;
+    font-size: 14px;
     display: flex;
-    margin-bottom: 30px;
+    margin-bottom: 70px;
 
     .snsContainer {
       display: flex;
       align-items: center;
+      padding-right: 5px;
 
       .imgContainer {
         img {
-          width: 17px;
+          width: 30px;
           margin-left: 10px;
           margin-right: 3px;
         }
@@ -151,7 +152,7 @@ export default {};
   }
 
   .link {
-    font-size: 8px;
+    font-size: 14px;
     text-decoration: none;
     color: white;
   }

@@ -6,8 +6,8 @@ import Login from "../BrandiService/Login/Login.vue";
 import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
-import Header from "../BrandiService/Components/Header.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
+import Header from "../BrandiService/Components/Header.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -15,6 +15,10 @@ Vue.use(VueRouter);
 export const router = new VueRouter({
   mode: "history",
   routes: [
+    {
+      path: "/footer",
+      component: Footer,
+    },
     {
       path: "/main",
       component: Main,
