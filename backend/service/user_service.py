@@ -55,6 +55,7 @@ class UserService:
         return user
 
     def generate_access_token(self, user_no):
+
         """
 
         jwt를 이용해 access token을 제공합니다.
@@ -75,6 +76,7 @@ class UserService:
 
         # token 생성
         access_token = jwt.encode({'user_no' : user_no}, SECRET['secret_key'], SECRET['algorithm']).decode('utf-8')
+
         return access_token
 
     def google_social_login(self, user_info, db_connection):
@@ -104,6 +106,7 @@ class UserService:
                 dao 메소드 실행 시 db_connection을 parameter로 전달
 
         """
+
         # social_network 테이블의 구글pk 설정
         user_info['social_id'] = 1
 
@@ -115,10 +118,8 @@ class UserService:
             user = self.user_dao.signup_user(user_info, db_connection)
 
         # 유저의 최종 접속시간 update
-        current_time = time.strftime('%Y-%m-%d %H:%M:%S')
         self.user_dao.update_user_last_access({
             'user_no'       : user['user_no'],
-            'current_time'  : current_time
         }, db_connection)
 
         return user

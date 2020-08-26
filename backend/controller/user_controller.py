@@ -31,6 +31,7 @@ def create_user_endpoints(user_service):
         """
 
         db_connection = None
+
         try:
             # db 연결
             db_connection = get_connection()
@@ -39,14 +40,17 @@ def create_user_endpoints(user_service):
             data = request.json
 
             if db_connection:
+
                 # 유저 로그인 메소드 실행
                 sign_in_user = user_service.sign_in(data, db_connection)
 
                 if sign_in_user:
+
                     #access_token 생성 메소드 실행 결과를 access_token 에 저장
                     access_token = user_service.generate_access_token(sign_in_user)
 
                     db_connection.commit()
+
                     return jsonify({'access_token' : access_token}), 200
 
                 # login 실패
@@ -65,7 +69,9 @@ def create_user_endpoints(user_service):
 
     @user_app.route('/google-signin', methods=['POST'])
     def googlesignin():
+
         """
+
         구글 소셜 로그인 api
 
         Args:
@@ -87,7 +93,9 @@ def create_user_endpoints(user_service):
         """
 
         db_connection = None
+
         try:
+
             # db 연결
             db_connection = get_connection()
 
@@ -116,10 +124,12 @@ def create_user_endpoints(user_service):
                     }, db_connection)
 
                 if sign_in_user:
+
                     # 소셜 로그인 성공 시 access_token 생성 메소드 실행
                     access_token = user_service.generate_access_token(sign_in_user)
 
                     db_connection.commit()
+
                     return jsonify({"access_token" : access_token}), 200
 
                 # 소셜 로그인 실패
@@ -143,6 +153,7 @@ def create_admin_user_endpoints(user_service):
 
     @admin_user_app.route('/userlist', methods=['GET'])
     def user_list():
+
         """
 
         유저 리스트 표출 api
@@ -174,7 +185,9 @@ def create_admin_user_endpoints(user_service):
         """
 
         db_connection = None
+
         try:
+
             # db 연결
             db_connection = get_connection()
 
