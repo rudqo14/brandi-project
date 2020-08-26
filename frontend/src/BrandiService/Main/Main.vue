@@ -38,6 +38,7 @@
         </section>
       </div>
     </main>
+    <Footer />
   </div>
 </template>
 
@@ -45,10 +46,13 @@
 import axios from "axios";
 import Header from "../Components/Header";
 import Banner from "../Components/Banner";
+import Footer from "../Components/Footer";
+
 export default {
   components: {
     Header,
     Banner,
+    Footer,
   },
   created() {
     this.getProductData();

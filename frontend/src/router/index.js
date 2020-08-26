@@ -6,6 +6,7 @@ import Login from "../BrandiService/Login/Login.vue";
 import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
+import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
 import Header from "../BrandiService/Components/Header.vue";
 
@@ -37,6 +38,10 @@ export const router = new VueRouter({
       component: Banner,
     },
     {
+      path: "/order",
+      component: Order,
+    },
+    {
       //초기 url을 main으로 적용
       path: "/",
       redirect: "/main",
@@ -44,6 +49,10 @@ export const router = new VueRouter({
     {
       path: "/admin",
       component: AdminFrame,
+    },
+    {
+      path: "/footer",
+      component: Footer,
     },
   ],
 });

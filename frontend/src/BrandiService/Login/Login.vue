@@ -17,19 +17,15 @@
           </div>
           <div></div>
           <h3 class="socialTitle">간편 로그인 / 가입</h3>
-          <GoogleLogin
-            class="googleLogin"
-            :params="params"
-            :onSuccess="onSuccess"
-          >
+          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
             <div class="imgContainer">
               <img src="/Images/google-logo.png" />
-            </div>
-            Google 계정으로 계속하기
+            </div>Google 계정으로 계속하기
           </GoogleLogin>
         </div>
       </main>
     </section>
+    <Footer />
   </div>
 </template>
 
@@ -39,11 +35,13 @@ import { ClientId } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
 import axios from "axios";
+import Footer from "../Components/Footer";
 
 export default {
   components: {
     Header,
     GoogleLogin,
+    Footer,
   },
   data() {
     return {
