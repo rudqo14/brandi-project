@@ -52,8 +52,10 @@
         <div class="deliveredContainer">
           <span>배송지 정보</span>
           <span class="deliveredBtn">
-            <input class="checkboxBtn" type="checkbox" />
-            주문자 정보와 동일
+            <label class="checkboxLable">
+              <input class="checkboxBtn" type="checkbox" />
+              주문자 정보와 동일
+            </label>
           </span>
         </div>
         <div class="orderInfoContainer">
@@ -72,6 +74,7 @@
           <span class="name">배송주소</span>
           <div>
             <input class="address" disabled />
+            <button class="findAddress">우편번호 찾기</button>
             <br />
             <input class="address" disabled />
             <input class="address" disabled />
@@ -91,12 +94,12 @@
         <div class="priceContainer">
           <div class="detailPrice">
             <span>총 상품 금액</span>
-            <span>19,530원</span>
+            <span>14,490원</span>
           </div>
           <div class="detailPrice">
             <span class="totalPrice">결제 예상 금액</span>
             <span class="totalPrice">
-              <strong>19,530원</strong>
+              <strong>14,490원</strong>
             </span>
           </div>
         </div>
@@ -231,10 +234,15 @@ export default {
       display: flex;
       align-items: center;
 
-      .checkboxBtn {
-        width: 20px;
-        height: 20px;
-        margin-right: 10px;
+      .checkboxLable {
+        cursor: pointer;
+
+        .checkboxBtn {
+          width: 20px;
+          height: 20px;
+          margin-right: 10px;
+          cursor: pointer;
+        }
       }
     }
   }
@@ -338,6 +346,16 @@ export default {
       border: none;
       outline: none;
       background-color: #f5f5f5;
+    }
+
+    .findAddress {
+      width: 120px;
+      height: 40px;
+      font-size: 16px;
+      background-color: #4c4c4c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
     }
 
     p {
