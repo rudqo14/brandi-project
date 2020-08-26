@@ -1,4 +1,4 @@
-from model.product_dao import ProductDao
+from flask import jsonify
 
 class ProductService:
     def __init__(self, product_dao):
@@ -21,10 +21,11 @@ class ProductService:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
         """
 
-        product_dao           = ProductDao()
-        product_create_result = product_dao.insert_product(product_info, db_connection)
+        product_id                 = self.product_dao.insert_product(db_connection)
+        product_info['product_id'] = product_id
+        self.product_dao.insert_product_detail(product_info, db_connection)
 
-        return product_create_result
+        return jsonify({'message': 'SUCCESS'}), 200
 
     def get_product_list(self, db_connection):
         """
