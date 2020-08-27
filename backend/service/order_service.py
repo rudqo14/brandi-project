@@ -60,14 +60,16 @@ class OrderService:
         """
 
         # offset 설정
-        page = int(filter_info['page'])
-        filter_info['limit'] = int(filter_info['limit'])
-
-        filter_info['offset'] = (page*filter_info['limit']) - filter_info['limit']
+        filter_info['offset'] = (filter_info['page']*filter_info['limit']) - filter_info['limit']
 
         if not filter_info['from_date']:
+
             # filter에 날짜 정보가 없으면 검색 조건 정보 존재 확인
-            if not(filter_info['order_id'] or filter_info['order_detail_id'] or filter_info['phone_number'] or filter_info['orderer'] or filter_info['product_name']):
+            if not( filter_info['order_id']
+                    or filter_info['order_detail_id']
+                    or filter_info['phone_number']
+                    or filter_info['orderer']
+                    or filter_info['product_name'] ):
                 return None
 
         return filter_info
