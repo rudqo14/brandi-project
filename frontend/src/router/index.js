@@ -1,5 +1,5 @@
-import Vue from "../../node_modules/vue";
-import VueRouter from "../../node_modules/vue-router";
+import Vue from "vue";
+import VueRouter from "vue-router";
 import Main from "../BrandiService/Main/Main.vue";
 import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
