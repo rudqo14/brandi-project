@@ -34,7 +34,8 @@
         </div>
       </aside>
       <section class="content">
-        <ProductResistration />
+        <!-- <ProductResistration /> -->
+        <router-view></router-view>
       </section>
     </main>
   </div>
