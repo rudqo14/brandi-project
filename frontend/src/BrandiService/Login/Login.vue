@@ -24,7 +24,6 @@
         </div>
       </main>
     </section>
-    <Footer />
   </div>
 </template>
 

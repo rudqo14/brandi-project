@@ -1,136 +1,160 @@
 <template>
-  <div>
-    <main>
-      <article class="ProductInfo">
-        <agile class="agile" :dots="false">
-          <div
-            class="imgContainer"
-            v-for="(item, index) in detailData.image_list"
-            v-bind:key="index"
-          >
-            <img alt="product  image" :src="item" />
-          </div>
-          <div class="prevBtn" slot="prevButton"></div>
-          <div class="nextBtn" slot="nextButton"></div>
-        </agile>
-        <div class="detailInfoContainer">
-          <p class="title">{{ detailData.product_name }}</p>
-          <div class="priceContainer">
-            <span class="percent">{{ detailData.discount_rate }}%</span>
-            <span class="price">
-              {{
+  <main>
+    <article class="ProductInfo">
+      <agile class="agile" :dots="false">
+        <div
+          class="imgContainer"
+          v-for="(item, index) in detailData.image_list"
+          v-bind:key="index"
+        >
+          <img alt="product  image" :src="item" />
+        </div>
+        <div class="prevBtn" slot="prevButton"></div>
+        <div class="nextBtn" slot="nextButton"></div>
+      </agile>
+      <div class="detailInfoContainer">
+        <p class="title">{{ detailData.product_name }}</p>
+        <div class="priceContainer">
+          <span class="percent">{{ detailData.discount_rate }}%</span>
+          <span class="price">
+            {{
               (
-              detailData.price -
-              detailData.price * (detailData.discount_rate / 100)
+                detailData.price -
+                detailData.price * (detailData.discount_rate / 100)
               ).toLocaleString(5) + "원"
-              }}
-            </span>
-            <span class="cost">{{ Math.floor(detailData.price).toLocaleString(5) + "원" }}</span>
-          </div>
-          <hr />
-          <div v-on:click="onColorClick" class="option">
-            <div>{{ colorToggleData }}</div>
-            <div class="imgContainer">
-              <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
-            </div>
-            <div
-              v-bind:class="{
-                toggleOn: isColorToggle,
-                toggleOff: !isColorToggle,
-              }"
-            >
-              <div class="defaultToggle">[색상]을 선택하세요.</div>
-              <div
-                v-for="(item, index) in detailData.option_colors"
-                class="colorToggle"
-                v-bind:key="index"
-                @click="colorToggleData = detailData.option_colors[index]"
-              >{{ item }}</div>
-            </div>
-          </div>
-          <!-- 사이즈 옵션 -->
-          <div v-on:click="onSizeClick" class="option">
-            <div
-              v-bind:class="{
-                title: disabledSizeToggle,
-                none: !disabledSizeToggle,
-              }"
-            >{{ sizeToggleData }}</div>
-            <div class="imgContainer">
-              <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
-            </div>
-            <div
-              v-bind:class="{
-                toggleOn: isSizeToggle,
-                toggleOff: !isSizeToggle,
-              }"
-            >
-              <div class="defaultToggle">[사이즈]를 선택하세요.</div>
-              <div
-                v-for="(item, index) in detailData.option_sizes"
-                class="colorToggle"
-                v-bind:key="index"
-                @click="optionSizeHandler(detailData, index)"
-              >{{ item }}</div>
-            </div>
+            }}
+          </span>
+          <span class="cost">{{
+            Math.floor(detailData.price).toLocaleString(5) + "원"
+          }}</span>
+        </div>
+        <hr />
+        <div v-on:click="onColorClick" class="option">
+          <div>{{ colorToggleData }}</div>
+          <div class="imgContainer">
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
           </div>
           <div
             v-bind:class="{
-              selectedOptions: isPurchaseBox,
-              noneOptions: !isPurchaseBox,
+              toggleOn: isColorToggle,
+              toggleOff: !isColorToggle,
             }"
           >
-            <div class="selectTitle">
-              <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
-              <div @click="removeSelectHandler()" class="imgContainer">
-                <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
-              </div>
-            </div>
-            <div class="selectPrice">
-              <div class="caculatar">
-                <button class="numberBtn" name="minus" @click="calculationHandler">-</button>
-                <span class="border"></span>
-                <input class="productNumber" :value="input" readonly />
-                <span class="border"></span>
-                <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
-              </div>
-              <p>
-                {{
-                (
-                (detailData.price -
-                detailData.price * (detailData.discount_rate / 100)) *
-                input
-                ).toLocaleString(5) + "원"
-                }}
-              </p>
+            <div class="defaultToggle">[색상]을 선택하세요.</div>
+            <div
+              v-for="(item, index) in detailData.option_colors"
+              class="colorToggle"
+              v-bind:key="index"
+              @click="colorToggleData = detailData.option_colors[index]"
+            >
+              {{ item }}
             </div>
           </div>
-          <div class="detailpriceContainer">
-            <p>총 {{ input }}개의 상품</p>
-            <p class="totalPrice">
-              총 금액
-              <strong>
-                {{
+        </div>
+        <!-- 사이즈 옵션 -->
+        <div v-on:click="onSizeClick" class="option">
+          <div
+            v-bind:class="{
+              title: disabledSizeToggle,
+              none: !disabledSizeToggle,
+            }"
+          >
+            {{ sizeToggleData }}
+          </div>
+          <div class="imgContainer">
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
+          </div>
+          <div
+            v-bind:class="{
+              toggleOn: isSizeToggle,
+              toggleOff: !isSizeToggle,
+            }"
+          >
+            <div class="defaultToggle">[사이즈]를 선택하세요.</div>
+            <div
+              v-for="(item, index) in detailData.option_sizes"
+              class="colorToggle"
+              v-bind:key="index"
+              @click="optionSizeHandler(detailData, index)"
+            >
+              {{ item }}
+            </div>
+          </div>
+        </div>
+        <div
+          v-bind:class="{
+            selectedOptions: isPurchaseBox,
+            noneOptions: !isPurchaseBox,
+          }"
+        >
+          <div class="selectTitle">
+            <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
+            <div @click="removeSelectHandler()" class="imgContainer">
+              <img
+                src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png"
+              />
+            </div>
+          </div>
+          <div class="selectPrice">
+            <div class="caculatar">
+              <button
+                class="numberBtn"
+                name="minus"
+                @click="calculationHandler"
+              >
+                -
+              </button>
+              <span class="border"></span>
+              <input class="productNumber" :value="input" readonly />
+              <span class="border"></span>
+              <button class="numberBtn" name="plus" @click="calculationHandler">
+                +
+              </button>
+            </div>
+            <p>
+              {{
                 (
-                (detailData.price -
-                detailData.price * (detailData.discount_rate / 100)) *
-                input
+                  (detailData.price -
+                    detailData.price * (detailData.discount_rate / 100)) *
+                  input
                 ).toLocaleString(5) + "원"
-                }}
-              </strong>
+              }}
             </p>
           </div>
-          <button @click="buyNowHandler()" class="purchaseBtn">바로 구매하기</button>
         </div>
-      </article>
-      <article class="detailProduct">
-        <div class="categoryContainer">
-          <div class="productDetail">상품정보</div>
-          <div v-html="detailHtml" />
+        <div class="detailpriceContainer">
+          <p>총 {{ input }}개의 상품</p>
+          <p class="totalPrice">
+            총 금액
+            <strong>
+              {{
+                (
+                  (detailData.price -
+                    detailData.price * (detailData.discount_rate / 100)) *
+                  input
+                ).toLocaleString(5) + "원"
+              }}
+            </strong>
+          </p>
         </div>
-      </article>
-    </main>
-  </div>
+        <button @click="buyNowHandler()" class="purchaseBtn">
+          바로 구매하기
+        </button>
+      </div>
+    </article>
+    <article class="detailProduct">
+      <div class="categoryContainer">
+        <div class="productDetail">상품정보</div>
+        <div>
+          <div class="detailHtml" v-html="detailHtml" />
+        </div>
+      </div>
+    </article>
+  </main>
 </template>
 
 <script>
@@ -487,7 +511,7 @@ export default {
 
   .categoryContainer {
     width: 100%;
-    height: 45px;
+    /* height: 100%; */
     border-bottom: 2px solid #dbdbdb;
 
     .productDetail {

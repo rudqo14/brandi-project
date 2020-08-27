@@ -8,6 +8,7 @@
 <script>
 import Header from "./BrandiService/Components/Header";
 import Footer from "./BrandiService/Components/Footer";
+
 export default {
   components: {
     Header,
