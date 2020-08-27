@@ -43,24 +43,17 @@ class ProductService:
 
         Returns:
             상품 전체 리스트
-            - 판매여부와 진열여부가 모두 True인 상품들만
 
         Authors:
             minho.lee0716@gmail.com(이민호)
 
         History:
             2020-08-25 (minho.lee0716@gmail.com) : 초기 생성
-            2020-08-25 (minho.lee0716@gmail.com) : 수정 - 전체 상품이 하나도 없을 경우 (0개 일 때) None 리턴
 
         """
 
-        # 전체 상품이 하나 이상이면 product로 가져옴
         # 상품의 기준은 진열여부=True, 판매여부=True
         products = self.product_dao.select_product_list(db_connection)
 
-        # 전체 상품이 하나도 없을 경우 None 리턴
-        if not products:
-            return None
-
-        # 전체 상품이 하나라도 있을 경우 products(전체 상품) 리턴
+        # 모든 상품을 리턴
         return products

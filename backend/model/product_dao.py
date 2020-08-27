@@ -132,56 +132,57 @@ class ProductDao:
 
         History:
             2020-08-25 (minho.lee0716@gmail.com) : 초기 생성
-            2020-08-25 (minho.lee0716@gmail.com) : 엔드포인트를 찾아가지 못하는 문제 해결
+            2020-08-25 (minho.lee0716@gmail.com) : 수정
+                컨벤션 수정
 
         """
 
-        cursor = db_connection.cursor()
+        with db_connection.cursor() as cursor:
 
-        SQL = """
-        SELECT
-            P.product_no,
-            I.image AS thumbnail_image,
-            PD.name AS product_name,
-            PD.price,
-            PD.discount_rate
+            select_products_query = """
+            SELECT
+                P.product_no,
+                I.image AS thumbnail_image,
+                PD.name AS product_name,
+                PD.price,
+                PD.discount_rate
 
-        FROM products as P
+            FROM products as P
 
-        LEFT JOIN product_images as PI
-        ON P.product_no = PI.product_id
+            LEFT JOIN product_images as PI
+            ON P.product_no = PI.product_id
 
-        LEFT JOIN images as I
-        ON PI.image_id = I.image_no
+            LEFT JOIN images as I
+            ON PI.image_id = I.image_no
 
-        LEFT JOIN product_details as PD
-        ON P.product_no = PD.product_id
+            LEFT JOIN product_details as PD
+            ON P.product_no = PD.product_id
 
-        WHERE
-            P.is_deleted    = False AND
-            PI.is_main      = True AND
-            I.is_deleted    = False AND
-            PD.is_activated = True AND
-            PD.is_displayed = True
+            WHERE
+                P.is_deleted        = False
+                AND PI.is_main      = True
+                AND I.is_deleted    = False
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+            """
+
+            cursor.execute(select_products_query)
+            products = cursor.fetchall()
+
+            return products
+
+    def select_product_details(self, product_id, db_connection):
+
         """
 
-        cursor.execute(SQL)
-        products = cursor.fetchall()
-
-        return products
-
-    def select_images_of_product(self, ,product_id, db_connection):
-
-        """
-
-        서비스 페이지의 상품 상세정보 중에서 이미지들을 리턴합니다.
+        서비스 페이지의 상품 상세정보를 리턴합니다.
 
         Args:
-            product_id    : 해당 상품의 id(pk)
+            product_id    : 해당 상품의 id
             db_connection : 연결된 db 객체
 
         Returns:
-            서비스 페이지의 상품 상세정보의 이미지들
+            해당 상품에 대한 상세정보들
 
         Authors:
             minho.lee0716@gmail.com (이민호)
@@ -191,12 +192,12 @@ class ProductDao:
 
         """
 
-        cursor = db_connection.cursor()
+        with db_connection.cursor() as cursor:
 
-        SQL = """
-        """
+            select_product_details_query = """
+            """
 
-        cursor.execute(SQL)
-        images = cursor.fetchall()
+            cursor.execute(select_product_details_query)
+            product_details = cursor.fetchall()
 
-        return images
+            return product_details
