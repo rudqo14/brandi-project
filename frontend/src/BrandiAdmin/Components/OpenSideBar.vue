@@ -43,7 +43,7 @@
       </div>
     </div>
     <ul :class="{orderMenuList: orderToggle, orderMenuListOpen: !orderToggle}">
-      <li>결제완료관리</li>
+      <li @click="test" name="orderPage">결제완료관리</li>
     </ul>
     <div class="menu productMenu" @click="productToggleHandler">
       <div class="MC productContainer">
@@ -89,11 +89,6 @@ export default {
   },
 
   methods: {
-    // toggleHandler(e) {
-    //   const name = e.target.getAttribute("name");
-    //   this.homeToggle;
-    //   console.log("homeToggle: ", this.homeToggle, name);
-    // },
     statisticsToggleHandler() {
       this.statisticsToggle = !this.statisticsToggle;
     },
@@ -105,6 +100,9 @@ export default {
     },
     userToggleHandler() {
       this.userToggle = !this.userToggle;
+    },
+    test(e) {
+      console.log(e.target.innerHTML);
     },
   },
 };
@@ -139,11 +137,22 @@ export default {
     transform: rotate(-90deg);
   }
 }
+
 .statiscticsMenuList,
 .orderMenuList,
 .productrMenuList,
 .userMenuList {
   margin: 8px 0;
+  // 어드민 사이드바 토글 애니메이션
+  animation: 0.4s menuOpen ease-out forwards;
+  @keyframes menuOpen {
+    0% {
+      transform: translatey(-10%);
+    }
+    100% {
+      transform: translatey(0);
+    }
+  }
 
   li {
     display: flex;
@@ -153,7 +162,12 @@ export default {
     cursor: pointer;
     height: 40px;
     padding: 0 18px;
-    animation: 200ms 1ms menuOpen linear forwards;
+    &:hover {
+      background: #414247 !important;
+    }
+
+    // 어드민 사이드바 토글 애니메이션
+    /* animation: 200ms 1ms menuOpen linear forwards;
     transform: translateY(-100%);
     @keyframes menuOpen {
       0% {
@@ -162,7 +176,7 @@ export default {
       100% {
         transform: translatey(0);
       }
-    }
+    } */
   }
 }
 

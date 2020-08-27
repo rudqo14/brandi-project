@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <section class="main">
       <main class="article">
         <h1 class="title">오늘 사면 내일 도착!</h1>
@@ -30,7 +29,6 @@
 </template>
 
 <script>
-import Header from "../Components/Header";
 import { ClientId } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
@@ -39,7 +37,6 @@ import Footer from "../Components/Footer";
 
 export default {
   components: {
-    Header,
     GoogleLogin,
     Footer,
   },

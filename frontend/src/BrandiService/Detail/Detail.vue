@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <main>
       <article class="ProductInfo">
         <agile class="agile" :dots="false">
@@ -140,7 +139,6 @@ import axios from "axios";
 import detailData from "../../../Data/Detail.json";
 import detailOption from "../../../Data/DetailOption.json";
 import { VueAgile } from "vue-agile";
-import Header from "../Components/Header.vue";
 
 export default {
   data() {
@@ -162,7 +160,6 @@ export default {
   components: {
     //이미지 Caroucel
     agile: VueAgile,
-    Header,
   },
   methods: {
     //컬러 인풋 클릭시 토글 박스 열리게하기
