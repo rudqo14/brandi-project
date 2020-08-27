@@ -43,7 +43,7 @@
       </div>
     </div>
     <ul :class="{orderMenuList: orderToggle, orderMenuListOpen: !orderToggle}">
-      <li>결제완료관리</li>
+      <li @click="test" name="orderPage">결제완료관리</li>
     </ul>
     <div class="menu productMenu" @click="productToggleHandler">
       <div class="MC productContainer">
@@ -101,6 +101,9 @@ export default {
     userToggleHandler() {
       this.userToggle = !this.userToggle;
     },
+    test(e) {
+      console.log(e.target.innerHTML);
+    },
   },
 };
 </script>
@@ -140,10 +143,6 @@ export default {
 .productrMenuList,
 .userMenuList {
   margin: 8px 0;
-  /* transition: transform 0.3s ease-out;
-  transform: scaleY(1);
-  transform-origin: top;
-  transform:scaleY(0) */
   // 어드민 사이드바 토글 애니메이션
   animation: 0.4s menuOpen ease-out forwards;
   @keyframes menuOpen {

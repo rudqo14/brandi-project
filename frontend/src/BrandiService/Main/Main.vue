@@ -17,9 +17,9 @@
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
-                <span class="discountRate">{{ product.discount_rate }}%</span>
+                <span class="discountRate" v-if="product.discount_rate">{{ product.discount_rate }}%</span>
                 <span class="price">{{ numberWithCommas(Math.floor(product.price)) }}</span>
-                <span class="discountPrice">
+                <span class="discountPrice" v-if="product.discount_rate">
                   {{
                   numberWithCommas(
                   parseInt(product.price) *
@@ -33,17 +33,14 @@
         </section>
       </div>
     </main>
-    <Footer />
   </div>
 </template>
 <script>
 import axios from "axios";
 import Banner from "../Components/Banner";
-import Footer from "../Components/Footer";
 export default {
   components: {
     Banner,
-    Footer,
   },
   created() {
     this.getProductData();
@@ -55,7 +52,7 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://10.58.3.90:5000/product").then((res) => {
+      axios.get("http://52.79.197.248:5000/product").then((res) => {
         this.product = res.data;
       });
     },

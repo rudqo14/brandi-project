@@ -22,7 +22,7 @@ export default {};
   .inputName {
     display: flex;
     align-items: center;
-    width: 299px;
+    width: 298px;
     height: 100%;
     padding-left: 15px;
     border-right: 1px solid lightgray;
