@@ -4,11 +4,14 @@ from flask import request, Blueprint, jsonify
 from connection import get_connection
 
 def create_user_endpoints(user_service):
+
     user_app = Blueprint('user_app', __name__, url_prefix='/user')
 
     @user_app.route('/signin', methods=['POST'])
     def signin():
+
         """
+
         기본 로그인 api
 
         Args:
@@ -33,6 +36,7 @@ def create_user_endpoints(user_service):
         db_connection = None
 
         try:
+
             # db 연결
             db_connection = get_connection()
 

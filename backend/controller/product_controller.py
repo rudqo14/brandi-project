@@ -5,6 +5,7 @@ from flask import (
 )
 
 from connection import get_connection
+from utils      import ResizeImage
 
 def create_admin_product_endpoints(product_service):
 
@@ -71,6 +72,16 @@ def create_admin_product_endpoints(product_service):
         finally:
             if db_connection:
                 db_connection.close()
+
+
+    # resizing 테스트
+    @admin_product_app.route('/test', methods=['POST'])
+    def test_image_resize():
+        images = request.files
+        resizing = ResizeImage(images)
+        print(resizing())
+
+        return jsonify({"data" : "resizing test"}), 200
 
     return admin_product_app
 

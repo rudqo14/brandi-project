@@ -1,14 +1,40 @@
 import datetime
 
-from flask import Blueprint, request, jsonify
+from flask                      import (
+    Blueprint,
+    request,
+    jsonify
+)
+from flask_request_validator    import (
+    GET,
+    PATH,
+    Param,
+    validate_params
+)
 
 from connection import get_connection
+from utils      import DatetimeRule
 
 def create_admin_order_endpoints(order_service):
     admin_order_app = Blueprint('admin_order_app', __name__, url_prefix='/admin/order')
 
     @admin_order_app.route('/orderCompletedList', methods=['GET'])
-    def order_list():
+    @validate_params(
+        Param('fromDate', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('page', GET, int),
+        Param('limit', GET, int),
+        Param('sort', GET, bool, default=False, required=False),
+        Param('orderId', GET, int, required=False),
+        Param('orderDetailId', GET, int, required=False),
+        Param('orderer', GET, str, required=False),
+        Param('phoneNumber', GET, str, required=False),
+        Param('productName', GET, str, required=False)
+    )
+    def order_list(errors, *args):
+
+        # parameter 유효성 통과하지 못한 경우 error return
+        if errors:
+            return jsonify({"message" : f"INVALID_PARAMETER_AS_{errors.keys()}"}), 400
 
         db_connection = None
 
@@ -19,16 +45,16 @@ def create_admin_order_endpoints(order_service):
 
             # request의 filter 정보 저장
             filter_info = {
-                'from_date'         : request.args.get('fromDate', default=None),
-                'page'              : request.args.get('page', default=1),
-                'limit'             : request.args.get('limit', default=50),
+                'from_date'         : args[0],
+                'page'              : args[1],
+                'limit'             : args[2],
                 # 정렬 조건 존재하는경우 : 주문일 오래된 순
-                'sort'              : request.args.get('sort', default=False),
-                'order_id'          : request.args.get('orderId', default=None),
-                'order_detail_id'   : request.args.get('orderDetailId', default=None),
-                'orderer'           : request.args.get('orderer', default=None),
-                'phone_number'      : request.args.get('phoneNumber', default=None),
-                'product_name'      : request.args.get('productName', default=None)
+                'sort'              : args[3],
+                'order_id'          : args[4],
+                'order_detail_id'   : args[5],
+                'orderer'           : args[6],
+                'phone_number'      : args[7],
+                'product_name'      : args[8]
             }
 
             if db_connection:
@@ -41,13 +67,18 @@ def create_admin_order_endpoints(order_service):
                     # filter 조건 정보에 해당하는 총 결제 완료 건수 조회
                     count = order_service.get_total_number(filters, db_connection)
 
-                    # filter 정보를 전달하여 결제 완료 리스트 가져와서 result에 저장
-                    result = order_service.get_order_list(filters, db_connection)
+                    if count:
 
-                    if result:
+                        # filter 정보를 전달하여 결제 완료 리스트 가져와서 result에 저장
+                        result = order_service.get_order_list(filters, db_connection)
 
-                        # 총 갯수와 result return
-                        return jsonify({"total_number" : count['total_number'], "data" : result}), 200
+                        if result:
+
+                            # 총 갯수와 result return
+                            return jsonify({"total_number" : count['total_number'], "data" : result}), 200
+
+                        # page에 해당하는 data 없을 시
+                        return jsonify({"total_number" : count['total_number'], "data" : []}),200
 
                     # 존재하는 데이터 없음
                     return jsonify({"total_number" : 0, "data" : []}), 200
@@ -58,7 +89,10 @@ def create_admin_order_endpoints(order_service):
             # db 연결이 없을 시
             return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
 
-        # 정의하지 않은 모든 error를 잡아줌
+        except ValueError as e:
+            return jsonify({"message" : f"VALUE_ERROR_AS_{e}"}), 400
+
+        #정의하지 않은 모든 error를 잡아줌
         except Exception as e:
             return jsonify({"message" : f'{e}'}), 400
 
@@ -66,8 +100,15 @@ def create_admin_order_endpoints(order_service):
             if db_connection:
                 db_connection.close()
 
-    @admin_order_app.route('/detail/<int:order_detail_id>', methods=['GET'])
-    def get_order_detail(order_detail_id):
+    @admin_order_app.route('/detail/<order_detail_id>', methods=['GET'])
+    @validate_params(
+        Param('order_detail_id', PATH, int)
+    )
+    def get_order_detail(errors, *args):
+
+        # path parameter 유효성 검사를 통과하지 못한 경우 error 리턴
+        if errors:
+            return jsonify({"message" : f"VALUE_ERROR_AS_{errors.keys()}"})
 
         db_connection = None
 
@@ -78,10 +119,13 @@ def create_admin_order_endpoints(order_service):
             if db_connection:
 
                 # order_detail_id에 해당하는 주문 상세정보를 가져옴
-                result = order_service.get_order_detail({"order_detail_id" : order_detail_id}, db_connection)
+                result = order_service.get_order_detail({"order_detail_id" : args[0]}, db_connection)
 
                 if result:
                     return jsonify({"data" : result}), 200
+
+                # parameter로 들어온 주문 상세정보에 해당하는 data가 없을 때
+                return jsonify({"data" : []}), 200
 
         # 정의하지 않은 모든 에러를 잡아줌
         except Exception as e:

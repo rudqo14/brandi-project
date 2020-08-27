@@ -32,17 +32,16 @@ class UserDao:
         with db_connection.cursor() as cursro:
 
             insert_user_query = """
-            INSERT INTO users
-            (
-            name,
-            email,
-            social_id,
-            user_social_id
+            INSERT INTO users (
+                name,
+                email,
+                social_id,
+                user_social_id
             ) VALUES (
-            %(name)s,
-            %(email)s,
-            %(social_id)s,
-            %(user_social_id)s
+                %(name)s,
+                %(email)s,
+                %(social_id)s,
+                %(user_social_id)s
             )
             """
 
