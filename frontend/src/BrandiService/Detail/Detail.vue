@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <main>
       <article class="ProductInfo">
         <agile class="agile" :dots="false">
@@ -20,23 +19,19 @@
             <span class="percent">{{ detailData.discount_rate }}%</span>
             <span class="price">
               {{
-                (
-                  detailData.price -
-                  detailData.price * (detailData.discount_rate / 100)
-                ).toLocaleString(5) + "원"
+              (
+              detailData.price -
+              detailData.price * (detailData.discount_rate / 100)
+              ).toLocaleString(5) + "원"
               }}
             </span>
-            <span class="cost">
-              {{ Math.floor(detailData.price).toLocaleString(5) + "원" }}
-            </span>
+            <span class="cost">{{ Math.floor(detailData.price).toLocaleString(5) + "원" }}</span>
           </div>
           <hr />
           <div v-on:click="onColorClick" class="option">
             <div>{{ colorToggleData }}</div>
             <div class="imgContainer">
-              <img
-                src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
-              />
+              <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
             </div>
             <div
               v-bind:class="{
@@ -50,9 +45,7 @@
                 class="colorToggle"
                 v-bind:key="index"
                 @click="colorToggleData = detailData.option_colors[index]"
-              >
-                {{ item }}
-              </div>
+              >{{ item }}</div>
             </div>
           </div>
           <!-- 사이즈 옵션 -->
@@ -62,13 +55,9 @@
                 title: disabledSizeToggle,
                 none: !disabledSizeToggle,
               }"
-            >
-              {{ sizeToggleData }}
-            </div>
+            >{{ sizeToggleData }}</div>
             <div class="imgContainer">
-              <img
-                src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
-              />
+              <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
             </div>
             <div
               v-bind:class="{
@@ -82,12 +71,9 @@
                 class="colorToggle"
                 v-bind:key="index"
                 @click="optionSizeHandler(detailData, index)"
-              >
-                {{ item }}
-              </div>
+              >{{ item }}</div>
             </div>
           </div>
-
           <div
             v-bind:class="{
               selectedOptions: isPurchaseBox,
@@ -97,38 +83,24 @@
             <div class="selectTitle">
               <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
               <div @click="removeSelectHandler()" class="imgContainer">
-                <img
-                  src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png"
-                />
+                <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
               </div>
             </div>
             <div class="selectPrice">
               <div class="caculatar">
-                <button
-                  class="numberBtn"
-                  name="minus"
-                  @click="calculationHandler"
-                >
-                  -
-                </button>
+                <button class="numberBtn" name="minus" @click="calculationHandler">-</button>
                 <span class="border"></span>
                 <input class="productNumber" :value="input" readonly />
                 <span class="border"></span>
-                <button
-                  class="numberBtn"
-                  name="plus"
-                  @click="calculationHandler"
-                >
-                  +
-                </button>
+                <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
               </div>
               <p>
                 {{
-                  (
-                    (detailData.price -
-                      detailData.price * (detailData.discount_rate / 100)) *
-                    input
-                  ).toLocaleString(5) + "원"
+                (
+                (detailData.price -
+                detailData.price * (detailData.discount_rate / 100)) *
+                input
+                ).toLocaleString(5) + "원"
                 }}
               </p>
             </div>
@@ -139,18 +111,16 @@
               총 금액
               <strong>
                 {{
-                  (
-                    (detailData.price -
-                      detailData.price * (detailData.discount_rate / 100)) *
-                    input
-                  ).toLocaleString(5) + "원"
+                (
+                (detailData.price -
+                detailData.price * (detailData.discount_rate / 100)) *
+                input
+                ).toLocaleString(5) + "원"
                 }}
               </strong>
             </p>
           </div>
-          <button @click="buyNowHandler()" class="purchaseBtn">
-            바로 구매하기
-          </button>
+          <button @click="buyNowHandler()" class="purchaseBtn">바로 구매하기</button>
         </div>
       </article>
       <article class="detailProduct">
@@ -169,9 +139,6 @@ import axios from "axios";
 import detailData from "../../../Data/Detail.json";
 import detailOption from "../../../Data/DetailOption.json";
 import { VueAgile } from "vue-agile";
-import Header from "../Components/Header.vue";
-
-console.log(detailOption);
 
 export default {
   data() {
@@ -193,7 +160,6 @@ export default {
   components: {
     //이미지 Caroucel
     agile: VueAgile,
-    Header,
   },
   methods: {
     //컬러 인풋 클릭시 토글 박스 열리게하기

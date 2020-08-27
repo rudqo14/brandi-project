@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import BasicInfo from "./Components/BasicInfo";
+import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
 export default {
@@ -68,5 +68,6 @@ header {
 
 .pageContents {
   margin: 10px 5px;
+  background-color: #fafafa;
 }
 </style>

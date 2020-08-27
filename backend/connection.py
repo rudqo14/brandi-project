@@ -18,7 +18,7 @@ def get_connection():
 
     """
 
-    return pymysql.connect(
+    connection = pymysql.connect(
         host        = DATABASE["host"],
         port        = DATABASE["port"],
         user        = DATABASE["user"],
@@ -27,4 +27,7 @@ def get_connection():
         charset     = DATABASE["charset"],
         cursorclass = pymysql.cursors.DictCursor
     )
+    connection.cursor().execute("""SET time_zone='Asia/Seoul'""")
+
+    return connection
 

@@ -4,14 +4,13 @@ from flask      import (
     jsonify,
 )
 
-from connection              import get_connection
-from service.product_service import ProductService
+from connection import get_connection
 
-class AdminProductView:
-    # 'admin/'의 end point에 대한 처리
-    product_app = Blueprint('product_app', __name__, url_prefix='/admin')
+def create_admin_product_endpoints(product_service):
+    # 'admin/product' end point prefix 설정
+    admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
-    @product_app.route('product', methods=['POST'])
+    @admin_product_app.route('', methods=['POST'])
     def product_register():
         """
         상품등록 엔드포인트
@@ -58,10 +57,41 @@ class AdminProductView:
 
             if db_connection:
                 product_info          = request.json
-                product_service       = ProductService()
                 product_create_result = product_service.create_product(product_info, db_connection)
+                db_connection.commit()
                 return product_create_result
+
+        except Exception as e:
+            return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
+
+    return admin_product_app
+
+def service_product_endpoint(product_service):
+    service_product_app = Blueprint('service_product_app', __name__, url_prefix='/product')
+
+    @service_product_app.route('', methods=['GET'])
+    def product_list():
+
+        # finally error 발생 방지
+        db_connection = None
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+                products = product_service.get_product_list(db_connection)
+
+                return jsonify({'data':products}), 200
+            return jsonify({'message':'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message':e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    return service_product_app
