@@ -28,7 +28,6 @@
 </template>
 
 <script>
-import Header from "../Components/Header";
 import { ClientId } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
@@ -37,7 +36,6 @@ import Footer from "../Components/Footer";
 
 export default {
   components: {
-    Header,
     GoogleLogin,
     Footer,
   },

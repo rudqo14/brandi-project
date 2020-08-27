@@ -5,7 +5,6 @@
     <Footer v-if="$route.path.indexOf('admin') == -1" />
   </v-app>
 </template>
-
 <script>
 import Header from "./BrandiService/Components/Header";
 import Footer from "./BrandiService/Components/Footer";
@@ -17,7 +16,6 @@ export default {
   },
 };
 </script>
-
 <style lang="scss">
 @import "./Styles/reset.scss";
 </style>

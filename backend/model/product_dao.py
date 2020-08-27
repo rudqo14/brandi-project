@@ -3,7 +3,9 @@ from flask import jsonify
 class ProductDao:
 
     def insert_product(self, db_connection):
+
         """
+
         product table insert function
 
         Args:
@@ -17,17 +19,20 @@ class ProductDao:
 
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
+
         """
+
         try:
             with db_connection.cursor() as cursor:
+
                 insert_product_query = """
-                    INSERT INTO products (
-                        created_at,
-                        is_deleted
-                        ) VALUES (
-                        DEFAULT,
-                        DEFAULT
-                        );
+                INSERT INTO products (
+                    created_at,
+                    is_deleted
+                ) VALUES (
+                    DEFAULT,
+                    DEFAULT
+                    )
                 """
 
                 affected_row = cursor.execute(insert_product_query)
@@ -41,7 +46,9 @@ class ProductDao:
             raise e
 
     def insert_product_detail(self, product_info, db_connection):
+
         """
+
         상품등록 Model Function
 
         Args:
@@ -56,42 +63,44 @@ class ProductDao:
 
         History:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
+
         """
 
         try:
             with db_connection.cursor() as cursor:
+
                 insert_product_detail_query = """
-                    INSERT INTO product_details (
-                        product_id,
-                        is_activated,
-                        is_displayed,
-                        main_category_id,
-                        sub_category_id,
-                        name,
-                        simple_description,
-                        detail_information,
-                        price,
-                        discount_rate,
-                        discount_start_date,
-                        discount_end_date,
-                        min_sales_quantity,
-                        max_sales_quantity
-                        ) VALUES (
-                        %(product_id)s,
-                        %(sellYn)s,
-                        %(exhibitionYn)s,
-                        %(mainCategoryId)s,
-                        %(subCategoryId)s,
-                        %(productName)s,
-                        %(simpleDescription)s,
-                        %(detailInformation)s,
-                        %(price)s,
-                        %(discountRate)s,
-                        %(discountStartDate)s,
-                        %(discountEndDate)s,
-                        %(minSalesQuantity)s,
-                        %(maxSalesQuantity)s
-                        )
+                INSERT INTO product_details (
+                    product_id,
+                    is_activated,
+                    is_displayed,
+                    main_category_id,
+                    sub_category_id,
+                    name,
+                    simple_description,
+                    detail_information,
+                    price,
+                    discount_rate,
+                    discount_start_date,
+                    discount_end_date,
+                    min_sales_quantity,
+                    max_sales_quantity
+                ) VALUES (
+                    %(product_id)s,
+                    %(sellYn)s,
+                    %(exhibitionYn)s,
+                    %(mainCategoryId)s,
+                    %(subCategoryId)s,
+                    %(productName)s,
+                    %(simpleDescription)s,
+                    %(detailInformation)s,
+                    %(price)s,
+                    %(discountRate)s,
+                    %(discountStartDate)s,
+                    %(discountEndDate)s,
+                    %(minSalesQuantity)s,
+                    %(maxSalesQuantity)s
+                )
                 """
 
                 affected_row = cursor.execute(insert_product_detail_query, product_info)
@@ -103,39 +112,92 @@ class ProductDao:
 
         except Exception as e:
             raise e
+
         return jsonify({'message' : 'SUCCESS'}), 200
 
     def select_product_list(self, db_connection):
-        cursor = db_connection.cursor()
 
-        SQL = """
-        SELECT
-            P.product_no,
-            I.image AS thumbnail_image,
-            PD.name AS product_name,
-            PD.price,
-            PD.discount_rate
-
-        FROM products as P
-
-        LEFT JOIN product_images as PI
-        ON P.product_no = PI.product_id
-
-        LEFT JOIN images as I
-        ON PI.image_id = I.image_no
-
-        LEFT JOIN product_details as PD
-        ON P.product_no = PD.product_id
-
-        WHERE
-            P.is_deleted = False AND
-            PI.is_main = True AND
-            I.is_deleted = False AND
-            PD.is_activated = True AND
-            PD.is_displayed = True
         """
 
-        cursor.execute(SQL)
-        products = cursor.fetchall()
+        서비스 페이지의 상품 전체 리스트를 리턴합니다.
 
-        return products
+        Args:
+            db_connection : 연결된 db 객체
+
+        Returns:
+            서비스 페이지의 상품 전체 리스트
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-25 (minho.lee0716@gmail.com) : 초기 생성
+            2020-08-25 (minho.lee0716@gmail.com) : 수정
+                컨벤션 수정
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_products_query = """
+            SELECT
+                P.product_no,
+                I.image AS thumbnail_image,
+                PD.name AS product_name,
+                PD.price,
+                PD.discount_rate
+
+            FROM products as P
+
+            LEFT JOIN product_images as PI
+            ON P.product_no = PI.product_id
+
+            LEFT JOIN images as I
+            ON PI.image_id = I.image_no
+
+            LEFT JOIN product_details as PD
+            ON P.product_no = PD.product_id
+
+            WHERE
+                P.is_deleted        = False
+                AND PI.is_main      = True
+                AND I.is_deleted    = False
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+            """
+
+            cursor.execute(select_products_query)
+            products = cursor.fetchall()
+
+            return products
+
+    def select_product_details(self, product_id, db_connection):
+
+        """
+
+        서비스 페이지의 상품 상세정보를 리턴합니다.
+
+        Args:
+            product_id    : 해당 상품의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품에 대한 상세정보들
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-26 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_details_query = """
+            """
+
+            cursor.execute(select_product_details_query)
+            product_details = cursor.fetchall()
+
+            return product_details

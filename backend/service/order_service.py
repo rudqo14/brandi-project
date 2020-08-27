@@ -4,7 +4,9 @@ class OrderService:
         self.order_dao = order_dao
 
     def get_order_list(self, filter_info, db_connection):
+
         """
+
         결제 완료 리스트 표출 로직
 
         Args:
@@ -19,13 +21,16 @@ class OrderService:
 
         History:
             2020-08-24 (tnwjd060124@gmail.com) : 초기 생성
+
         """
 
         # 결제 완료 리스트 가져오는 메소드 실행
         orders = self.order_dao.get_ordercompleted_list(filter_info, db_connection)
+
         return orders
 
     def check_filter_list(self, filter_info):
+
         """
 
         filter의 유효성 체크
@@ -58,13 +63,19 @@ class OrderService:
         filter_info['offset'] = (filter_info['page']*filter_info['limit']) - filter_info['limit']
 
         if not filter_info['from_date']:
+
             # filter에 날짜 정보가 없으면 검색 조건 정보 존재 확인
-            if not(filter_info['order_id'] or filter_info['order_detail_id'] or filter_info['phone_number'] or filter_info['orderer'] or filter_info['product_name']):
+            if not( filter_info['order_id']
+                    or filter_info['order_detail_id']
+                    or filter_info['phone_number']
+                    or filter_info['orderer']
+                    or filter_info['product_name'] ):
                 return None
 
         return filter_info
 
     def get_total_number(self, filters, db_connection):
+
         """
 
         총 결제 완료 건수 조회
@@ -90,6 +101,7 @@ class OrderService:
         return total_number
 
     def get_order_detail(self, order_detail, db_connection):
+
         """
 
         주문 상세 정보 조회

@@ -3,12 +3,10 @@ import VueRouter from "../../node_modules/vue-router";
 import Main from "../BrandiService/Main/Main.vue";
 import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
-import Banner from "../BrandiService/Components/Banner.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
-import Header from "../BrandiService/Components/Header.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -31,11 +29,6 @@ export const router = new VueRouter({
     {
       path: "/login",
       component: Login,
-    },
-
-    {
-      path: "/banner",
-      component: Banner,
     },
     {
       path: "/order",

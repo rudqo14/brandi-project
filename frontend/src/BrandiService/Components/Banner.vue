@@ -7,11 +7,9 @@
     <div class="nextBtn" slot="nextButton"></div>
   </agile>
 </template>
-
 <script>
 import imgData from "../../../Data/banner.json";
 import { VueAgile } from "vue-agile";
-
 export default {
   data() {
     return {
@@ -23,11 +21,14 @@ export default {
   },
 };
 </script>
-
 <style lang="scss" >
 .agile {
   width: 100%;
   position: relative;
+
+  img {
+    width: 100vw;
+  }
 
   .prevBtn {
     width: 32px;
@@ -38,7 +39,6 @@ export default {
     position: absolute;
     background-image: url(https://www.brandi.co.kr/static/3.49.1/images/controls.png);
   }
-
   .nextBtn {
     width: 32px;
     height: 32px;
@@ -48,11 +48,9 @@ export default {
     position: absolute;
     background-image: url(https://www.brandi.co.kr/static/3.49.1/images/controls.png);
   }
-
   &__actions {
     margin-top: 20px;
   }
-
   &__nav-button {
     background: transparent;
     border: none;
@@ -60,15 +58,12 @@ export default {
     cursor: pointer;
     font-size: 24px;
     transition-duration: 0.3s;
-
     &:hover {
       color: #888;
     }
   }
-
   &__dot {
     margin: 0 10px;
-
     button {
       background-color: black;
       border: none;
@@ -83,7 +78,6 @@ export default {
       transition-duration: 0.3s;
       width: 10px;
     }
-
     &--current,
     &:hover {
       button {
