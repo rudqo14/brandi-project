@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <main>
       <article class="orderContainer">
         <h1 class="orderTitle">주문하기</h1>
@@ -51,41 +50,200 @@
       <article class="orderInfo">
         <div class="deliveredContainer">
           <span>배송지 정보</span>
-          <span class="deliveredBtn">
-            <label class="checkboxLable">
-              <input class="checkboxBtn" type="checkbox" />
-              주문자 정보와 동일
-            </label>
-          </span>
+          <!-- <span @click="modalHandler" class="deliveredBtn">입력하기</span> -->
+          <div class="text-center">
+            <v-dialog v-model="dialog" width="500">
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on"
+                  >입력하기</v-btn
+                >
+              </template>
+
+              <v-card max-height="600" v-if="isAddressAdd === false">
+                <v-card-title class="headline black lighten-2"></v-card-title>
+                <v-card-title class="headline white lighten-2"
+                  >배송지 변경</v-card-title
+                >
+                <div class="cardCustomContainer">
+                  <div class="orderImgContainer">
+                    <img src="/Images/ic-default-exclamation@3x.png" />
+                  </div>
+                  <v-card-text>저장된 배송지가 없습니다.</v-card-text>
+                </div>
+
+                <v-divider></v-divider>
+                <div class="AddContainer">
+                  <!-- <v-card-actions>
+                    <v-btn
+                      color="black lighten-2"
+                      dark
+                      v-bind="attrs"
+                      @click="dialog = false"
+                    >배송지 추가</v-btn>
+                  </v-card-actions>-->
+                  <button @click="addAddressHandler" class="addBtn">
+                    배송지 추가
+                  </button>
+                </div>
+              </v-card>
+              <v-card v-if="isAddressAdd === true">
+                <v-card-title class="headline black lighten-2"></v-card-title>
+                <v-card-title class="headline white lighten-2"
+                  >배송지 추가</v-card-title
+                >
+                <v-divider />
+                <div class="addressContainer">
+                  <div class="rowContainer">
+                    <v-card-title>수령인</v-card-title>
+                    <v-text-field
+                      :counter="10"
+                      label="수령인"
+                      required
+                      v-model="name"
+                      maxlength="10"
+                    ></v-text-field>
+                  </div>
+                  <div class="rowContainer">
+                    <v-card-title>휴대폰</v-card-title>
+                    <input
+                      class="phoneNumber"
+                      type="tel"
+                      max="999"
+                      maxlength="3"
+                      placeholder="010"
+                      v-model="phoneNumberFirst"
+                    />
+                    <input
+                      class="phoneNumber"
+                      @keyup="numberHandler"
+                      type="tel"
+                      max="9999"
+                      maxlength="4"
+                      placeholder="0000"
+                      v-model="phoneNumberSecond"
+                    />
+                    <input
+                      class="phoneNumber"
+                      type="tel"
+                      max="9999"
+                      maxlength="4"
+                      placeholder="0000"
+                      v-model="phoneNumberThird"
+                    />
+                  </div>
+                  <div class="rowContainer">
+                    <v-card-title>배송지</v-card-title>
+                    <input
+                      class="address"
+                      type="text"
+                      readonly
+                      :value="sigunguCode"
+                    />
+                    <button @click="findAddressHandler" class="findAddress">
+                      우편번호 찾기
+                    </button>
+                  </div>
+                  <div class="daumContainer">
+                    <vue-daum-postcode
+                      v-if="isDaumToggle"
+                      @complete="handleAddress"
+                    />
+                  </div>
+                  <div class="rowContainer">
+                    <div class="addressSecond">{{ daumAddress }}</div>
+                  </div>
+                  <div class="rowContainer">
+                    <input
+                      class="addressThird"
+                      type="text"
+                      placeholder="상세 주소 입력를 입력하세요."
+                      v-model="detailAddress"
+                    />
+                  </div>
+                </div>
+                <v-divider />
+                <div class="AddContainer">
+                  <v-card-actions>
+                    <v-btn
+                      width="100"
+                      color="grey lighten-1"
+                      dark
+                      @click="(dialog = false), dialogCanceled()"
+                      >취소</v-btn
+                    >
+                    <v-btn
+                      width="100"
+                      color="black lighten-2"
+                      dark
+                      @click="dialog = false"
+                      >확인</v-btn
+                    >
+                  </v-card-actions>
+                </div>
+              </v-card>
+            </v-dialog>
+          </div>
         </div>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" disabled />
+          <input class="nameInput" placeholder="이름" disabled :value="name" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
-          <input class="phoneNumber" disabled />
+          <input class="phoneNumber" :value="phoneNumberFirst" disabled />
           <p>-</p>
-          <input class="phoneNumber" disabled />
+          <input class="phoneNumber" :value="phoneNumberSecond" disabled />
           <p>-</p>
-          <input class="phoneNumber" disabled />
+          <input class="phoneNumber" :value="phoneNumberThird" disabled />
         </div>
         <div class="addressInfoContainer">
           <span class="name">배송주소</span>
           <div>
-            <input class="address" disabled />
-            <button class="findAddress">우편번호 찾기</button>
+            <input class="address" :value="sigunguCode" disabled />
             <br />
-            <input class="address" disabled />
-            <input class="address" disabled />
-            <p class="shippingMemo">* 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수 있습니다</p>
+            <input class="address" :value="daumAddress" disabled />
+            <input class="address" :value="detailAddress" disabled />
+            <p class="shippingMemo">
+              * 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수
+              있습니다
+            </p>
           </div>
         </div>
         <div class="orderInfoContainer">
           <span class="name">배송메모</span>
-          <div class="orderMemoContainer">
-            <p class="orderMemo">배송시 요청사항을 선택해주세요.</p>
-            <div class="imgContainer" />
+          <div class="orderMemoBox">
+            <div @click="toggleHandler" class="orderMemoContainer">
+              <p class="orderMemo">{{ toggleData }}</p>
+              <div class="imgContainer" />
+            </div>
+            <div class="directContainer" v-if="directInput === true">
+              <input maxlength="50" placeholder="50자 이내로 작성해주세요." />
+            </div>
+            <div
+              v-bind:class="{
+                toggleContainer: isToggleDelivered,
+                noneToggle: !isToggleDelivered,
+              }"
+            >
+              <div class="orderChoice" @click="toggleDataHandler">
+                배송시 요청사항을 선택해주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                문앞에 놓아주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                경비(관리)실에 맡겨주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                택배함에 넣어주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 받겠습니다.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 입력
+              </div>
+            </div>
           </div>
         </div>
       </article>
@@ -108,7 +266,6 @@
         <button class="paymentBtn">결제하기</button>
       </div>
     </main>
-    <Footer />
   </div>
 </template>
 
@@ -118,13 +275,93 @@ import axios from "axios";
 import { VueAgile } from "vue-agile";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
+import { VueDaumPostcode } from "vue-daum-postcode";
 
 export default {
   data() {
-    return {};
+    return {
+      isToggleDelivered: false,
+      toggleData: "배송시 요청사항을 선택해주세요.",
+      directInput: false,
+      dialog: false,
+      isAddressAdd: false,
+      isDaumToggle: false,
+      daumAddress: "",
+      sigunguCode: "",
+      detailAddress: "",
+      name: "",
+      phoneNumberFirst: "",
+      phoneNumberSecond: "",
+      phoneNumberThird: "",
+    };
   },
-  components: { Header, Footer },
-  methods: {},
+  components: { Header, Footer, VueDaumPostcode },
+  methods: {
+    //배송메모 토글 열고 닫기
+    toggleHandler() {
+      this.isToggleDelivered = !this.isToggleDelivered;
+    },
+
+    //배송지 입력 모달창에서 취소버튼 클릭시
+    //모든 배송입력에 해당하는 State값 초기화하여 취소 적용
+    dialogCanceled() {
+      this.daumAddress = "";
+      this.sigunguCode = "";
+      this.isAddressAdd = false;
+      this.detailAddress = "";
+      this.name = "";
+      this.phoneNumberFirst = "";
+      this.phoneNumberSecond = "";
+      this.phoneNumberThird = "";
+    },
+
+    //클릭한 토글 데이터 보여주기
+    //직접입력을 클릭한다면 인풋창 활성화
+    toggleDataHandler(e) {
+      if (e.target.innerText === "직접 입력") {
+        this.toggleData = "";
+        this.isToggleDelivered = !this.isToggleDelivered;
+        this.directInput = true;
+        return;
+      }
+
+      this.toggleData = e.target.innerText;
+      this.isToggleDelivered = !this.isToggleDelivered;
+      this.directInput = false;
+    },
+
+    //모달창의 열고닫는 상태값
+    modalHandler() {
+      this.isModalOn = !this.isModalOn;
+    },
+
+    //상세 주소 입력 활/비활성화
+    addAddressHandler() {
+      this.isAddressAdd = !this.isAddressAdd;
+    },
+
+    //다음 우편 정보 상태값 토글
+    findAddressHandler() {
+      this.isDaumToggle = !this.isDaumToggle;
+    },
+
+    //다음 API 사용한 주소 클릭시
+    //주소와 우편에 해당하는 값을 저장하고,
+    //다음 API 토글 닫기
+    handleAddress(data) {
+      this.daumAddress = data.address;
+      this.sigunguCode = data.sigunguCode;
+      this.isDaumToggle = false;
+    },
+
+    //number의 값이 아닌 텍스트가 들어가면
+    //Input에 값이 들어가지 않게끔 구현
+    numberHandler(e) {
+      if (e.keyCode < 48 || e.keyCode > 57) {
+        e.preventDefault();
+      }
+    },
+  },
 };
 </script>
 
@@ -233,31 +470,19 @@ export default {
 
     .deliveredBtn {
       font-size: 26px;
-      display: flex;
-      align-items: center;
-
-      .checkboxLable {
-        cursor: pointer;
-
-        .checkboxBtn {
-          width: 20px;
-          height: 20px;
-          margin-right: 10px;
-          cursor: pointer;
-        }
-      }
+      color: #1e88e5;
+      cursor: pointer;
     }
   }
 
   .orderInfoContainer {
-    height: 70px;
     border-bottom: 1px solid #929292;
     display: flex;
     align-items: center;
 
     .name {
       width: 250px;
-      margin-left: 10px;
+      margin: 20px 10px 20px 0;
     }
 
     .nameInput {
@@ -305,6 +530,7 @@ export default {
     .orderMemoContainer {
       width: 700px;
       height: 45px;
+      margin: 10px 0;
       background-color: #f5f5f5;
       display: flex;
       justify-content: space-between;
@@ -312,6 +538,7 @@ export default {
       cursor: pointer;
 
       .orderMemo {
+        margin: auto 0;
         margin-left: 10px;
         color: #929292;
       }
@@ -326,6 +553,45 @@ export default {
         img {
           width: 100%;
           height: 100%;
+        }
+      }
+    }
+
+    .directContainer {
+      margin-bottom: 10px;
+
+      input {
+        height: 40px;
+        width: 100%;
+        padding: 0 10px;
+        background-color: #f5f5f5;
+        border: none;
+        outline: none;
+      }
+    }
+
+    .orderMemoBox {
+      position: relative;
+
+      .noneToggle {
+        display: none;
+      }
+
+      .toggleContainer,
+      .noneToggle {
+        background-color: white;
+        border: 1px solid #dbdbdb;
+        position: absolute;
+        width: 100%;
+        cursor: pointer;
+
+        .orderChoice {
+          padding: 10px;
+
+          &:hover {
+            color: white;
+            background-color: #007fff;
+          }
         }
       }
     }
@@ -345,6 +611,7 @@ export default {
       width: 350px;
       height: 45px;
       margin-top: 10px;
+      padding-left: 10px;
       border: none;
       outline: none;
       background-color: #f5f5f5;
@@ -399,6 +666,108 @@ export default {
     color: white;
     margin-bottom: 60px;
     cursor: pointer;
+  }
+}
+
+.v-card {
+  .cardCustomContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    .v-card__text {
+      text-align: center;
+    }
+
+    .orderImgContainer {
+      width: 50px;
+      height: 50px;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+
+  .addressContainer {
+    .daumContainer {
+      padding: 10px;
+    }
+
+    .rowContainer {
+      margin-right: 15px;
+      display: flex;
+      align-items: center;
+
+      .v-card__title {
+        width: 100px;
+      }
+
+      .v-input {
+        width: 50px;
+      }
+
+      .phoneNumber {
+        text-align: center;
+        width: 100px;
+        height: 40px;
+        margin-right: 5px;
+        border: 0.5px solid #bdbdbd;
+        border-radius: 5px;
+      }
+
+      .address {
+        text-align: center;
+        width: 250px;
+        margin-right: 10px;
+        height: 40px;
+        border: 0.5px solid #bdbdbd;
+        border-radius: 5px;
+        outline: none;
+      }
+
+      .addressSecond {
+        text-align: center;
+        width: 100%;
+        padding-top: 8px;
+        margin: 0 10px 10px 100px;
+        height: 40px;
+        border: 0.5px solid #bdbdbd;
+        border-radius: 5px;
+        outline: none;
+      }
+
+      .addressThird {
+        width: 100%;
+        margin: 0 10px 20px 100px;
+        padding-left: 5px;
+        height: 40px;
+        border: 0.5px solid #bdbdbd;
+        border-radius: 5px;
+      }
+
+      .findAddress {
+        background-color: black;
+        padding: 5px;
+        border-radius: 5px;
+        color: white;
+      }
+    }
+  }
+  .AddContainer {
+    display: flex;
+    justify-content: center;
+
+    .addBtn {
+      width: 200px;
+      height: 50px;
+      background-color: black;
+      color: white;
+      margin: 10px;
+      border-radius: 5px;
+    }
   }
 }
 </style>

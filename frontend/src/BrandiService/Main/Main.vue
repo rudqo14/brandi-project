@@ -1,7 +1,6 @@
 <template>
   <div>
-    <Header />
-    <!-- <Banner /> -->
+    <Banner />
     <main>
       <div class="mainProducts">
         <section class="productContainer">
@@ -14,16 +13,12 @@
           <article class="productList">
             <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
               <div class="productImage" @click="linkToDetail">
-                <img :src="product.thumbnail_image" alt="jpg" />
+                <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
                 <span class="discountRate">{{ product.discount_rate }}%</span>
-                <span class="price">
-                  {{
-                  numberWithCommas(Math.floor(product.price))
-                  }}
-                </span>
+                <span class="price">{{ numberWithCommas(Math.floor(product.price)) }}</span>
                 <span class="discountPrice">
                   {{
                   numberWithCommas(

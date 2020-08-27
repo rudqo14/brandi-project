@@ -1,6 +1,5 @@
 <template>
   <div>
-    <Header />
     <section class="main">
       <main class="article">
         <h1 class="title">오늘 사면 내일 도착!</h1>
@@ -25,7 +24,6 @@
         </div>
       </main>
     </section>
-    <Footer />
   </div>
 </template>
 
