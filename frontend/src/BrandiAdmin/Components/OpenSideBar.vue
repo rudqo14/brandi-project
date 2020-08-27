@@ -134,11 +134,26 @@ export default {
     transform: rotate(-90deg);
   }
 }
+
 .statiscticsMenuList,
 .orderMenuList,
 .productrMenuList,
 .userMenuList {
   margin: 8px 0;
+  /* transition: transform 0.3s ease-out;
+  transform: scaleY(1);
+  transform-origin: top;
+  transform:scaleY(0) */
+  // 어드민 사이드바 토글 애니메이션
+  animation: 0.4s menuOpen ease-out forwards;
+  @keyframes menuOpen {
+    0% {
+      transform: translatey(-10%);
+    }
+    100% {
+      transform: translatey(0);
+    }
+  }
 
   li {
     display: flex;
@@ -148,9 +163,12 @@ export default {
     cursor: pointer;
     height: 40px;
     padding: 0 18px;
+    &:hover {
+      background: #414247 !important;
+    }
 
     // 어드민 사이드바 토글 애니메이션
-    animation: 200ms 1ms menuOpen linear forwards;
+    /* animation: 200ms 1ms menuOpen linear forwards;
     transform: translateY(-100%);
     @keyframes menuOpen {
       0% {
@@ -159,7 +177,7 @@ export default {
       100% {
         transform: translatey(0);
       }
-    }
+    } */
   }
 }
 
