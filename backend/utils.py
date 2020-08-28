@@ -195,3 +195,36 @@ class ResizeImage:
     def __call__(self):
         self.resizing()
         return self.resize_images
+
+def catch_exception(func, *args, **kwargs):
+
+    """
+
+    parameter 유효성 검사하는 데코레이터의 exception을 잡아줍니다.
+
+    Args:
+        func: parameter 유효성 검사하는 function
+
+    Returns:
+        400 {"message" : "INVALID_PARAMETER_"} : parameter 유효성 검사 통과 못함
+
+    Author:
+        tnwjd060124@gmail.com (손수정)
+
+    History:
+        2020-08-29 (tnwjd060124@gmail.com) : 초기 생성
+
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+
+        try:
+            #parameter 유효성 검사하는 function 리턴
+            return func(*args, **kwargs)
+
+        except Exception as e:
+            # exception: parameter 유효성 검사를 통과하지 못하면 나는 exception을 json형식으로 리턴
+            return jsonify({"message" : f"INVALID_PARAMETER_{e}"}), 400
+
+    return wrapper
