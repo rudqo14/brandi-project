@@ -183,3 +183,37 @@ class UserService:
         total_number = self.user_dao.get_total_user(db_connection)
 
         return total_number
+
+    def get_user_orders(self, user_info, db_connection):
+
+        """
+
+        유저의 주문 정보를 보여줍니다.
+
+        Args:
+            user_info:
+                user_no : 유저의 pk
+            db_connection: 연결된 db 객체
+
+        Returns:
+            유저의 주문 정보
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-28 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        # user_info로 들어온 user_no에 해당하는 유저가 존재하는지 확인
+        user = self.user_dao.check_user(user_info, db_connection)
+
+        if user:
+
+            # 유저의 주문 정보를 가져오는 메소드 실행
+            orders = self.user_dao.get_user_orders(user, db_connection)
+
+            return orders
+
+        return None
