@@ -129,11 +129,13 @@ class ProductDao:
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-25 (minho.lee0716@gmail.com) : 초기 생성
             2020-08-25 (minho.lee0716@gmail.com) : 수정
                 컨벤션 수정
+            2020-08-28 (tnwjd060124@gmail.com) : 현재 이력만 조회하는 조건 추가
 
         """
 
@@ -151,19 +153,26 @@ class ProductDao:
 
             LEFT JOIN product_images as PI
             ON P.product_no = PI.product_id
+            AND CURRENT_TIMESTAMP >= PI.start_time
+            AND PI.close_time >= CURRENT_TIMESTAMP
+            AND PI.is_main = 1
 
             LEFT JOIN images as I
             ON PI.image_id = I.image_no
+            AND I.is_deleted = 0
 
             LEFT JOIN product_details as PD
             ON P.product_no = PD.product_id
+            AND PD.is_activated = 1
+            AND PD.is_displayed = 1
+            AND CURRENT_TIMESTAMP >= PD.start_time
+            AND PD.close_time >= CURRENT_TIMESTAMP
 
             WHERE
-                P.is_deleted        = False
-                AND PI.is_main      = True
-                AND I.is_deleted    = False
-                AND PD.is_activated = True
-                AND PD.is_displayed = True
+                P.is_deleted = False
+
+            ORDER BY
+                P.product_no
             """
 
             cursor.execute(select_products_query)
