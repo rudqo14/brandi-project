@@ -43,7 +43,7 @@
       </div>
     </div>
     <ul :class="{orderMenuList: orderToggle, orderMenuListOpen: !orderToggle}">
-      <li @click="test" name="orderPage">결제완료관리</li>
+      <li>결제완료관리</li>
     </ul>
     <div class="menu productMenu" @click="productToggleHandler">
       <div class="MC productContainer">
@@ -57,7 +57,7 @@
       </div>
     </div>
     <ul :class="{productrMenuList: productToggle, productrMenuListOpen: !productToggle}">
-      <li>상품 관리</li>
+      <li @click="pmStateHanlder">상품 관리</li>
       <li>상품 등록</li>
     </ul>
     <div class="menu userMenu" @click="userToggleHandler">
@@ -85,9 +85,10 @@ export default {
       orderToggle: false,
       productToggle: false,
       userToggle: false,
+      pmState: 1,
+      stateValue: 5,
     };
   },
-
   methods: {
     statisticsToggleHandler() {
       this.statisticsToggle = !this.statisticsToggle;
@@ -101,8 +102,10 @@ export default {
     userToggleHandler() {
       this.userToggle = !this.userToggle;
     },
-    test(e) {
-      console.log(e.target.innerHTML);
+    pmStateHanlder: function () {
+      console.log("hi");
+      stateValue += 1;
+      this.$emit("update-emit", stateValue);
     },
   },
 };

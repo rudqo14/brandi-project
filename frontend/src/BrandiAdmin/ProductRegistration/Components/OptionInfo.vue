@@ -1,5 +1,7 @@
 <template>
-  <div>옵션정보</div>
+  <div>
+    <h1>옵션정보</h1>
+  </div>
 </template>
 
 <script>

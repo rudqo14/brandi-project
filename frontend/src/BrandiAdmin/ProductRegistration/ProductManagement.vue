@@ -19,7 +19,9 @@
 </template>
 
 <script>
-export default {};
+export default {
+  component: {},
+};
 </script>
 
 <style lang="scss" scoped>

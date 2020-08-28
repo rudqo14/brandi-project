@@ -29,6 +29,8 @@ import SellingInfo from "./Components/SellingInfo";
 export default {
   components: {
     BasicInfo,
+    OptionInfo,
+    SellingInfo,
   },
 };
 </script>
