@@ -13,12 +13,13 @@ from flask_request_validator    import (
 )
 
 from connection import get_connection
-from utils      import DatetimeRule
+from utils      import DatetimeRule, catch_exception
 
 def create_admin_order_endpoints(order_service):
     admin_order_app = Blueprint('admin_order_app', __name__, url_prefix='/admin/order')
 
-    @admin_order_app.route('/orderCompletedList', methods=['GET'])
+    @admin_order_app.route('/orderCompletedList', methods=['GET'], endpoint='order_list')
+    @catch_exception
     @validate_params(
         Param('fromDate', GET, int, required=False, rules=[DatetimeRule()]),
         Param('page', GET, int),
@@ -30,11 +31,7 @@ def create_admin_order_endpoints(order_service):
         Param('phoneNumber', GET, str, required=False),
         Param('productName', GET, str, required=False)
     )
-    def order_list(errors, *args):
-
-        # parameter 유효성 통과하지 못한 경우 error return
-        if errors:
-            return jsonify({"message" : f"INVALID_PARAMETER_AS_{errors.keys()}"}), 400
+    def order_list(*args):
 
         db_connection = None
 
@@ -93,22 +90,19 @@ def create_admin_order_endpoints(order_service):
             return jsonify({"message" : f"VALUE_ERROR_AS_{e}"}), 400
 
         #정의하지 않은 모든 error를 잡아줌
-        except Exception as e:
-            return jsonify({"message" : f'{e}'}), 400
+        #except Exception as e:
+            #return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
 
-    @admin_order_app.route('/detail/<order_detail_id>', methods=['GET'])
+    @admin_order_app.route('/detail/<order_detail_id>', methods=['GET'], endpoint='get_order_detail')
+    @catch_exception
     @validate_params(
         Param('order_detail_id', PATH, int)
     )
-    def get_order_detail(errors, *args):
-
-        # path parameter 유효성 검사를 통과하지 못한 경우 error 리턴
-        if errors:
-            return jsonify({"message" : f"VALUE_ERROR_AS_{errors.keys()}"})
+    def get_order_detail(*args):
 
         db_connection = None
 
