@@ -1,215 +1,92 @@
 <template>
-  <div>
-    <header>
-      <div class="adminPageLogo">
-        <div class="logoWrapper">
-          <img class="brandiLogoImg" src="/Images/admin-logo.png" alt="img" />
-        </div>
-        <div class="adminPageChange">⌄</div>
-        <div class="adminVersion">staging(200806_authority_func)</div>
-      </div>
-      <div class="adminAccount">
-        <div class="account">intern_master</div>
-        <div class="accountToggle">⌄</div>
-      </div>
-    </header>
-    <main class="adminMain">
-      <aside :class="{sideMenuBar: !isSideBar, sideMenuBarReduction: isSideBar}">
-        <!-- <aside class="sideMenuBar"> -->
-        <div class="sideBarToggleContainer">
-          <div
-            @click="sideBarActive"
-            :class="{sideBarToggleWrapper: !isSideBar, sideBarToggleWrapperOff: isSideBar}"
+  <div class="main-container">
+    <v-navigation-drawer
+      clipped
+      app
+      dark
+      style="width: 256px; height: unset; position:unset; max-height: unset; top:unset"
+    >
+      <v-list dense>
+        <v-container></v-container>
+
+        <template v-for="item in items">
+          <v-list-group
+            v-if="item.children"
+            :key="item.text"
+            v-model="item.model"
+            prepend-icon
+            :append-icon="item.icon"
           >
-            <i class="fas fa-angle-left"></i>
-          </div>
-        </div>
-        <div class="menuContainer">
-          <div :class="{toggleOnSideBar: !isSideBar, toggleOffSideBar: isSideBar}">
-            <ReductionSideBar />
-          </div>
-          <div :class="{openSideBar: !isSideBar, closedSideBar: isSideBar}">
-            <OpenSideBar />
-          </div>
-        </div>
-      </aside>
-      <section class="content">
-        <!-- <ProductResistration /> -->
-        <router-view></router-view>
-      </section>
-    </main>
+            <!-- More 버튼 생성 -->
+            <template v-slot:activator>
+              <v-list-item-content>
+                <v-list-item-title style="font-size: 14px;font-weight: 400;">{{item.text}}</v-list-item-title>
+              </v-list-item-content>
+            </template>
+
+            <!-- 아래 목록 버튼 생성 -->
+            <v-list-item
+              v-for="(child, i) in item.children"
+              :key="i"
+              @click="detailPage(item.children[i].path)"
+              link
+            >
+              <v-list-item-title
+                style="padding-left : 14px;font-size: 14px;font-weight: 400;"
+              >{{child.text}}</v-list-item-title>
+            </v-list-item>
+          </v-list-group>
+        </template>
+      </v-list>
+    </v-navigation-drawer>
+    <!-- 보여지는 페이지 공간 -->
+    <div class="about">
+      <div class="container">
+        <div class="box">
+          <router-view></router-view>
+       </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import ReductionSideBar from "./ReductionSideBar";
-import OpenSideBar from "./OpenSideBar";
-import ProductResistration from "../ProductRegistration/ProductResistration";
+import { items } from "../../../itemConfig";
 export default {
-  components: {
-    ReductionSideBar,
-    OpenSideBar,
-    ProductResistration,
-  },
   data() {
     return {
-      isSideBar: false,
+      items: items
     };
   },
   methods: {
-    sideBarActive() {
-      this.isSideBar = !this.isSideBar;
-    },
-  },
+    detailPage(path) {
+      this.$router.push(`${path}`);
+    }
+  }
 };
 </script>
 
 <style lang="scss" scoped>
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #873b53;
-  height: 45px;
-  padding: 0 20px;
-
-  .adminPageLogo {
-    display: flex;
-    align-items: center;
-    height: 22px;
-
-    .logoWrapper {
-      width: 100px;
-      height: 22px;
-
-      .brandiLogoImg {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    .adminPageChange {
-      font-size: 15px;
-      height: 24px;
-      padding: 0 10px;
-      color: #fff;
-    }
-
-    .adminVersion {
-      color: #fff;
-      height: 16px;
-      font-size: 12px;
-    }
-  }
-
-  .adminAccount {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-left: 1px solid #484a4f;
-    height: 100%;
-
-    .account {
-      color: #cecfd3;
-      font-size: 15px;
-      margin-left: 10px;
-    }
-
-    .accountToggle {
-      color: #cecfd3;
-      font-size: 15px;
-      height: 24px;
-      padding: 0 10px;
-    }
-  }
-}
-.adminMain {
-  display: flex;
-  width: 100%;
+.main-container {
   height: 100%;
-
-  .sideMenuBarReduction {
-    width: 45px;
-  }
-
-  .sideMenuBar {
-    width: 215px;
-  }
-
-  .sideMenuBar,
-  .sideMenuBarReduction {
-    display: inline-block;
-    background-color: #333;
-    height: 100%;
-
-    .sideBarToggleContainer {
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      height: 100px;
-
-      .sideBarToggleWrapper {
-        background: white;
-        cursor: pointer;
-        border-top-left-radius: 5px;
-        border-bottom-left-radius: 5px;
-        padding: 10px 10px 10px 14px;
-      }
-
-      .sideBarToggleWrapperOff {
-        background: white;
-        cursor: pointer;
-        border-top-right-radius: 5px;
-        border-bottom-right-radius: 5px;
-        padding: 10px 10px 10px 14px;
-        transform: rotate(180deg);
-      }
-    }
-
-    .menuContainer {
-      width: 215px;
-      color: lightgray;
-      font-size: 14px;
-      font-weight: lighter;
-
-      .toggleOnSideBar {
-        display: none;
-      }
-
-      .toggleOffSideBar {
-        display: block;
-      }
-
-      .openSideBar {
-        display: block;
-      }
-
-      .closedSideBar {
-        display: none;
-      }
-
-      .menu {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 40px;
-        padding: 0 15px;
-        border-bottom: 1px solid #414247;
-
-        .MC {
-          display: flex;
-        }
-
-        .iconBox {
-          width: 20px;
-          margin-right: 5px;
-        }
-      }
+  padding-top: 45px;
+  display: flex;
+  .about {
+    min-height: 100vh !important;
+    width: calc(100vw - 256px);
+    color: black;
+    background: white;
+    .container {
+      width: unset !important;
+      overflow: hidden;
+      margin: 0 0 50px 0 !important;
+      max-width: unset;
     }
   }
-
-  .content {
-    width: 100%;
+  .v-icon {
+    font-size: 18px;
+    color: gray;
+    transform: rotate(-90deg);
   }
 }
 </style>

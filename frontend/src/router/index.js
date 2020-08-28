@@ -5,7 +5,7 @@ import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
-import Regist from "../BrandiAdmin/ProductRegistration/ProductRegistration"
+import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue"
 import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
 
@@ -43,11 +43,12 @@ export const router = new VueRouter({
     {
       path: "/admin",
       component: AdminFrame,
+      name: AdminFrame,
       children: [
         {
-          path: 'regist',
-          component: Regist,
-          name: 'registration'
+          path: 'productRegistration',
+          component: ProductRegistration,
+          name: 'productRegistration'
         }
       ]
     },
