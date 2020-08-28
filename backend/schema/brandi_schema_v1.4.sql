@@ -1420,7 +1420,7 @@ INSERT INTO product_details
     20,
     10,
     '2020-07-20 12:00:00',
-    '2020-08-28 13:00:00'
+    CURRENT_TIMESTAMP
 ), (
     2,
     2,
@@ -1719,7 +1719,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    '2020-08-28 13:00:00',
+    CURRENT_TIMESTAMP,
     DEFAULT
 );
 
@@ -1904,7 +1904,7 @@ INSERT INTO product_images
     22,
     1,
     22,
-    0,
+    1,
     CURRENT_TIMESTAMP,
     DEFAULT
 );
