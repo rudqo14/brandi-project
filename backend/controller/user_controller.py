@@ -2,6 +2,7 @@ import requests
 from flask import request, Blueprint, jsonify
 
 from connection import get_connection
+from utils      import login_required
 
 def create_user_endpoints(user_service):
 
@@ -149,6 +150,61 @@ def create_user_endpoints(user_service):
         finally:
             if db_connection:
                 db_connection.close()
+
+    @user_app.route('/mypage', methods=['GET'])
+    @login_required
+    def mypage(user_info):
+        """
+
+        유저 no에 따른 주문 정보를 리턴합니다.
+
+        Args:
+            headers:
+                Authorization: access_token
+
+            Returns:
+                유저의 주문 정보
+
+            Authors:
+                tnwjd060124@gmail.com (손수정)
+
+            History:
+                2020-08-28 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        db_connection = None
+
+        try:
+
+            # db 연결
+            db_connection = get_connection()
+
+            if db_connection:
+
+                # 유저의 주문 정보를 가져오는 메소드 실행
+                result = user_service.get_user_orders(user_info, db_connection)
+
+                if result:
+
+                    # 주문정보가 리턴
+                    return jsonify({"data" : result}), 200
+
+                # 주문정보가 없는 경우 빈 list 리턴
+                return jsonify({"data" : []}), 200
+
+            # db 연결이 되지 않은 경우
+            return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
+
+        # 정의하지 않은 error를 잡아줌
+        except Exception as e:
+            return jsonify({"message" : f"{e}"}), 400
+
+        finally:
+
+            if db_connection:
+                db_connection.close()
+
 
     return user_app
 

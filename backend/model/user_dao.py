@@ -58,7 +58,8 @@ class UserDao:
 
         Args:
             user_info :
-                email : 이메일
+                user_no : pk
+                email   : 이메일
             db_connection : 연결된 db 객체
 
         Returns:
@@ -81,9 +82,19 @@ class UserDao:
                 user_no
             FROM
                 users
-            WHERE
-                email = %(email)s
             """
+            for keys,values in user_info.items():
+                if keys == 'email':
+                    select_user_query += """
+                    WHERE
+                        email = %(email)s
+                    """
+
+                elif keys == 'user_no':
+                    select_user_query += """
+                    WHERE
+                        user_no = %(user_no)s
+                    """
 
             cursor.execute(select_user_query, user_info)
 
@@ -301,3 +312,89 @@ class UserDao:
             total_number = cursor.fetchone()
 
             return total_number
+
+    def get_user_orders(self, user_info, db_connection):
+
+        """
+
+        유저의 주문 정보를 리턴합니다.
+
+        Args:
+            user_info:
+                user_no : 유저의 pk
+            db_connection : 연결된 db 객체
+
+        Returns:
+            유저의 주문 정보
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-08-28 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_user_orders = """
+            SELECT
+                P2.order_detail_no,
+                P2.start_time,
+                P7.image_small,
+                P8.name AS product_name,
+                P9.name AS color,
+                P10.name AS size,
+                P3.quantity,
+                P8.price,
+                P11.name AS order_status
+
+            FROM orders AS P1
+
+            INNER JOIN orders_details AS P2
+            ON P1.order_no = P2.order_id
+
+            INNER JOIN order_product AS P3
+            ON P2.order_detail_no = P3.order_id
+
+            INNER JOIN product_options AS P4
+            ON P3.product_option_id = P4.product_option_no
+
+            INNER JOIN option_details AS P5
+            ON P4.product_option_no = P5.product_option_id
+            AND CURRENT_TIMESTAMP >= P5.start_time
+            AND P5.close_time >= CURRENT_TIMESTAMP
+
+            INNER JOIN product_images AS P6
+            ON P4.product_id = P6.product_id
+            AND P6.is_main = 1
+            AND CURRENT_TIMESTAMP >= P6.start_time
+            AND P6.close_time >= CURRENT_TIMESTAMP
+
+            INNER JOIN images AS P7
+            ON P7.image_no = P6.image_id
+
+            INNER JOIN product_details AS P8
+            ON P4.product_id = P8.product_id
+            AND CURRENT_TIMESTAMP >= P8.start_time
+            AND P8.close_time >= CURRENT_TIMESTAMP
+
+            INNER JOIN colors AS P9
+            ON P9.color_no = P5.color_id
+
+            INNER JOIN sizes AS P10
+            ON P10.size_no = P5.size_id
+
+            INNER JOIN order_status AS P11
+            ON P11.order_status_no = P2.order_status_id
+
+            WHERE P1.user_id = %(user_no)s
+
+            ORDER BY P1.order_no
+            """
+
+            cursor.execute(select_user_orders, user_info)
+
+            orders = cursor.fetchall()
+
+            return orders
