@@ -61,7 +61,7 @@ def login_required(func):
     """
 
     @wraps(func)
-    def wrapper():
+    def wrapper(*args, **kwargs):
 
         # header Authorization에 담긴 access_token 가져옴
         access_token = request.headers.get('Authorization')
@@ -70,7 +70,7 @@ def login_required(func):
             # access_token decode
             user_no = jwt.decode(access_token, SECRET['secret_key'], SECRET['algorithm'])['user_no']
 
-            return func(user_no)
+            return func(user_no, *args, **kwargs)
 
         # header에 access_token이 없는경우
         return jsonify({"message" : "UNAUTHORIZED"}), 401
