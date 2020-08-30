@@ -336,13 +336,19 @@ class ProductDao:
 
         """
 
-        상품의 색상 정보를 Return 합니다.
+        상품의 색상 List를 Return 합니다.
 
         Args:
             db_connection : DATABASE Connection Instance
 
         Returns:
-            product의 색상 정보
+            product의 색상 List
+            "data": [
+                {
+                    "color_no" : {color_no} ,
+                    "name"     : "{color_nam}"
+                }
+            ]
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -371,13 +377,19 @@ class ProductDao:
 
         """
 
-        상품의 사이즈 정보를 Return 합니다.
+        상품의 사이즈 List를 Return 합니다.
 
         Args:
             db_connection : DATABASE Connection Instance
 
         Returns:
-            product의 사이즈 정보
+            product의 사이즈 List
+            "data": [
+                {
+                    "size_no" : {size_no},
+                    "name"    : "{size_name}"
+                }
+            ]
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -557,3 +569,90 @@ class ProductDao:
 
         except Exception as e:
             raise e
+
+    def select_main_category_list(self, db_connection):
+
+        """
+
+        상품의 Main Category List를 Return 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            product의 Main Category List
+            "data": [
+                {
+                  "main_category_no" : {main_category_id},
+                  "name"             : "{main_category_name}"
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_main_categories_query = """
+            SELECT
+                main_category_no,
+                name
+
+            FROM main_categories
+            """
+
+            cursor.execute(select_main_categories_query)
+            main_categories = cursor.fetchall()
+
+            return main_categories
+
+    def select_sub_category_list(self, main_cetegory_id, db_connection):
+
+        """
+
+        상품의 Sub Category List를 Return 합니다.
+
+        Args:
+            main_category_id : main_categories 테이블의 PK
+            db_connection    : DATABASE Connection Instance
+
+        Returns:
+            product의 Sub Category List
+            "data": [
+                {
+                  "name"            : "{sub_category_name}",
+                  "sub_category_no" : {sub_category_no}
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            print(main_cetegory_id)
+            select_sub_categories_query = """
+            SELECT
+                sub_category_no,
+                name
+
+            FROM sub_categories
+
+            WHERE
+                main_category_id = %s
+            """
+
+            cursor.execute(select_sub_categories_query, main_cetegory_id)
+            sub_categories = cursor.fetchall()
+
+            return sub_categories

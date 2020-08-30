@@ -28,7 +28,7 @@ class ProductService:
                 discountStartDate : 할인 시작일
                 discountEndDate   : 할인 종료일
                 minSalesQuantity  : 최소판매 수량
-                maxSalesQuantity  : 최대판매 수량TypeError: sequence item 0: expected str instance, dict found
+                maxSalesQuantity  : 최대판매 수량
                 image_url         : 상품이미지(Dict)
                     {
                         'product_image_(No.)' : {
@@ -215,8 +215,8 @@ class ProductService:
         Returns:
             "data": [
                 {
-                    "size_no" : {size_no},
-                    "name"    : "{size_name}"
+                  "name"            : "{sub_category_name}",
+                  "sub_category_no" : {sub_category_no}
                 }
             ]
 
@@ -233,3 +233,66 @@ class ProductService:
 
         # 모든 사이즈 정보 Return
         return sizes
+
+    def get_main_category_list(self, db_connection) :
+
+        """
+
+        Main Category 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                  "main_category_no" : {main_category_id},
+                  "name"             : "{main_category_name}"
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        main_categories = self.product_dao.select_main_category_list(db_connection)
+
+        # 모든 Main Category 정보 Return
+        return main_categories
+
+    def get_sub_category_list(self, main_cetegory_id, db_connection) :
+
+        """
+
+        Sub Category 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            main_cetegory_id : main_categories 테이블의 PK
+            db_connection    : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                  "name"            : "{sub_category_name}",
+                  "sub_category_no" : {sub_category_no}
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        sub_categories = self.product_dao.select_sub_category_list(main_cetegory_id, db_connection)
+
+        # 모든 Main Category 정보 Return
+        return sub_categories

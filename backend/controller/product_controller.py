@@ -22,29 +22,30 @@ def create_admin_product_endpoints(product_service):
         [상품관리 > 상품등록] - 엔드포인트 Function
         [POST] http://ip:5000/admin/product
 
-        request.form:
-            mainCategoryId      : Main Category ID
-            subCategoryId       : Sub Category ID
-            sellYn              : 상품 판매여부 (Boolean)
-            exhibitionYn        : 상품 진열여부 (Boolean)
-            productName         : 상품이름
-            simpleDescription   : 상품 한 줄 설명
-            detailInformation   : 상품 상세 설명
-            price               : 상품가격
-            discountRate        : 상품 할인율
-            discountStartDate   : 할인 시작일
-            discountEndDate     : 할인 종료일
-            minSalesQuantity    : 최소판매 수량
-            maxSalesQuantity    : 최대판매 수량
-            optionQuantity      : 옵션별 수량 List
-                {
-                    colorId  : 상품 색상 id
-                    sizeId   : 상품 사이즈 id
-                    quantity : 상품 재고수량
-                }
+        Args:
+            request.form:
+                mainCategoryId      : Main Category ID
+                subCategoryId       : Sub Category ID
+                sellYn              : 상품 판매여부 (Boolean)
+                exhibitionYn        : 상품 진열여부 (Boolean)
+                productName         : 상품이름
+                simpleDescription   : 상품 한 줄 설명
+                detailInformation   : 상품 상세 설명
+                price               : 상품가격
+                discountRate        : 상품 할인율
+                discountStartDate   : 할인 시작일
+                discountEndDate     : 할인 종료일
+                minSalesQuantity    : 최소판매 수량
+                maxSalesQuantity    : 최대판매 수량
+                optionQuantity      : 옵션별 수량 List
+                    {
+                        colorId  : 상품 색상 id
+                        sizeId   : 상품 사이즈 id
+                        quantity : 상품 재고수량
+                    }
 
-        request.files
-            product_image_(No.) : 상품이미지 파일(Number: 1-5)
+            request.files
+                product_image_(No.) : 상품이미지 파일(Number: 1-5)
 
         Returns:
             200 : SUCCESS, 상품등록 완료 message
@@ -185,6 +186,106 @@ def create_admin_product_endpoints(product_service):
 
         except Exception as e:
             return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('/main-category', methods=['GET'])
+    def main_category_list():
+
+        """
+
+        [ 상품관리 > 상품등록] Main Category Return 엔드포인트
+        [GET] http://ip:5000/admin/product/main-category
+
+        Returns:
+            200 :
+                "data": [
+                    {
+                      "main_category_no" : {main_category_id},
+                      "name"             : "{main_category_name}"
+                    }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+
+                # get_main_category_list 함수 호출해 Main Category List 받아오기
+                main_category = product_service.get_main_category_list(db_connection)
+
+                return jsonify({'data' : main_category}), 200
+
+        #except Exception as e:
+        #    return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('/sub-category', methods=['POST'])
+    def sub_category_list():
+
+        """
+
+        [ 상품관리 > 상품등록] Sub Category Return 엔드포인트
+        [POST] http://ip:5000/admin/product/sub-category
+
+        Args:
+            request.body:
+                mainCategoryId : 메인 카테고리 ID
+
+        Returns:
+            200 :
+                "data": [
+                    {
+                      "name"            : "{sub_category_name}",
+                      "sub_category_no" : {sub_category_no}
+                    }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+
+                main_cetegory_id = request.json['mainCategoryId']
+
+                # sub_category_list 함수 호출해 Sub Category List 받아오기
+                sub_category = product_service.get_sub_category_list(main_cetegory_id, db_connection)
+
+                return jsonify({'data' : sub_category}), 200
+
+        #except Exception as e:
+        #    return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
