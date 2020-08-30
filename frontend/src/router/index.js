@@ -5,20 +5,19 @@ import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
-import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue"
+import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue";
 import Order from "../BrandiService/Order/order.vue";
-import Footer from "../BrandiService/Components/Footer.vue";
+import Mypage from "../BrandiService/Mypage/Mypage.vue";
+import OrderList from "../BrandiService/Mypage/OrderList.vue";
+import Coupon from "../BrandiService/Mypage/Coupon.vue";
+import Point from "../BrandiService/Mypage/Point.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
 
 export const router = new VueRouter({
-  mode: "history",
+  mode: "hash",
   routes: [
-    {
-      path: "/footer",
-      component: Footer,
-    },
     {
       path: "/main",
       component: Main,
@@ -36,6 +35,45 @@ export const router = new VueRouter({
       component: Order,
     },
     {
+      path: "/mypage",
+      redirect: "/mypage/orderList",
+      component: Mypage,
+      name: Mypage,
+      children: [
+        {
+          path: "",
+          redirect: "/mypage/orderList",
+          component: OrderList,
+          name: "orderList",
+        },
+        {
+          path: "orderList",
+          component: OrderList,
+          name: "orderList",
+        },
+        {
+          path: "point",
+          component: Point,
+          name: "point",
+        },
+        {
+          path: "coupon",
+          component: Coupon,
+          name: "coupon",
+        },
+        {
+          path: "qna",
+          component: Mypage,
+          name: "qna",
+        },
+        {
+          path: "faq",
+          component: Mypage,
+          name: "faq",
+        },
+      ],
+    },
+    {
       //초기 url을 main으로 적용
       path: "/",
       redirect: "/main",
@@ -46,15 +84,11 @@ export const router = new VueRouter({
       name: AdminFrame,
       children: [
         {
-          path: 'productRegistration',
+          path: "productRegistration",
           component: ProductRegistration,
-          name: 'productRegistration'
-        }
-      ]
-    },
-    {
-      path: "/footer",
-      component: Footer,
+          name: "productRegistration",
+        },
+      ],
     },
   ],
 });
