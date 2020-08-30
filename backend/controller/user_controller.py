@@ -1,8 +1,13 @@
 import requests
-from flask import request, Blueprint, jsonify
+from flask                  import request, Blueprint, jsonify
+from flask_request_validator import (
+    validate_params,
+    Param,
+    PATH
+)
 
 from connection import get_connection
-from utils      import login_required
+from utils      import login_required, catch_exception
 
 def create_user_endpoints(user_service):
 
@@ -205,6 +210,62 @@ def create_user_endpoints(user_service):
             if db_connection:
                 db_connection.close()
 
+    @user_app.route('/mypage/orderdetail/<order_detail_no>', methods=['GET'], endpoint='user_order_detail')
+    @catch_exception
+    @validate_params(
+        Param('order_detail_no', PATH, int)
+    )
+    @login_required
+    def user_order_detail(user_info, *args):
+        """
+
+        유저의 주문 상세정보 표출 api
+
+        Args:
+            headers:
+                Authorizaion: access_token
+
+            Returns:
+                200, 유저의 주문 상세정보
+                401, 토큰에 해당하는 유저 정보 없을 시
+                500, database 연결 실패
+
+            Author:
+                tnwjd060124@gmail.com (손수정)
+
+            History:
+                2020-08-30 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        db_connection = None
+
+        try:
+
+            db_connection = get_connection()
+
+            if db_connection:
+
+                # path parameter로 받은 order_detail_no를 user_info에 넣어줌
+                user_info['order_detail_no'] = args[0]
+
+                result = user_service.get_order_detail(user_info, db_connection)
+
+                if result:
+
+                    return jsonify({"data" : result}), 200
+
+                return jsonify({"message" : "NO_MATCH_DATA"}), 401
+
+            # db 연결 실패
+            return jsonify({"NO_DATABASE_CONNECTION"}), 500
+
+        except Exception as e:
+            return jsonify ({"message" : f"{e}"}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
 
     return user_app
 
