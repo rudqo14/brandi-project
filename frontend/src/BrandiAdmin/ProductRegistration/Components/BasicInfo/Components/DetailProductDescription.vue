@@ -22,18 +22,36 @@
         </v-btn>
         <span class="inputImageCheckMessage">이미지 확장자는 JPG, PNG만 등록 가능합니다.</span>
       </div>
-      <div class="simpleUploadContainer">
-        <input type="hidden" />
-        <iframe class="uploadBox" frameborder="0" scrolling="auto">
-          <textarea name id cols="30" rows="10"></textarea>
-        </iframe>
+      <div class="editorContainer">
+        <Editor height="500px" @change="dataCheck()" v-model="editorText" />
+        <Viewer />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-export default {};
+import axios from "axios";
+import "codemirror/lib/codemirror.css";
+import "@toast-ui/editor/dist/toastui-editor.css";
+import { Editor, Viewer } from "@toast-ui/vue-editor";
+
+export default {
+  components: {
+    Editor,
+    Viewer,
+  },
+  data() {
+    return {
+      editorText: "텍스트를 입력해주세요.",
+    };
+  },
+  methods: {
+    dataCheck() {
+      console.log("editorText: ", this.editorText);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -98,29 +116,8 @@ export default {};
       }
     }
 
-    .simpleUploadContainer {
-      margin-top: 15px;
-
-      textarea {
-        display: none;
-        height: 400px;
-        text-align: center;
-        line-height: 170%;
-      }
-      .uploadBox {
-        background: #fff;
-        width: 100%;
-        height: 500px;
-        border: 1px solid lightgray;
-        border-radius: 5px;
-        box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
-          0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
-
-        textarea {
-          width: 100%;
-          height: 400px;
-        }
-      }
+    .editorContainer {
+      margin-top: 20px;
     }
   }
 }

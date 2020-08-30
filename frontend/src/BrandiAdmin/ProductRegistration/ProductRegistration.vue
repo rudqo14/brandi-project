@@ -19,10 +19,23 @@
       <OptionInfo />
       <SellingInfo />
     </section>
+    <div class="RegistrationContainer">
+      <div class="RegistrationBtn" @click="registrationHandler">
+        <v-btn depressed color="success">
+          <span>등록</span>
+        </v-btn>
+      </div>
+      <div class="CancleBtn">
+        <v-btn depressed color="error">
+          <span>취소</span>
+        </v-btn>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
@@ -31,6 +44,13 @@ export default {
     BasicInfo,
     OptionInfo,
     SellingInfo,
+  },
+  methods: {
+    ...mapActions(["registration", "postProductImages"]),
+    registrationHandler() {
+      this.$store.commit("registration");
+      this.$store.commit("postProductImages");
+    },
   },
 };
 </script>
@@ -71,5 +91,19 @@ header {
 .pageContents {
   margin: 10px 5px;
   background-color: #fafafa;
+}
+
+.RegistrationContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+
+  span {
+    font-size: 16px;
+  }
+
+  .RegistrationBtn {
+    margin-right: 10px;
+  }
 }
 </style>
