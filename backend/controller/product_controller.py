@@ -3,7 +3,7 @@ from utils      import ResizeImage
 from flask import (
     request,
     Blueprint,
-    jsonify,
+    jsonify
 )
 
 from connection import get_connection, get_s3_connection
@@ -13,12 +13,13 @@ def create_admin_product_endpoints(product_service):
     # 'admin/product' end point prefix 설정
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
+    # 상품등록 Function
     @admin_product_app.route('', methods=['POST'])
     def product_register():
 
         """
 
-        상품등록 - 엔드포인트 Function
+        [상품관리 > 상품등록] - 엔드포인트 Function
         [POST] http://ip:5000/admin/product
 
         request.form:
@@ -35,13 +36,19 @@ def create_admin_product_endpoints(product_service):
             discountEndDate     : 할인 종료일
             minSalesQuantity    : 최소판매 수량
             maxSalesQuantity    : 최대판매 수량
+            optionQuantity      : 옵션별 수량 List
+                {
+                    colorId  : 상품 색상 id
+                    sizeId   : 상품 사이즈 id
+                    quantity : 상품 재고수량
+                }
 
         request.files
             product_image_(No.) : 상품이미지 파일(Number: 1-5)
 
         Returns:
-            200 : SUCCESS, 상품등록 완료
-            400 : VALIDATION_ERROR
+            200 : SUCCESS, 상품등록 완료 message
+            400 : VALIDATION_ERROR, KEY_ERROR
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -51,6 +58,7 @@ def create_admin_product_endpoints(product_service):
             2020-08-25 (sincerity410@gmail.com) : 초기생성
             2020-08-26 (sincerity410@gmail.com) : controller, service, model role 재정의에 따른 함수수정
             2020-08-28 (sincerity410@gmail.com) : product_images, images 저장 기능추가
+            2020-08-30 (sincerity410@gmail.com) : product option 별 재고수량 저장 기능추가
 
         """
 
@@ -71,7 +79,7 @@ def create_admin_product_endpoints(product_service):
             if db_connection:
 
                 # form-data request를 product_info라는 Dictionary 변수에 담기
-                product_info              = request.form.to_dict(flat=False)
+                product_info = request.form.to_dict(flat=False)
 
                 # 1-5번의 사이즈 별 상품이미지를 product_info에 추가
                 product_info['image_url'] = product_image_upload_result
@@ -82,9 +90,101 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'message' : 'SUCCESS'}), 200
 
-        #except Exception as e:
-        #    db_connection.rollback()
-        #    return jsonify({"message" : f'{e}'}), 400
+        except Exception as e:
+            db_connection.rollback()
+            return jsonify({"message" : f'{e}'}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('/color', methods=['GET'])
+    def color_list():
+
+        """
+
+        [ 상품관리 > 상품등록] 색상 List Return 엔드포인트
+        [GET] http://ip:5000/admin/product/color
+
+        Returns:
+            200 :
+                "data" : [
+                    {
+                        "color_no" : {color_no} ,
+                        "name"     : "{color_nam}"
+                    }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+            if db_connection:
+
+                # get_size_list 함수 호출해 색상 List 받아오기
+                colors = product_service.get_color_list(db_connection)
+
+                return jsonify({'data' : colors}), 200
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('/size', methods=['GET'])
+    def size_list():
+
+        """
+
+        [ 상품관리 > 상품등록] 사이즈 List Return 엔드포인트
+        [GET] http://ip:5000/admin/product/size
+
+        Returns:
+            200 :
+                "data": [
+                    {
+                        "size_no" : {size_no},
+                        "name"    : "{size_name}"
+                    }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+            if db_connection:
+
+                # get_size_list 함수 호출해 사이즈 List 받아오기
+                sizes = product_service.get_size_list(db_connection)
+
+                return jsonify({'data' : sizes}), 200
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
@@ -188,4 +288,3 @@ def service_product_endpoint(product_service):
                 db_connection.close()
 
     return service_product_app
-
