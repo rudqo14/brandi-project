@@ -1,18 +1,16 @@
-from flask import jsonify
-
 class ProductDao:
 
     def insert_product(self, db_connection):
 
         """
 
-        product table insert function
+        상품 테이블(products)에 insert 하고 product_no(PK)를 Return 합니다.
 
         Args:
             db_connection : DATABASE Connection Instance
 
         Returns:
-            200: SUCCESS, (상품등록 완료)
+            product_no(products Table PK)
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -54,14 +52,14 @@ class ProductDao:
 
         """
 
-        상품등록 Model Function
+        상품 상세 테이블(product_details)에 insert 합니다.
 
         Args:
             product_info  : business layer로 부터 받은 Parameter
             db_connection : DATABASE Connection Instance
 
         Returns:
-            200: SUCCESS, (상품등록 완료)
+            None
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -117,7 +115,7 @@ class ProductDao:
                 if affected_row <= 0:
                     raise Exception('QUERY_FAILED')
 
-                return cursor.lastrowid
+                return None
 
         except KeyError as e:
             raise e
@@ -129,7 +127,7 @@ class ProductDao:
 
         """
 
-        상품 이미지 URL 등록 -  Persistence Layer(model) function
+        상품 이미지 URL을 Image Size 별로 images 테이블에 insert 하고 image_no(PK)를 Return합니다.
 
         Args:
             image_url     : 사진 사이즈 별 URL(Dictionary)
@@ -141,7 +139,7 @@ class ProductDao:
             db_connection : DATABASE Connection Instance
 
         Returns:
-            등록한 image의 row id
+            image_no(images Table PK)
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -184,7 +182,7 @@ class ProductDao:
 
         """
 
-        product_images(상품 이미지 id & 상품 id) 등록 -  Persistence Layer(model) function
+        products와 images 테이블의 중간 테이블(product_images)에 상품별 image row id를 insert 합니다.
 
         Args:
             product_id       : business layer로 부터 받은 Parameter
@@ -209,27 +207,22 @@ class ProductDao:
                 # Thumbnail(대표) 사진의 구분
                 is_main = 1 if product_image_no == 'product_image_1' else 0
 
-                # Query Arguments를 정의할 변수
-                product_image_info = {}
-
-                # Function Arguments를 Query Arguments에 입력
-                product_image_info['product_id'] = product_id
-                product_image_info['image_id']   = image_id
-                product_image_info['is_main']    = is_main
-
                 insert_product_images_query = """
                 INSERT INTO product_images (
                     product_id,
                     image_id,
                     is_main
                 ) VALUES (
-                    %(product_id)s,
-                    %(image_id)s,
-                    %(is_main)s
+                    %s,
+                    %s,
+                    %s
                 )
                 """
 
-                affected_row = cursor.execute(insert_product_images_query, product_image_info)
+                affected_row = cursor.execute(
+                    insert_product_images_query,
+                    (product_id, image_id, is_main)
+                )
 
                 if affected_row <= 0 :
                     raise Exception('QUERY_FAILED')
@@ -337,3 +330,230 @@ class ProductDao:
             product_details = cursor.fetchall()
 
             return product_details
+
+
+    def select_color_list(self, db_connection):
+
+        """
+
+        상품의 색상 정보를 Return 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            product의 색상 정보
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_colors_query = """
+            SELECT
+                color_no,
+                name
+
+            FROM colors
+            """
+
+            cursor.execute(select_colors_query)
+            colors = cursor.fetchall()
+
+            return colors
+
+    def select_size_list(self, db_connection):
+
+        """
+
+        상품의 사이즈 정보를 Return 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            product의 사이즈 정보
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_colors_query = """
+            SELECT
+                size_no,
+                name
+
+            FROM sizes
+            """
+
+            cursor.execute(select_colors_query)
+            colors = cursor.fetchall()
+
+            return colors
+
+
+    def insert_product_option(self, product_id, db_connection):
+
+        """
+
+       상품의 옵션 정보 테이블(product_options)에 insert 하고 product_option_no(PK)를 Return 합니다.
+
+        Args:
+            product_id    : 상품 테이블(products) PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            product_option_no(PK)
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            with db_connection.cursor() as cursor:
+
+                insert_product_options_query = """
+                INSERT INTO product_options (
+                    product_id,
+                    is_deleted
+                ) VALUES (
+                    %s,
+                    DEFAULT
+                )
+                """
+
+                affected_row = cursor.execute(insert_product_options_query, product_id)
+
+                if affected_row <= 0 :
+                    raise Exception('QUERY_FAILED')
+
+                # 등록한 images 테이블의 row id Return
+                return cursor.lastrowid
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+
+    def insert_option_detail(self, product_option_id, option, db_connection):
+
+        """
+
+        옵션 상세 정보 테이블(option_details)에 insert 하고 option_details_no(PK)를 Return 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            option_details_no(PK)
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            with db_connection.cursor() as cursor:
+
+                insert_option_details_query = """
+                INSERT INTO option_details (
+                    product_option_id,
+                    color_id,
+                    size_id
+                ) VALUES (
+                    %s,
+                    %s,
+                    %s
+                )
+                """
+
+                #print(option)
+
+                affected_row = cursor.execute(
+                    insert_option_details_query,
+                    (product_option_id, option['colorId'], option['sizeId'])
+                )
+
+                if affected_row <= 0 :
+                    raise Exception('QUERY_FAILED')
+
+                # 등록한 images 테이블의 row id Return
+                return cursor.lastrowid
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+
+
+    def insert_quantity(self, option_detail_id, option, db_connection):
+
+        """
+
+        상품 제고 수량 테이블(quantities)에 insert 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            None
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            with db_connection.cursor() as cursor:
+
+                insert_quantities_query = """
+                INSERT INTO quantities (
+                    option_detail_id,
+                    quantity
+                ) VALUES (
+                    %s,
+                    %s
+                )
+                """
+
+                affected_row = cursor.execute(
+                    insert_quantities_query,
+                    (option_detail_id, option['quantity'])
+                )
+
+                if affected_row <= 0 :
+                    raise Exception('QUERY_FAILED')
+
+                # 등록한 images 테이블의 row id Return
+                return None
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
