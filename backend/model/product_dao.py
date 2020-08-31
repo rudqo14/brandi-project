@@ -320,6 +320,10 @@ class ProductDao:
 
         History:
             2020-08-26 (minho.lee0716@gmail.com) : 초기 생성
+            2020-08-30 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
+            2020-08-31 (minho.lee0716@gmail.com) : 키값 수정
+                detail_information > html,
+                product_no > product_id
 
         """
 
@@ -327,9 +331,9 @@ class ProductDao:
 
             select_product_details_query = """
             SELECT
-                P.product_no,
+                P.product_no AS product_id,
                 PD.name,
-                PD.detail_information,
+                PD.detail_information AS html,
                 PD.price,
                 PD.discount_rate,
                 PD.min_sales_quantity,
@@ -692,6 +696,7 @@ class ProductDao:
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
+            2020-08-31 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
 
         """
 
@@ -701,17 +706,20 @@ class ProductDao:
             SELECT
                 I.image_large
 
-            FROM
-                products AS P
+            FROM products AS P
 
             LEFT JOIN product_images AS PI
             ON P.product_no = PI.product_id
+            AND CURRENT_TIMESTAMP >= PI.start_time
+            AND CURRENT_TIMESTAMP <= PI.close_time
 
             LEFT JOIN images AS I
             ON PI.image_id = I.image_no
+            AND I.is_deleted = False
 
             WHERE
-                P.product_no = %s;
+                P.product_no = %s
+                AND P.is_deleted = False;
             """
 
             cursor.execute(select_product_images_query, product_id)
@@ -737,6 +745,7 @@ class ProductDao:
 
         History:
             2020-08-30 (minho.lee0716@gmail.com) : 초기 생성
+            2020-08-31 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
 
         """
 
@@ -752,12 +761,17 @@ class ProductDao:
 
             LEFT JOIN product_options AS PO
             ON P.product_no = PO.product_id
+            AND PO.is_deleted = False
 
             LEFT JOIN option_details AS OD
             ON PO.product_option_no = OD.product_option_id
+            AND CURRENT_TIMESTAMP >= OD.start_time
+            AND CURRENT_TIMESTAMP <= OD.close_time
 
             LEFT JOIN quantities AS Q
             ON OD.option_detail_no = Q.option_detail_id
+            AND CURRENT_TIMESTAMP >= Q.start_time
+            AND CURRENT_TIMESTAMP <= Q.close_time
 
             LEFT JOIN colors AS C
             ON OD.color_id = C.color_no
@@ -767,6 +781,7 @@ class ProductDao:
 
             WHERE
                 P.product_no = %s
+                AND P.is_deleted = False
 
             ORDER BY
                 color,
