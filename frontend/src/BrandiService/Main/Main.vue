@@ -24,17 +24,23 @@
                 <span class="discountRate" v-if="product.discount_rate"
                   >{{ product.discount_rate }}%</span
                 >
-                <span class="price">{{
-                  numberWithCommas(Math.floor(product.price))
-                }}</span>
                 <span class="discountPrice" v-if="product.discount_rate">
                   {{
                     numberWithCommas(
-                      parseInt(product.price) *
-                        ((100 - product.discount_rate) / 100)
+                      Math.round(
+                        parseInt(product.price) *
+                          ((100 - product.discount_rate) / 100)
+                      )
                     )
                   }}
                 </span>
+                <span
+                  :class="{
+                    noneDisCountPrice: !product.discount_rate,
+                    price: product.discount_rate,
+                  }"
+                  >{{ numberWithCommas(Math.floor(product.price)) }}</span
+                >
               </div>
             </div>
           </article>
@@ -46,6 +52,7 @@
 <script>
 import axios from "axios";
 import Banner from "../Components/Banner";
+import { SERVICE_API_URL } from "../../../config";
 export default {
   components: {
     Banner,
@@ -60,7 +67,7 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://52.79.197.248:5000/product").then((res) => {
+      axios.get(`${SERVICE_API_URL}/product`).then((res) => {
         this.product = res.data;
       });
     },
@@ -125,14 +132,21 @@ main {
               color: #ff204b;
             }
             .price {
+              font-size: 15px;
+              color: #757575;
+              text-decoration: line-through;
+            }
+
+            .noneDisCountPrice {
               font-size: 20px;
               font-weight: 600;
               padding-right: 6px;
             }
+
             .discountPrice {
-              font-size: 15px;
-              color: #757575;
-              text-decoration: line-through;
+              font-size: 20px;
+              font-weight: 600;
+              padding-right: 6px;
             }
           }
         }
