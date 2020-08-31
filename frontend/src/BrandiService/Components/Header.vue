@@ -24,9 +24,14 @@
             <div class="divider"></div>
             <span>장바구니</span>
             <div class="divider"></div>
-            <span>마이페이지</span>
+            <span @click="linkToMyPage">마이페이지</span>
             <div class="divider"></div>
-            <span @click="linkToLogin">로그인</span>
+            <span @click="linkToLogin">
+              {{
+              getToken ? "로그아웃" : "로그인"
+              }}
+            </span>
+
             <div class="divider"></div>
             <span>입점문의</span>
           </div>
@@ -50,15 +55,34 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
+const serviceStore = "serviceStore";
+
 export default {
   methods: {
     linkToMain() {
       this.$router.push("/main");
     },
     linkToLogin() {
-      this.$router.push("/login");
+      if (this.getToken) {
+        this.$store.state.serviceStore.accessToken = "";
+        this.$router.push("/main");
+      } else {
+        this.$router.push("/login");
+      }
     },
+    linkToMyPage() {
+      if (this.getToken) {
+        this.$router.push("/mypage");
+      } else {
+        this.$router.push("/login");
+      }
+    }
   },
+  computed: {
+    ...mapGetters(serviceStore, ["getToken"])
+  }
 };
 </script>
 

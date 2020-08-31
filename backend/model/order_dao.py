@@ -59,13 +59,13 @@ class OrderDao:
             if filter_info['order_detail_id']:
                 select_list += """
                 INNER JOIN order_product AS P2
-                ON P3.order_detail_no = P2.order_id
+                ON P3.order_detail_no = P2.order_detail_id
                 AND P2.order_product_no = %(order_detail_id)s
                 """
             else:
                 select_list += """
                 INNER JOIN order_product AS P2
-                ON P3.order_detail_no = P2.order_id
+                ON P3.order_detail_no = P2.order_detail_id
                 """
 
             # JOIN 추가
@@ -208,13 +208,13 @@ class OrderDao:
             if filter_info['order_detail_id']:
                 count_num += """
                 INNER JOIN order_product AS P2
-                ON P3.order_detail_no = P2.order_id
+                ON P3.order_detail_no = P2.order_detail_id
                 AND P2.order_product_no = %(order_detail_id)s
                 """
             else:
                 count_num += """
                 INNER JOIN order_product AS P2
-                ON P3.order_detail_no = P2.order_id
+                ON P3.order_detail_no = P2.order_detail_id
                 """
 
             # JOIN 추가
@@ -345,7 +345,7 @@ class OrderDao:
             ON P1.user_shipping_id = P4.user_shipping_detail_no
 
             INNER JOIN order_product P11
-            ON P1.order_detail_no = P11.order_id
+            ON P1.order_detail_no = P11.order_detail_id
 
             INNER JOIN product_options P5
             ON P11.product_option_id = P5.product_option_no
