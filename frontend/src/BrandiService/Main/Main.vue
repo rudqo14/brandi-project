@@ -28,9 +28,10 @@
                   {{
                     numberWithCommas(
                       Math.round(
-                        parseInt(product.price) *
-                          ((100 - product.discount_rate) / 100)
-                      )
+                        (parseInt(product.price) *
+                          ((100 - product.discount_rate) / 100)) /
+                          10
+                      ) * 10
                     )
                   }}
                 </span>

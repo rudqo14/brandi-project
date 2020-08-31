@@ -12,20 +12,33 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <select class="mainCategoryBox">
+            <select
+              class="mainCategoryBox"
+              @change="getSubCategory($event)"
+              v-model="key"
+            >
               <option value="0">1차 카테고리를 선택해주세요</option>
               <option
-                @click="selectMainCategory($event, list.main_category_no)"
                 v-for="list in mainCategory"
                 :key="list.main_category_no"
                 :value="list.main_category_no"
-              >{{list.name}}</option>
+                >{{ list.name }}</option
+              >
             </select>
           </div>
           <div class="secondaryCategory">
-            <select class="subCategoryBox">
+            <select
+              class="subCategoryBox"
+              @change="selectSubCategory($event)"
+              v-model="value"
+            >
               <option value="0">2차 카테고리를 선택해주세요</option>
-              <option value="1">2차 카테고리를 선택해주세요</option>
+              <option
+                v-for="list in subCategory"
+                :key="list.sub_category_no"
+                :value="list.sub_category_no"
+                >{{ list.name }}</option
+              >
             </select>
           </div>
         </div>
@@ -36,6 +49,7 @@
 
 <script>
 import axios from "axios";
+import { ADMIN_API_URL } from "../../../../../../config";
 
 export default {
   created() {
@@ -45,17 +59,35 @@ export default {
   data() {
     return {
       mainCategory: [],
+      subCategory: [],
+      key: "",
+      mainCategoryId: "",
+      subCategoryId: "",
     };
   },
 
   methods: {
     getMainCategoryData() {
-      axios.get("http://localhost:8080/Data/MainCategory.json").then((res) => {
+      axios.get(`${ADMIN_API_URL}/admin/product/category`).then((res) => {
         this.mainCategory = res.data.data;
       });
     },
-    selectMainCategory(event, id) {
-      console.log("asdfasdf");
+    getSubCategory(event) {
+      this.mainCategoryId = event.target.value;
+
+      axios
+        .get(`${ADMIN_API_URL}/admin/product/category/${this.mainCategoryId}`)
+        .then((res) => {
+          this.subCategory = res.data.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    selectSubCategory(event) {
+      this.subCategoryId = event.target.value;
+      console.log("subCategoryId: ", this.subCategoryId);
+      console.log("mainCategoryId: ", this.mainCategoryId);
     },
   },
 };
@@ -129,5 +161,3 @@ export default {
   }
 }
 </style>
-
-

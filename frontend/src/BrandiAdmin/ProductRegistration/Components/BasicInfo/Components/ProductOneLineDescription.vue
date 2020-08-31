@@ -42,7 +42,7 @@ export default {
   .inputName {
     display: flex;
     align-items: center;
-    width: 298px;
+    width: 303px;
     height: 100%;
     padding-left: 15px;
     border-right: 1px solid lightgray;

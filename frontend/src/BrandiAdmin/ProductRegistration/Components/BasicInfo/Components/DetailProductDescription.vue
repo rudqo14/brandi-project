@@ -10,17 +10,22 @@
           <v-radio label="간편 업로드" value="radio-1"></v-radio>
           <v-radio label="에디터 사용 (html 가능)" value="radio-2"></v-radio>
         </v-radio-group>
-        <div>( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)</div>
+        <div>
+          ( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)
+        </div>
       </div>
       <div class="alertText">
-        <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold Out으로 표시 됩니다.
+        <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold
+        Out으로 표시 됩니다.
       </div>
       <div class="imageInputBtn">
         <v-btn normal>
           <i class="far fa-image"></i>
           <span>사진 삽입</span>
         </v-btn>
-        <span class="inputImageCheckMessage">이미지 확장자는 JPG, PNG만 등록 가능합니다.</span>
+        <span class="inputImageCheckMessage"
+          >이미지 확장자는 JPG, PNG만 등록 가능합니다.</span
+        >
       </div>
       <div class="editorContainer">
         <Editor height="500px" @change="dataCheck()" v-model="editorText" />
@@ -63,7 +68,7 @@ export default {
   .inputName {
     display: flex;
     align-items: center;
-    width: 305px;
+    width: 306px;
     height: 100%;
     padding-left: 15px;
     border-right: 1px solid lightgray;
