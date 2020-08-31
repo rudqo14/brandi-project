@@ -46,6 +46,8 @@
 <script>
 import axios from "axios";
 import Banner from "../Components/Banner";
+import { sip } from "../../../config";
+
 export default {
   components: {
     Banner
@@ -60,7 +62,7 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get("http://10.251.1.83:5000/product").then(res => {
+      axios.get(`${sip}/product`).then(res => {
         this.product = res.data;
       });
     },
