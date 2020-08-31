@@ -315,10 +315,8 @@ class ProductService:
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
-            2020-08-30 (minho.lee0716@gmail.com) : 추가
-                이미지 리스트를 details에 추가.
-            2020-08-31 (minho.lee0716@gmail.com) : 추가
-                상품 옵션들을 details에 추가.
+            2020-08-30 (minho.lee0716@gmail.com) : 이미지 리스트를 details에 추가.
+            2020-08-31 (minho.lee0716@gmail.com) : 상품 옵션들을 details에 추가.
 
         """
 
@@ -330,3 +328,27 @@ class ProductService:
 
         # 해당 상품의 상세정보들을 리턴
         return details
+
+    def get_order_product_info(self, product_info, db_connection):
+        """
+
+        상품 상세정보 > 구매 클릭시 나오는 구매할 상품 정보
+
+        Args:
+            product_info : 구매할 상품에 대한 정보(id, color, size, quantity, total_price)
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품의 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        purchase_info = self.product_dao.FUNCTION_NAME(product_info, db_connection)
+
+        return purchase_info
