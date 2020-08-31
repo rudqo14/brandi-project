@@ -1,12 +1,11 @@
-import time
-import jwt
+import time, jwt, io, uuid
 from PIL        import Image
 from functools  import wraps
 
 from flask_request_validator import AbstractRule
 from flask                   import request, jsonify
 
-from config import SECRET
+from config import SECRET, S3
 
 class DatetimeRule(AbstractRule):
 
@@ -25,10 +24,12 @@ class DatetimeRule(AbstractRule):
                     유효성 검사를 통과하면 빈 list
 
         Authors:
-            tnwjd060124@gmail.com (손수정)
+            tnwjd060124@gmail.com  (손수정)
+            sincerity410@gmail.com (이곤호)
 
         History:
-            2020-08-27 (tnwjd060124@gmail.com) : 초기 생성
+            2020-08-27 (tnwjd060124@gmail.com)  : 초기 생성
+            2020-08-27 (sincerity410@gmail.com) : S3 URL return을 위한 추가 설정
 
         """
 
@@ -60,7 +61,7 @@ def login_required(func):
     """
 
     @wraps(func)
-    def wrapper():
+    def wrapper(*args, **kwargs):
 
         # header Authorization에 담긴 access_token 가져옴
         access_token = request.headers.get('Authorization')
@@ -69,7 +70,7 @@ def login_required(func):
             # access_token decode
             user_no = jwt.decode(access_token, SECRET['secret_key'], SECRET['algorithm'])['user_no']
 
-            return func(user_no)
+            return func(user_no, *args, **kwargs)
 
         # header에 access_token이 없는경우
         return jsonify({"message" : "UNAUTHORIZED"}), 401
@@ -122,15 +123,18 @@ class ResizeImage:
         }
 
     Authors:
-        tnwjd060124@gmail.com (손수정)
+        tnwjd060124@gmail.com  (손수정)
+        sincerity410@gmail.com (이곤호)
 
     History:
-        2020-08-27 (tnwjd060124@gmail.com) : 초기 생성
+        2020-08-27 (tnwjd060124@gmail.com)  : 초기 생성
+        2020-08-27 (sincerity410@gmail.com) : S3 저장기능 추가 구현
 
     """
 
-    def __init__(self, images):
+    def __init__(self, images, s3_connection):
         self.images         = images
+        self.s3_connection  = s3_connection
         self.large_width    = 640
         self.medium_width   = 320
         self.small_width    = 150
@@ -146,14 +150,17 @@ class ResizeImage:
             # image 사이즈 측정
             width, height = image.size
 
+            # uuid 생성
+            unique_id = str(uuid.uuid4().int)
+
             # large size로 resizing 하는 메소드 실행
-            large_size_image = self.resize_image_to_large(values, width, height)
+            large_size_image = self.resize_image_to_large(values, width, height, unique_id, self.s3_connection)
 
             # medium size로 resizing 하는 메소드 실행
-            medium_size_image = self.resize_image_to_medium(values, width, height)
+            medium_size_image = self.resize_image_to_medium(values, width, height, unique_id, self.s3_connection)
 
             # small size로 resizing 하는 메소드 실행
-            small_size_image = self.resize_image_to_small(values, width, height)
+            small_size_image = self.resize_image_to_small(values, width, height, unique_id, self.s3_connection)
 
             # resize_images dictionary에 결과 저장
             self.resize_images[key] = {
@@ -162,7 +169,7 @@ class ResizeImage:
                 'product_image_S' : small_size_image
             }
 
-    def resize_image_to_large(self, image_file, width, height):
+    def resize_image_to_large(self, image_file, width, height, unique_id, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -170,9 +177,22 @@ class ResizeImage:
         # image resize
         image_L = image.resize((self.large_width,int((height*self.large_width)/width)))
 
-        return image_L
+        buffer = io.BytesIO()
+        image_L.save(buffer, "JPEG")
+        buffer.seek(0)
 
-    def resize_image_to_medium(self, image_file, width, height):
+        s3_connection.put_object(
+            Body        = buffer,
+            Bucket      = 'brandi-project',
+            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_L",
+            ContentType = image_file.content_type
+        )
+
+        image_L_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_L"
+
+        return image_L_url
+
+    def resize_image_to_medium(self, image_file, width, height, unique_id, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -180,9 +200,22 @@ class ResizeImage:
         # image resize
         image_M = image.resize((self.medium_width, int((height*self.medium_width)/width)))
 
-        return image_M
+        buffer = io.BytesIO()
+        image_M.save(buffer, "JPEG")
+        buffer.seek(0)
 
-    def resize_image_to_small(self, image_file, width, height):
+        s3_connection.put_object(
+            Body        = buffer,
+            Bucket      = 'brandi-project',
+            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_M",
+            ContentType = image_file.content_type
+        )
+
+        image_M_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_M"
+
+        return image_M_url
+
+    def resize_image_to_small(self, image_file, width, height, unique_id, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -190,7 +223,20 @@ class ResizeImage:
         # image resize
         image_S = image.resize((self.small_width, int((height*self.small_width)/width)))
 
-        return image_S
+        buffer = io.BytesIO()
+        image_S.save(buffer, "JPEG")
+        buffer.seek(0)
+
+        s3_connection.put_object(
+            Body        = buffer,
+            Bucket      = 'brandi-project',
+            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_S",
+            ContentType = image_file.content_type
+        )
+
+        image_S_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_S"
+
+        return image_S_url
 
     def __call__(self):
         self.resizing()

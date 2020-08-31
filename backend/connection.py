@@ -1,6 +1,7 @@
-import pymysql
+import pymysql, boto3
 
 from config import DATABASE
+from config import S3
 
 def get_connection():
     """
@@ -30,4 +31,13 @@ def get_connection():
     connection.cursor().execute("""SET time_zone='Asia/Seoul'""")
 
     return connection
+
+def get_s3_connection():
+    s3_connection = boto3.client(
+        's3',
+        aws_access_key_id     = S3['aws_access_key_id'],
+        aws_secret_access_key = S3['aws_secret_access_key']
+    )
+
+    return s3_connection
 
