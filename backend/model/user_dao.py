@@ -29,7 +29,7 @@ class UserDao:
 
         """
 
-        with db_connection.cursor() as cursro:
+        with db_connection.cursor() as cursor:
 
             insert_user_query = """
             INSERT INTO users (

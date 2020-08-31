@@ -149,8 +149,8 @@ def create_user_endpoints(user_service):
             return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
 
         # 정의하지 않은 모든 에러를 잡아줌
-        except Exception as e:
-            return jsonify({"message" : f'{e}'}), 400
+        #except Exception as e:
+            #return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:

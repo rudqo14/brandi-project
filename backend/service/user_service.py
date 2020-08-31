@@ -115,12 +115,11 @@ class UserService:
 
         # 유저가 없으면 db에 유저 정보 저장
         if not user:
-            user = self.user_dao.signup_user(user_info, db_connection)
+            user_no = self.user_dao.signup_user(user_info, db_connection)
+            user = {"user_no" : user_no}
 
         # 유저의 최종 접속시간 update
-        self.user_dao.update_user_last_access({
-            'user_no'       : user['user_no'],
-        }, db_connection)
+        self.user_dao.update_user_last_access(user, db_connection)
 
         return user
 
