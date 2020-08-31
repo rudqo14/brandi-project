@@ -1,6 +1,5 @@
+import json
 from PIL import Image
-
-from flask import jsonify
 
 from utils import ResizeImage
 
@@ -34,15 +33,21 @@ class ProductService:
                     {
                         'product_image_(No.)' : {
                             'product_image_L' : Large 사이즈 url,
-                            'product_image_M' : Medium 사이즈 url
+                            'product_image_M' : Medium 사이즈 url,
                             'product_image_S' : Small 사이즈 url
                         }
+                    }
+                optionQuantity    : 옵션별 수량 List
+                    {
+                        colorId  : 상품 색상 id
+                        sizeId   : 상품 사이즈 id
+                        quantity : 상품 재고수량
                     }
 
             db_connection : DATABASE Connection Instance
 
         Returns :
-            product_detail_id : 생성한 product_details row id
+            None
 
         Author :
             sincerity410@gmail.com (이곤호)
@@ -51,18 +56,28 @@ class ProductService:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
             2020-08-26 (sincerity410@gmail.com) : controller, service, model role 재정의에 따른 함수수정
             2020-08-28 (sincerity410@gmail.com) : images, product_images insert 수행
+            2020-08-30 (sincerity410@gmail.com) : option 별 재고수량 관련 테이블(product_options, option_details,
+                                                  quantities) insert 수행
 
         """
 
         # product에 insert 한 id를 product_info에 포함 > 상세정보 insert query 실행
-        product_id                 = self.product_dao.insert_product(db_connection)
-        product_info['product_id'] = product_id
-        product_detail_id          = self.product_dao.insert_product_detail(product_info, db_connection)
+        product_info['product_id'] = self.product_dao.insert_product(db_connection)
+        self.product_dao.insert_product_detail(product_info, db_connection)
 
         # 사진크기 별 product_image(최대 5개)에 대해 image URL insert & product_images(매핑테이블) insert
         for product_image_no, image_url in product_info['image_url'].items() :
-            image_id = self.product_dao.insert_image(image_url, db_connection)
-            self.product_dao.insert_product_image(product_id, image_id, product_image_no, db_connection)
+            image_no = self.product_dao.insert_image(image_url, db_connection)
+            self.product_dao.insert_product_image(product_info['product_id'], image_no, product_image_no, db_connection)
+
+        # nested JSON 구조인 optionQuantity를 form-data로 받아 JSON 변환
+        options = json.loads(product_info['optionQuantity'][0])
+
+        # 상품 옵션 별 produc_options, option_details, quantities 테이블 insert 수행 
+        for option in options :
+            product_option_id = self.product_dao.insert_product_option(product_info['product_id'], db_connection)
+            option_detail_id  = self.product_dao.insert_option_detail(product_option_id, option, db_connection)
+            self.product_dao.insert_quantity(option_detail_id, option, db_connection)
 
         return None
 
@@ -106,7 +121,14 @@ class ProductService:
             s3_connection : S3 Connection Instance
 
         Returns:
-            200: SUCCESS, Image URL
+            Image URL List:
+            {
+                'product_image_(No.)' : {
+                    'product_image_L' : Large 사이즈 url,
+                    'product_image_M' : Medium 사이즈 url,
+                    'product_image_S' : Small 사이즈 url
+                }
+            }
 
         Author:
             sincerity410@gmail.com (이곤호)
@@ -150,3 +172,127 @@ class ProductService:
         except Exception as e:
             raise e
 
+    def get_color_list(self, db_connection) :
+
+        """
+
+        색상 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                    "color_no" : {color_no} ,
+                    "name"     : "{color_nam}"
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        colors = self.product_dao.select_color_list(db_connection)
+
+        # 모든 색상 정보 Return
+        return colors
+
+    def get_size_list(self, db_connection) :
+
+        """
+
+        사이즈 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                  "name"            : "{sub_category_name}",
+                  "sub_category_no" : {sub_category_no}
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        sizes = self.product_dao.select_size_list(db_connection)
+
+        # 모든 사이즈 정보 Return
+        return sizes
+
+    def get_main_category_list(self, db_connection) :
+
+        """
+
+        Main Category 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                  "main_category_no" : {main_category_id},
+                  "name"             : "{main_category_name}"
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        main_categories = self.product_dao.select_main_category_list(db_connection)
+
+        # 모든 Main Category 정보 Return
+        return main_categories
+
+    def get_sub_category_list(self, main_cetegory_id, db_connection) :
+
+        """
+
+        Sub Category 목록을 Return 하는Business Layer(service) function
+
+        Args:
+            main_cetegory_id : main_categories 테이블의 PK
+            db_connection    : DATABASE Connection Instance
+
+        Returns:
+            "data": [
+                {
+                  "name"            : "{sub_category_name}",
+                  "sub_category_no" : {sub_category_no}
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-30 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        sub_categories = self.product_dao.select_sub_category_list(main_cetegory_id, db_connection)
+
+        # 모든 Main Category 정보 Return
+        return sub_categories

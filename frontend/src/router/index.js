@@ -9,6 +9,10 @@ import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegis
 import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
 import ProductManagement from "../BrandiAdmin/ProductRegistration/ProductManagement.vue";
+import Mypage from "../BrandiService/Mypage/Mypage.vue";
+import OrderList from "../BrandiService/Mypage/OrderList.vue";
+import Coupon from "../BrandiService/Mypage/Coupon.vue";
+import Point from "../BrandiService/Mypage/Point.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -16,10 +20,6 @@ Vue.use(VueRouter);
 export const router = new VueRouter({
   mode: "hash",
   routes: [
-    {
-      path: "/footer",
-      component: Footer,
-    },
     {
       path: "/main",
       component: Main,
@@ -35,6 +35,45 @@ export const router = new VueRouter({
     {
       path: "/order",
       component: Order,
+    },
+    {
+      path: "/mypage",
+      redirect: "/mypage/orderList",
+      component: Mypage,
+      name: Mypage,
+      children: [
+        {
+          path: "",
+          redirect: "/mypage/orderList",
+          component: OrderList,
+          name: "orderList",
+        },
+        {
+          path: "orderList",
+          component: OrderList,
+          name: "orderList",
+        },
+        {
+          path: "point",
+          component: Point,
+          name: "point",
+        },
+        {
+          path: "coupon",
+          component: Coupon,
+          name: "coupon",
+        },
+        {
+          path: "qna",
+          component: Mypage,
+          name: "qna",
+        },
+        {
+          path: "faq",
+          component: Mypage,
+          name: "faq",
+        },
+      ],
     },
     {
       //초기 url을 main으로 적용
