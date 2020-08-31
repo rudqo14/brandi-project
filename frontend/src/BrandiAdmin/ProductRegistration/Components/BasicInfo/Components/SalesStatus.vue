@@ -7,12 +7,21 @@
       <div class="inputPlace">
         <div class="radioContainer">
           <v-radio-group v-model="row" row>
-            <v-radio label="판매" value="radio-1" @click="sellYesHandler"></v-radio>
-            <v-radio label="미판매" value="radio-2" @click="sellNoHandler"></v-radio>
+            <v-radio
+              label="판매"
+              value="radio-1"
+              @click="sellYesHandler"
+            ></v-radio>
+            <v-radio
+              label="미판매"
+              value="radio-2"
+              @click="sellNoHandler"
+            ></v-radio>
           </v-radio-group>
         </div>
         <div class="alertText">
-          <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold Out으로 표시 됩니다.
+          <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold
+          Out으로 표시 됩니다.
         </div>
       </div>
     </div>
@@ -22,18 +31,20 @@
 <script>
 import { mapMutations } from "vuex";
 
+const AdminStore = "adminStore";
+
 export default {
   data() {
     return {};
   },
   computed: {},
   methods: {
-    ...mapMutations(["sellYesHandler, sellNoHandler"]),
+    ...mapMutations(AdminStore, ["sellYesHandler, sellNoHandler"]),
     sellYesHandler() {
-      this.$store.commit("sellYesHandler");
+      this.sellYesHandler;
     },
     sellNoHandler() {
-      this.$store.commit("sellNoHandler");
+      this.sellNoHandler;
     },
   },
 };

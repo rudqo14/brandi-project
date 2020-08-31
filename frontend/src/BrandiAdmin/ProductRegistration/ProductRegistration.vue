@@ -35,11 +35,13 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapMutations } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
 import { ADMIN_API_URL } from "../../../config";
+
+const AdminStore = "adminStore";
 
 export default {
   created() {},
@@ -57,10 +59,10 @@ export default {
   },
 
   methods: {
-    ...mapActions(["registration", "postProductImages"]),
+    ...mapMutations(AdminStore, ["registration", "postProductImages"]),
     registrationHandler() {
-      this.$store.commit("registration");
-      this.$store.commit("postProductImages");
+      this.registration();
+      this.postProductImages();
     },
   },
 };

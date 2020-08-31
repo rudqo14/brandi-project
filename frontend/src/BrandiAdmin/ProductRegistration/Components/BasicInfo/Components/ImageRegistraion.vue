@@ -8,7 +8,12 @@
       <div class="imageContainer">
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img width="100%" height="100%" :src="imageURL1" alt="img"></v-img>
+            <v-img
+              width="100%"
+              height="100%"
+              :src="imageURL1"
+              alt="img"
+            ></v-img>
           </div>
           <input
             ref="imageURL1"
@@ -21,7 +26,11 @@
             <span class="firstImgText">*대표 이미지</span>
             선택
           </v-btn>
-          <div class="deleteBtnBox" @click="imageDelete1" v-if="this.imageURL1.length > 1">
+          <div
+            class="deleteBtnBox"
+            @click="imageDelete1"
+            v-if="this.imageURL1.length > 1"
+          >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
             </v-btn>
@@ -29,14 +38,28 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img width="100%" height="100%" :src="imageURL2" alt="img"></v-img>
+            <v-img
+              width="100%"
+              height="100%"
+              :src="imageURL2"
+              alt="img"
+            ></v-img>
           </div>
-          <input ref="imageInput2" type="file" hidden @change="(e) => onChangeImages2(e)" />
+          <input
+            ref="imageInput2"
+            type="file"
+            hidden
+            @change="(e) => onChangeImages2(e)"
+          />
           <v-btn type="button" normal @click="onClickImageUpload2">
             이미지
             <span>선택</span>
           </v-btn>
-          <div class="deleteBtnBox" @click="imageDelete2" v-if="this.imageURL2.length > 1">
+          <div
+            class="deleteBtnBox"
+            @click="imageDelete2"
+            v-if="this.imageURL2.length > 1"
+          >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
             </v-btn>
@@ -44,14 +67,28 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img width="100%" height="100%" :src="imageURL3" alt="img"></v-img>
+            <v-img
+              width="100%"
+              height="100%"
+              :src="imageURL3"
+              alt="img"
+            ></v-img>
           </div>
-          <input ref="imageInput3" type="file" hidden @change="(e) => onChangeImages3(e)" />
+          <input
+            ref="imageInput3"
+            type="file"
+            hidden
+            @change="(e) => onChangeImages3(e)"
+          />
           <v-btn type="button" normal @click="onClickImageUpload3">
             이미지
             <span>선택</span>
           </v-btn>
-          <div class="deleteBtnBox" @click="imageDelete3" v-if="this.imageURL3.length > 1">
+          <div
+            class="deleteBtnBox"
+            @click="imageDelete3"
+            v-if="this.imageURL3.length > 1"
+          >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
             </v-btn>
@@ -59,14 +96,28 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img width="100%" height="100%" :src="imageURL4" alt="img"></v-img>
+            <v-img
+              width="100%"
+              height="100%"
+              :src="imageURL4"
+              alt="img"
+            ></v-img>
           </div>
-          <input ref="imageInput4" type="file" hidden @change="(e) => onChangeImages4(e)" />
+          <input
+            ref="imageInput4"
+            type="file"
+            hidden
+            @change="(e) => onChangeImages4(e)"
+          />
           <v-btn type="button" normal @click="onClickImageUpload4">
             이미지
             <span>선택</span>
           </v-btn>
-          <div class="deleteBtnBox" @click="imageDelete4" v-if="this.imageURL4.length > 1">
+          <div
+            class="deleteBtnBox"
+            @click="imageDelete4"
+            v-if="this.imageURL4.length > 1"
+          >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
             </v-btn>
@@ -74,14 +125,28 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img width="100%" height="100%" :src="imageURL5" alt="img"></v-img>
+            <v-img
+              width="100%"
+              height="100%"
+              :src="imageURL5"
+              alt="img"
+            ></v-img>
           </div>
-          <input ref="imageInput5" type="file" hidden @change="(e) => onChangeImages5(e)" />
+          <input
+            ref="imageInput5"
+            type="file"
+            hidden
+            @change="(e) => onChangeImages5(e)"
+          />
           <v-btn type="button" normal @click="onClickImageUpload5">
             이미지
             <span>선택</span>
           </v-btn>
-          <div class="deleteBtnBox" @click="imageDelete5" v-if="this.imageURL5.length > 1">
+          <div
+            class="deleteBtnBox"
+            @click="imageDelete5"
+            v-if="this.imageURL5.length > 1"
+          >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
             </v-btn>
@@ -89,7 +154,8 @@
         </div>
       </div>
       <div class="alertText">
-        <i class="fas fa-exclamation-triangle"></i> 640 * 720 사이즈 이상 등록 가능하며 확장자는 jpg 만 등록 가능합니다.
+        <i class="fas fa-exclamation-triangle"></i> 640 * 720 사이즈 이상 등록
+        가능하며 확장자는 jpg 만 등록 가능합니다.
       </div>
     </div>
   </div>
@@ -98,6 +164,8 @@
 <script>
 import Axios from "axios";
 import { mapMutations, mapState } from "vuex";
+
+const AdminStore = "adminStore";
 
 export default {
   data() {
@@ -111,7 +179,7 @@ export default {
   },
 
   computed: {
-    ...mapState({
+    ...mapState(AdminStore, {
       productImage1: (state) => state.productImages.product_image_1,
       productImage2: (state) => state.productImages.product_image_2,
       productImage3: (state) => state.productImages.product_image_3,
@@ -120,7 +188,7 @@ export default {
     }),
   },
   methods: {
-    ...mapMutations([
+    ...mapMutations(AdminStore, [
       "getProductImage1",
       "getProductImage2",
       "getProductImage3",

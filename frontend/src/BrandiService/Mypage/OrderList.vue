@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="order.data.length">
     <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
       <div class="orderTop">
         <div class="topLeft">
@@ -30,11 +30,16 @@
             <div class="productOption">{{ order.color }} / {{ order.size }}</div>
             <div class="orderQuantity">{{ order.quantity }} 개</div>
           </div>
-          <div class="orderPrice">{{ numberWithCommas(order.price * order.quantity) }} 원</div>
+          <div
+            class="orderPrice"
+          >{{ numberWithCommas(getDiscountPrice(order.price, order.discount_rate) * order.quantity) }} 원</div>
           <div class="orderStatus">{{ order.order_status }}</div>
         </div>
       </div>
     </div>
+  </div>
+  <div v-else>
+    <div class="noOrder">주문한 상품이 없습니다.</div>
   </div>
 </template>
 
@@ -46,16 +51,18 @@ export default {
   },
   data() {
     return {
-      order: []
+      order: [],
+      orderData: false,
+      accessToken: this.$store.state.serviceStore.accessToken
     };
   },
   methods: {
     getOrderData() {
       axios
-        .get("http://192.168.219.102:5000/user/mypage", {
+        .get("http://10.251.1.83:5000/user/mypage", {
           headers: {
-            Authorization:
-              "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
+            Authorization: this.accessToken
+            //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
         .then(res => {
@@ -86,6 +93,10 @@ export default {
     // 주문 상세페이지로 이동
     linkToOrderDetail(orderDetailId) {
       this.$router.push(`/mypage/orderDetail/${orderDetailId}`);
+    },
+
+    getDiscountPrice(price, discountRate) {
+      return price * ((100 - discountRate) / 100);
     }
   }
 };
@@ -193,5 +204,10 @@ export default {
       }
     }
   }
+}
+.noOrder {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 </style>

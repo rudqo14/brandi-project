@@ -1,4 +1,5 @@
 const adminStore = {
+  namespaced: true,
   state: {
     sellYn: false,
     exhibitionYn: true,
@@ -106,3 +107,5 @@ const adminStore = {
 
   actions: {},
 };
+
+export default adminStore;

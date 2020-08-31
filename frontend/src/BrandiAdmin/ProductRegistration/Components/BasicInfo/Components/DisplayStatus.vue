@@ -6,12 +6,21 @@
     <div class="inputPlace">
       <div class="radioContainer">
         <v-radio-group v-model="row" row>
-          <v-radio label="진열" value="radio-1" @click="exhibitionYesHandler"></v-radio>
-          <v-radio label="미진열" value="radio-2" @click="exhibitionNoHandler"></v-radio>
+          <v-radio
+            label="진열"
+            value="radio-1"
+            @click="exhibitionYesHandler"
+          ></v-radio>
+          <v-radio
+            label="미진열"
+            value="radio-2"
+            @click="exhibitionNoHandler"
+          ></v-radio>
         </v-radio-group>
       </div>
       <div class="alertText">
-        <i class="fas fa-exclamation-triangle"></i> 미진열 선택시 앱에서 Sold Out으로 표시 됩니다.
+        <i class="fas fa-exclamation-triangle"></i> 미진열 선택시 앱에서 Sold
+        Out으로 표시 됩니다.
       </div>
     </div>
   </div>
@@ -20,14 +29,16 @@
 <script>
 import { mapMutations } from "vuex";
 
+const AdminStore = "adminStore";
+
 export default {
   methods: {
-    ...mapMutations(["exhibitionYes, exhibitionNo"]),
+    ...mapMutations(AdminStore, ["exhibitionYes, exhibitionNo"]),
     exhibitionYesHandler() {
-      this.$store.commit("exhibitionYes");
+      this.exhibitionYes;
     },
     exhibitionNoHandler() {
-      this.$store.commit("exhibitionNo");
+      this.exhibitionNo;
     },
   },
 };

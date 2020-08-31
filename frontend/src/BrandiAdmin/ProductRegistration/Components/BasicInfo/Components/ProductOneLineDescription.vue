@@ -18,16 +18,18 @@
 <script>
 import { mapMutations, mapState } from "vuex";
 
+const AdminStore = "adminStore";
+
 export default {
   computed: {
-    ...mapState({
+    ...mapState(AdminStore, {
       simpleDescription: (state) => state.simpleDescription,
     }),
   },
   methods: {
-    ...mapMutations(["updateSimpleDescription"]),
+    ...mapMutations(AdminStore, ["updateSimpleDescription"]),
     inputSimpleDescription(e) {
-      this.$store.commit("updateSimpleDescription", e.target.value);
+      this.updateSimpleDescription(e.target.value);
     },
   },
 };

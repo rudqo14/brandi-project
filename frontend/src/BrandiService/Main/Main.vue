@@ -137,7 +137,6 @@ main {
               color: #757575;
               text-decoration: line-through;
             }
-
             .noneDisCountPrice {
               font-size: 20px;
               font-weight: 600;

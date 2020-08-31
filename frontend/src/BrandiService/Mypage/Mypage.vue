@@ -11,19 +11,11 @@
           @click="linkToPage"
         >
           <div class="imgContainer">
-            <img
-              src="/Images/ic-mypage-orderlist-s@3x.png"
-              alt="orderList"
-              name="orderList"
-            />
+            <img src="/Images/ic-mypage-orderlist-s@3x.png" alt="orderList" name="orderList" />
           </div>
           <div class="menuText">
             <div :class="['text', 'orderList']">주문/배송조회</div>
-            <img
-              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
-              alt=">"
-              name="orderList"
-            />
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" name="orderList" />
           </div>
         </div>
 
@@ -41,11 +33,7 @@
           <div class="menuText">
             <span :class="['text', 'point']">포인트</span>
             <span class="number">{{ point }}</span>
-            <img
-              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
-              alt=">"
-              name="point"
-            />
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" name="point" />
           </div>
         </div>
         <div class="divider"></div>
@@ -57,50 +45,32 @@
           @click="linkToPage"
         >
           <div class="imgContainer">
-            <img
-              src="/Images/ic-mypage-coupon-s@3x.png"
-              alt="coupon"
-              name="coupon"
-            />
+            <img src="/Images/ic-mypage-coupon-s@3x.png" alt="coupon" name="coupon" />
           </div>
           <div class="menuText">
             <span :class="['text', 'coupon']">쿠폰</span>
             <span class="number">{{ coupon }}</span>
-            <img
-              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
-              alt=">"
-              name="coupon"
-            />
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" name="coupon" />
           </div>
         </div>
         <div class="divider"></div>
-        <div
-          :class="[getCurrentPage() === 'qna' ? 'active' : 'deactive', 'menu']"
-        >
+        <div :class="[getCurrentPage() === 'qna' ? 'active' : 'deactive', 'menu']">
           <div class="imgContainer">
             <img src="/Images/ic-mypage-qna-s@3x.png" alt="qna" />
           </div>
           <div class="menuText">
             <span class="text">Q & A</span>
-            <img
-              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
-              alt=">"
-            />
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" />
           </div>
         </div>
         <div class="divider"></div>
-        <div
-          :class="[getCurrentPage() === 'faq' ? 'active' : 'deactive', 'menu']"
-        >
+        <div :class="[getCurrentPage() === 'faq' ? 'active' : 'deactive', 'menu']">
           <div class="imgContainer">
             <img src="/Images/ic-myshopping-faq-s@3x.png" alt="faq" />
           </div>
           <div class="menuText">
             <span class="text">FAQ</span>
-            <img
-              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
-              alt=">"
-            />
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" />
           </div>
         </div>
       </div>
@@ -115,7 +85,7 @@ export default {
     return {
       currentPage: "",
       point: 0,
-      coupon: 0,
+      coupon: 0
     };
   },
   methods: {
@@ -144,8 +114,8 @@ export default {
         linkPage = event.target.className.split(" ")[1];
       }
       this.$router.push(`${linkPage}`);
-    },
-  },
+    }
+  }
 };
 </script>
 

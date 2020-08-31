@@ -41,6 +41,8 @@ import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor, Viewer } from "@toast-ui/vue-editor";
 
+const AdminStore = "adminStore";
+
 export default {
   components: {
     Editor,
