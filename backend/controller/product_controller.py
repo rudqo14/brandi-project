@@ -5,6 +5,12 @@ from flask import (
     Blueprint,
     jsonify
 )
+from flask_request_validator    import (
+    GET,
+    PATH,
+    Param,
+    validate_params
+)
 
 from connection import get_connection, get_s3_connection
 
@@ -191,13 +197,13 @@ def create_admin_product_endpoints(product_service):
             if db_connection:
                 db_connection.close()
 
-    @admin_product_app.route('/main-category', methods=['GET'])
+    @admin_product_app.route('/category', methods=['GET'])
     def main_category_list():
 
         """
 
         [ 상품관리 > 상품등록] Main Category Return 엔드포인트
-        [GET] http://ip:5000/admin/product/main-category
+        [GET] http://ip:5000/admin/product/category
 
         Returns:
             200 :
@@ -231,24 +237,27 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : main_category}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : e}), 400
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
 
-    @admin_product_app.route('/sub-category', methods=['POST'])
-    def sub_category_list():
+    @admin_product_app.route('/category/<main_category_id>', methods=['GET'])
+    @validate_params(
+        Param('main_category_id', PATH, int)
+    )
+    def sub_category_list(*args):
 
         """
 
         [ 상품관리 > 상품등록] Sub Category Return 엔드포인트
-        [POST] http://ip:5000/admin/product/sub-category
+        [GET] http://ip:5000/admin/product/sub-category
 
         Args:
-            request.body:
-                mainCategoryId : 메인 카테고리 ID
+            Parameter:
+                mainCategoryId : (int) 메인 카테고리 ID
 
         Returns:
             200 :
@@ -277,15 +286,15 @@ def create_admin_product_endpoints(product_service):
 
             if db_connection:
 
-                main_cetegory_id = request.json['mainCategoryId']
+                main_category_id = args[0]
 
                 # sub_category_list 함수 호출해 Sub Category List 받아오기
-                sub_category = product_service.get_sub_category_list(main_cetegory_id, db_connection)
+                sub_category = product_service.get_sub_category_list(main_category_id, db_connection)
 
                 return jsonify({'data' : sub_category}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : e}), 400
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
