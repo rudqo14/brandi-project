@@ -256,6 +256,8 @@ class ProductDao:
             2020-08-25 (minho.lee0716@gmail.com) : 수정
                 컨벤션 수정
             2020-08-28 (tnwjd060124@gmail.com) : 현재 이력만 조회하는 조건 추가
+            2020-08-28 (minho.lee0716@gmail.com) : 수정
+                Image 테이블 필드명을 나누어 image > image_medium으로 바꿈
 
         """
 
@@ -264,7 +266,7 @@ class ProductDao:
             select_products_query = """
             SELECT
                 P.product_no,
-                I.image AS thumbnail_image,
+                I.image_medium AS thumbnail_image,
                 PD.name AS product_name,
                 PD.price,
                 PD.discount_rate
@@ -324,13 +326,33 @@ class ProductDao:
         with db_connection.cursor() as cursor:
 
             select_product_details_query = """
+            SELECT
+                P.product_no,
+                PD.name,
+                PD.detail_information,
+                PD.price,
+                PD.discount_rate,
+                PD.min_sales_quantity,
+                PD.max_sales_quantity
+
+            FROM products AS P
+
+            LEFT JOIN product_details AS PD
+            ON P.product_no = PD.product_id
+            AND PD.is_activated = 1
+            AND PD.is_displayed = 1
+            AND CURRENT_TIMESTAMP >= PD.start_time
+            AND PD.close_time >= CURRENT_TIMESTAMP
+
+            WHERE
+                P.is_deleted = 0
+                AND P.product_no = %s;
             """
 
-            cursor.execute(select_product_details_query)
-            product_details = cursor.fetchall()
+            cursor.execute(select_product_details_query, product_id)
+            product_details = cursor.fetchone()
 
             return product_details
-
 
     def select_color_list(self, db_connection):
 
@@ -414,7 +436,6 @@ class ProductDao:
 
             return colors
 
-
     def insert_product_option(self, product_id, db_connection):
 
         """
@@ -462,7 +483,6 @@ class ProductDao:
 
         except Exception as e:
             raise e
-
 
     def insert_option_detail(self, product_option_id, option, db_connection):
 
@@ -517,8 +537,6 @@ class ProductDao:
 
         except Exception as e:
             raise e
-
-
 
     def insert_quantity(self, option_detail_id, option, db_connection):
 
@@ -640,7 +658,6 @@ class ProductDao:
 
         with db_connection.cursor() as cursor:
 
-            print(main_cetegory_id)
             select_sub_categories_query = """
             SELECT
                 sub_category_no,
@@ -656,3 +673,107 @@ class ProductDao:
             sub_categories = cursor.fetchall()
 
             return sub_categories
+
+    def select_product_images(self, product_id, db_connection):
+
+        """
+
+        상품 상세정보의 이미지들을 리턴합니다.
+
+        Args:
+            product_id    : 해당 상품의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품에 대한 상세정보 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_images_query = """
+            SELECT
+                I.image_large
+
+            FROM
+                products AS P
+
+            LEFT JOIN product_images AS PI
+            ON P.product_no = PI.product_id
+
+            LEFT JOIN images AS I
+            ON PI.image_id = I.image_no
+
+            WHERE
+                P.product_no = %s;
+            """
+
+            cursor.execute(select_product_images_query, product_id)
+            product_images = cursor.fetchall()
+
+            return product_images
+
+    def select_product_options(self, product_id, db_connection):
+
+        """
+
+        서비스 페이지의 상품 상세정보중 옵션들을 리턴합니다.
+
+        Args:
+            product_id    : 해당 상품의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품에 대한 상세정보중 옵션들
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-30 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_options_query = """
+            SELECT
+                C.name AS color,
+                S.name AS size,
+                Q.quantity
+
+            FROM products AS P
+
+            LEFT JOIN product_options AS PO
+            ON P.product_no = PO.product_id
+
+            LEFT JOIN option_details AS OD
+            ON PO.product_option_no = OD.product_option_id
+
+            LEFT JOIN quantities AS Q
+            ON OD.option_detail_no = Q.option_detail_id
+
+            LEFT JOIN colors AS C
+            ON OD.color_id = C.color_no
+
+            LEFT JOIN sizes AS S
+            ON OD.size_id = S.size_no
+
+            WHERE
+                P.product_no = %s
+
+            ORDER BY
+                color,
+                size;
+            """
+
+            cursor.execute(select_product_options_query, product_id)
+            product_details = cursor.fetchall()
+
+            return product_details

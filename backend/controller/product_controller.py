@@ -379,7 +379,11 @@ def service_product_endpoint(product_service):
 
         try:
             db_connection = get_connection()
-            return jsonify({'data':product_id}), 200
+
+            if db_connection:
+                print(product_id)
+                details = product_service.get_product_details(product_id, db_connection)
+                return jsonify({'data' : details}), 200
 
         except Exception as e:
             return jsonify({'message' : e}), 400
