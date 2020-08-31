@@ -6,7 +6,7 @@
     </div>
     <div class="inputPlace">
       <div class="inputBox">
-        <input type="text" />
+        <input type="text" :value="productName" @input="inputProductName" />
       </div>
       <div class="alertText">
         <i class="fas fa-exclamation-triangle"></i> 상품명에는 쌍따옴표(") 또는 홑따옴표(')를 포함할 수 없습니다.
@@ -19,7 +19,24 @@
 </template>
 
 <script>
-export default {};
+import { mapMutations, mapState } from "vuex";
+
+export default {
+  data() {
+    return {};
+  },
+  computed: {
+    ...mapState({
+      productName: (state) => state.productName,
+    }),
+  },
+  methods: {
+    ...mapMutations(["updateProductName"]),
+    inputProductName(e) {
+      this.$store.commit("updateProductName", e.target.value);
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
