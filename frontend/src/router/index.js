@@ -7,6 +7,8 @@ import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue";
 import Order from "../BrandiService/Order/order.vue";
+import Footer from "../BrandiService/Components/Footer.vue";
+import ProductManagement from "../BrandiAdmin/ProductRegistration/ProductManagement.vue";
 import Mypage from "../BrandiService/Mypage/Mypage.vue";
 import OrderList from "../BrandiService/Mypage/OrderList.vue";
 import Coupon from "../BrandiService/Mypage/Coupon.vue";
@@ -88,7 +90,16 @@ export const router = new VueRouter({
           component: ProductRegistration,
           name: "productRegistration",
         },
+        {
+          path: "ProductManagement",
+          component: ProductManagement,
+          name: "ProductManagement",
+        },
       ],
+    },
+    {
+      path: "/footer",
+      component: Footer,
     },
   ],
 });

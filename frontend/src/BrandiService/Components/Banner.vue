@@ -8,7 +8,7 @@
   </agile>
 </template>
 <script>
-import imgData from "../../../Data/banner.json";
+import imgData from "../../../Data/Banner.json";
 import { VueAgile } from "vue-agile";
 export default {
   data() {
