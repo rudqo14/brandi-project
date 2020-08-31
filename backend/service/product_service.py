@@ -88,7 +88,7 @@ class ProductService:
         브랜디 서비스 페이지 > 상품 전체 리스트
 
         Args:
-            연결된 db 객체
+            db_connection : 연결된 db 객체
 
         Returns:
             상품 전체 리스트
@@ -296,3 +296,37 @@ class ProductService:
 
         # 모든 Main Category 정보 Return
         return sub_categories
+
+    def get_product_details(self, product_id, db_connection):
+
+        """
+
+        상품 상세정보 > 이미지들
+
+        Args:
+            product_id : 상품 고유의 id(pk)
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품의 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
+            2020-08-30 (minho.lee0716@gmail.com) : 추가
+                이미지 리스트를 details에 추가.
+            2020-08-31 (minho.lee0716@gmail.com) : 추가
+                상품 옵션들을 details에 추가.
+
+        """
+
+        # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
+        # 상세정보중 이미지들과 옵션들은 따로 가져와서 details에 추가.
+        details = self.product_dao.select_product_details(product_id, db_connection)
+        details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
+        details['options']    = self.product_dao.select_product_options(product_id, db_connection)
+
+        # 해당 상품의 상세정보들을 리턴
+        return details
