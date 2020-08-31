@@ -27,6 +27,7 @@ import ProductOneLineDescription from "./Components/ProductOneLineDescription";
 import ImageRegistraion from "./Components/ImageRegistraion";
 import DetailProductDescription from "./Components/DetailProductDescription";
 export default {
+  mounted() {},
   components: {
     SellerSelect,
     SalesStatus,

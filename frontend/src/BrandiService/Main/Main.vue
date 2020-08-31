@@ -11,28 +11,24 @@
             </h1>
           </div>
           <article class="productList">
-            <div
-              class="product"
-              v-for="product in product.data"
-              v-bind:key="product.product_id"
-            >
+            <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
               <div class="productImage" @click="linkToDetail">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
-                <span class="discountRate" v-if="product.discount_rate"
-                  >{{ product.discount_rate }}%</span
-                >
-                <span class="price">{{
+                <span class="discountRate" v-if="product.discount_rate">{{ product.discount_rate }}%</span>
+                <span class="price">
+                  {{
                   numberWithCommas(Math.floor(product.price))
-                }}</span>
+                  }}
+                </span>
                 <span class="discountPrice" v-if="product.discount_rate">
                   {{
-                    numberWithCommas(
-                      parseInt(product.price) *
-                        ((100 - product.discount_rate) / 100)
-                    )
+                  numberWithCommas(
+                  parseInt(product.price) *
+                  ((100 - product.discount_rate) / 100)
+                  )
                   }}
                 </span>
               </div>

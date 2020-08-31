@@ -12,10 +12,21 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <v-select :items="items" label="1차 카테고리를 선택해주세요" solo></v-select>
+            <select class="mainCategoryBox">
+              <option value="0">1차 카테고리를 선택해주세요</option>
+              <option
+                @click="selectMainCategory($event, list.main_category_no)"
+                v-for="list in mainCategory"
+                :key="list.main_category_no"
+                :value="list.main_category_no"
+              >{{list.name}}</option>
+            </select>
           </div>
           <div class="secondaryCategory">
-            <v-select :items="items" label="1차 카테고리를 먼저 선택해주세요" solo></v-select>
+            <select class="subCategoryBox">
+              <option value="0">2차 카테고리를 선택해주세요</option>
+              <option value="1">2차 카테고리를 선택해주세요</option>
+            </select>
           </div>
         </div>
       </div>
@@ -24,11 +35,28 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
+  created() {
+    this.getMainCategoryData();
+  },
+
   data() {
     return {
-      items: ["Foo", "Bar", "Fizz", "Buzz"],
+      mainCategory: [],
     };
+  },
+
+  methods: {
+    getMainCategoryData() {
+      axios.get("http://localhost:8080/Data/MainCategory.json").then((res) => {
+        this.mainCategory = res.data.data;
+      });
+    },
+    selectMainCategory(event, id) {
+      console.log("asdfasdf");
+    },
   },
 };
 </script>
@@ -83,15 +111,23 @@ export default {
         display: flex;
         height: 40%;
 
-        .primaryCategory {
-          width: 50%;
-        }
-
+        .primaryCategory,
         .secondaryCategory {
           width: 50%;
+
+          select {
+            background-color: white;
+            border: 1px solid lightgray;
+            padding-left: 3px;
+            border-radius: 3px;
+            width: 100%;
+            height: 34px;
+          }
         }
       }
     }
   }
 }
 </style>
+
+

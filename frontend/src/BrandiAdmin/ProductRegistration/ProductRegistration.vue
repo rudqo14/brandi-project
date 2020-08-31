@@ -39,12 +39,23 @@ import { mapActions } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
+import { ADMIN_API_URL } from "../../../config";
+
 export default {
+  created() {},
+
   components: {
     BasicInfo,
     OptionInfo,
     SellingInfo,
   },
+
+  data() {
+    return {
+      mainCategory: [],
+    };
+  },
+
   methods: {
     ...mapActions(["registration", "postProductImages"]),
     registrationHandler() {
