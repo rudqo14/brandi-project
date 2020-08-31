@@ -10,7 +10,7 @@ const config = {
     extensions: [".js", ".vue"],
   },
   entry: {
-    app: path.join(__dirname, "main.js"),
+    app: path.resolve(__dirname, "./main.js"),
   },
   module: {
     rules: [
@@ -37,7 +37,7 @@ const config = {
   plugins: [new VueLoaderPlugin()],
   output: {
     filename: `[name].js`,
-    path: path.join(__dirname, "dist"),
+    path: path.resolve(__dirname, "dist"),
     publicPath: "/dist",
   },
 };

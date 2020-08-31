@@ -44,7 +44,7 @@
       <div class="container">
         <div class="box">
           <router-view></router-view>
-       </div>
+        </div>
       </div>
     </div>
   </div>
@@ -55,14 +55,14 @@ import { items } from "../../../itemConfig";
 export default {
   data() {
     return {
-      items: items
+      items: items,
     };
   },
   methods: {
     detailPage(path) {
       this.$router.push(`${path}`);
-    }
-  }
+    },
+  },
 };
 </script>
 

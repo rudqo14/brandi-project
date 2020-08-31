@@ -5,15 +5,16 @@ import Detail from "../BrandiService/Detail/Detail.vue";
 import Login from "../BrandiService/Login/Login.vue";
 import VueAgile from "vue-agile";
 import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
-import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue"
+import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue";
 import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
+import ProductManagement from "../BrandiAdmin/ProductRegistration/ProductManagement.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
 
 export const router = new VueRouter({
-  mode: "history",
+  mode: "hash",
   routes: [
     {
       path: "/footer",
@@ -46,11 +47,16 @@ export const router = new VueRouter({
       name: AdminFrame,
       children: [
         {
-          path: 'productRegistration',
+          path: "productRegistration",
           component: ProductRegistration,
-          name: 'productRegistration'
-        }
-      ]
+          name: "productRegistration",
+        },
+        {
+          path: "ProductManagement",
+          component: ProductManagement,
+          name: "ProductManagement",
+        },
+      ],
     },
     {
       path: "/footer",
