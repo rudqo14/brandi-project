@@ -6,14 +6,10 @@
       </div>
       <div class="inputPlace">
         <div class="radioContainer">
-          <div class="onSale">
-            <input type="radio" />
-            <span>판매</span>
-          </div>
-          <div class="offSale">
-            <input type="radio" />
-            <span>미판매</span>
-          </div>
+          <v-radio-group v-model="row" row>
+            <v-radio label="판매" value="radio-1" @click="sellYesHandler"></v-radio>
+            <v-radio label="미판매" value="radio-2" @click="sellNoHandler"></v-radio>
+          </v-radio-group>
         </div>
         <div class="alertText">
           <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold Out으로 표시 됩니다.
@@ -24,13 +20,29 @@
 </template>
 
 <script>
-export default {};
+import { mapMutations } from "vuex";
+
+export default {
+  data() {
+    return {};
+  },
+  computed: {},
+  methods: {
+    ...mapMutations(["sellYesHandler, sellNoHandler"]),
+    sellYesHandler() {
+      this.$store.commit("sellYesHandler");
+    },
+    sellNoHandler() {
+      this.$store.commit("sellNoHandler");
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
 .salesStatus {
   display: flex;
-  height: 55px;
+  height: 70px;
   border-bottom: 1px solid lightgray;
 
   .inputName {
@@ -52,17 +64,19 @@ export default {};
 
     .radioContainer {
       display: flex;
-      margin-bottom: 7px;
       font-size: 16px;
 
-      .onSale {
-        margin-right: 40px;
+      .v-input {
+        font-size: 10px;
+        margin: 0;
+        height: 30px;
       }
     }
 
     .alertText {
       color: #1e90ff;
       font-size: 14px;
+      margin-left: 4px;
     }
   }
 }
