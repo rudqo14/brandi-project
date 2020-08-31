@@ -831,7 +831,8 @@ CREATE TABLE user_shipping_details
     `user_shipping_detail_no`  INT             NOT NULL    AUTO_INCREMENT COMMENT 'pk', 
     `user_id`                  INT             NOT NULL    COMMENT '유저_id', 
     `address`                  VARCHAR(500)    NOT NULL    COMMENT '배송지', 
-    `additional_address`       VARCHAR(100)    NULL        COMMENT '나머지 주소',
+    `additional_address`       VARCHAR(100)    NOT NULL    COMMENT '나머지 주소',
+    `zip_code`                 VARCHAR(10)     NOT NULL    COMMENT '우편번호',
     `receiver`                 VARCHAR(50)     NOT NULL    COMMENT '수령자명', 
     `phone_number`             VARCHAR(50)     NOT NULL    COMMENT '휴대폰번호', 
     PRIMARY KEY (user_shipping_detail_no)
@@ -848,42 +849,48 @@ INSERT INTO user_shipping_details
     address,
     additional_address,
     receiver,
-    phone_number
+    phone_number,
+    zip_code
 ) VALUES (
     1,
     1,
     '서울특별시 강남구 테헤란로 32길 26 청송빌딩',
     '브랜디',
     '손수정수령',
-    '01012345678'
+    '01012345678',
+    '15279'
 ), (
     2,
     2,
     '서울특별시 강남구 테헤란로 427, 위워크타워',
     '위코드',
     '이곤호수령',
-    '01012345678'
+    '01012345678',
+    '15279'
 ), (
     3,
     3,
     '서울특별시 강남구 테헤란로 32길 26 청송빌딩',
     '브랜디',
     '이민호수령',
-    '01022223333'
+    '01022223333',
+    '15279'
 ), (
     4,
     4,
     '서울특별시',
     '서울 어딘가',
     '김경배수령',
-    '01033334444'
+    '01033334444',
+    '15279'
 ), (
     5,
     5,
     '서울특별시',
     '서울 어딘가',
     '배정규수령',
-    '01044445555'
+    '01044445555',
+    '15279'
 );
 
 -- order_status Table Create SQL

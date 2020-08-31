@@ -428,6 +428,57 @@ def service_product_endpoint(product_service):
             if db_connection:
                 db_connection.close()
 
+    @service_product_app.route('/<int:product_id>', methods=['POST'])
+    def product_etc_options(product_id):
+
+        # product_id는 query parameter로 받아옵니다.
+        # color_name은 body에 담겨서 온
+        color_name = request.json['color_name']
+        product_info = {}
+        product_info['product_id'] = product_id
+        product_info['color_name'] = color_name
+
+        """
+
+        [ 서비스 > 상품 상세정보 > 나머지 옵션 ] 엔드포인트
+        [GET] http://ip:5000/product/1
+
+        Returns:
+            200 : 상품 상세정보에 대한 사이즈와 수량
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # service에서 상세정보, 이미지, 옵션을 묶은 정보들을 details에 저장
+                etc_options = product_service.get_etc_options(product_info, db_connection)
+                return jsonify({'etc' : etc_options}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
     @service_product_app.route('/purchase', methods=['POST'])
     #@login_required
     def product_click_buying():

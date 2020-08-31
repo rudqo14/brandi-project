@@ -727,18 +727,18 @@ class ProductDao:
 
             return product_images
 
-    def select_product_options(self, product_id, db_connection):
+    def select_product_option_colors(self, product_id, db_connection):
 
         """
 
-        서비스 페이지의 상품 상세정보중 옵션들을 리턴합니다.
+        서비스 페이지의 상품 상세정보중 컬러들을 리턴합니다.
 
         Args:
             product_id    : 해당 상품의 id
             db_connection : 연결된 db 객체
 
         Returns:
-            해당 상품에 대한 상세정보중 옵션들
+            해당 상품에 대한 상세정보의 옵션중 컬러들만 리턴.
 
         Authors:
             minho.lee0716@gmail.com (이민호)
@@ -746,14 +746,77 @@ class ProductDao:
         History:
             2020-08-30 (minho.lee0716@gmail.com) : 초기 생성
             2020-08-31 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
+            2020-08-31 (minho.lee0716@gmail.com) : 옵션 전체가 아닌, 컬러만 조회하기
 
         """
 
         with db_connection.cursor() as cursor:
 
             select_product_options_query = """
+            SELECT DISTINCT
+                C.name AS color_name
+
+            FROM products AS P
+
+            LEFT JOIN product_options AS PO
+            ON P.product_no = PO.product_id
+            AND PO.is_deleted = False
+
+            LEFT JOIN option_details AS OD
+            ON PO.product_option_no = OD.product_option_id
+            AND CURRENT_TIMESTAMP >= OD.start_time
+            AND CURRENT_TIMESTAMP <= OD.close_time
+
+            LEFT JOIN colors AS C
+            ON OD.color_id = C.color_no
+
+            WHERE
+                P.product_no = %s
+                AND P.is_deleted = False
+
+            ORDER BY
+                C.color_no;
+            """
+
+            cursor.execute(select_product_options_query, product_id)
+            product_details = cursor.fetchall()
+
+            colors = [{
+                'color' : list(element.values())[0]
+            } for element in product_details]
+
+
+            return colors
+
+    def select_etc_options(self, product_info, db_connection):
+
+        """
+
+        서비스 페이지의 상품 상세정보중 사이즈와 수량을 리턴합니다.
+
+        Args:
+            product_info : {
+                product_id    : 해당 상품의 id
+                color_name    : 해당 상품의 color의 이름
+            }
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품에 대한 상세정보의 옵션중 사이즈와 수량을 리턴
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_etc_options_query = """
             SELECT
-                C.name AS color,
                 S.name AS size,
                 Q.quantity
 
@@ -768,27 +831,36 @@ class ProductDao:
             AND CURRENT_TIMESTAMP >= OD.start_time
             AND CURRENT_TIMESTAMP <= OD.close_time
 
-            LEFT JOIN quantities AS Q
-            ON OD.option_detail_no = Q.option_detail_id
-            AND CURRENT_TIMESTAMP >= Q.start_time
-            AND CURRENT_TIMESTAMP <= Q.close_time
-
             LEFT JOIN colors AS C
             ON OD.color_id = C.color_no
 
             LEFT JOIN sizes AS S
             ON OD.size_id = S.size_no
 
+            LEFT JOIN quantities AS Q
+            ON OD.option_detail_no = Q.option_detail_id
+            AND CURRENT_TIMESTAMP >= Q.start_time
+            AND CURRENT_TIMESTAMP <= Q.close_time
+
             WHERE
-                P.product_no = %s
+                P.product_no = %(product_id)s
                 AND P.is_deleted = False
+                AND C.name = %(color_name)s
 
             ORDER BY
-                color,
-                size;
+                S.size_no;
             """
 
-            cursor.execute(select_product_options_query, product_id)
-            product_details = cursor.fetchall()
+            cursor.execute(select_product_etc_options_query, product_info)
+            etc_options = cursor.fetchall()
 
-            return product_details
+            #print(etc_options[0]['size'])
+            #print(etc_options[0]['quantity'])
+            #print(etc_options[1])
+            #print(etc_options[2])
+            colors = [{
+                'size'     : element['size'],
+                'quantity' : element['quantity']
+            } for element in etc_options]
+            print(colors)
+            return etc_options
