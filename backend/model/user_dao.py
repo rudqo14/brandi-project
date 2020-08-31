@@ -345,7 +345,7 @@ class UserDao:
                 P2.order_detail_no,
                 P2.start_time,
                 P7.image_small,
-                P12.name AS product_name,
+                P8.name AS product_name,
                 P9.name AS color,
                 P10.name AS size,
                 P3.quantity,
@@ -372,8 +372,8 @@ class UserDao:
             INNER JOIN product_images AS P6
             ON P4.product_id = P6.product_id
             AND P6.is_main = 1
-            AND CURRENT_TIMESTAMP >= P6.start_time
-            AND P6.close_time >= CURRENT_TIMESTAMP
+            AND P2.start_time >= P6.start_time
+            AND P6.close_time >= P2.start_time
 
             INNER JOIN images AS P7
             ON P7.image_no = P6.image_id
@@ -391,11 +391,6 @@ class UserDao:
 
             INNER JOIN order_status AS P11
             ON P11.order_status_no = P2.order_status_id
-
-            INNER JOIN product_details AS P12
-            ON P4.product_id = P12.product_id
-            AND CURRENT_TIMESTAMP >= P12.start_time
-            AND P12.close_time >= CURRENT_TIMESTAMP
 
             WHERE P1.user_id = %(user_no)s
 
@@ -438,7 +433,7 @@ class UserDao:
                 P1.order_detail_no,
                 P1.start_time,
                 P3.name AS orderer,
-                P14.name AS product_name,
+                P7.name AS product_name,
                 P7.price,
                 P7.discount_rate,
                 P9.image_small,
@@ -481,6 +476,8 @@ class UserDao:
 
             INNER JOIN images AS P9
             ON P9.image_no = P8.image_id
+            AND P1.start_time >= P9.start_time
+            AND P9.close_time >= P1.start_time
 
             INNER JOIN option_details AS P10
             ON P6.product_option_no = P10.product_option_id
@@ -495,11 +492,6 @@ class UserDao:
 
             INNER JOIN order_status AS P13
             ON P1.order_status_id = P13.order_status_no
-
-            INNER JOIN product_details AS P14
-            ON P6.product_id = P14.product_id
-            AND CURRENT_TIMESTAMP >= P14.start_time
-            AND P14.close_time >= CURRENT_TIMESTAMP
 
             WHERE
                 P1.order_detail_no = %(order_detail_no)s

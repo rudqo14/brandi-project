@@ -31,6 +31,7 @@
 import { ClientId } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
+import { sip } from "../../../config";
 import axios from "axios";
 import Footer from "../Components/Footer";
 
@@ -59,16 +60,15 @@ export default {
       const headers = {
         headers: { Authorization: googleUser.wc.id_token }
       };
-      axios
-        .post(`http://10.251.1.83:5000/user/google-signin`, data, headers)
-        .then(res => {
-          if (res.data.access_token) {
-            this.$store.state.serviceStore.accessToken = res.data.access_token;
-            this.$router.push("/main");
-          } else {
-            alert("로그인 정보가 맞지 않습니다. 다시 시도해주세요.");
-          }
-        });
+      axios.post(`${sip}/user/google-signin`, data, headers).then(res => {
+        if (res.data.access_token) {
+          this.$store.state.serviceStore.accessToken = res.data.access_token;
+          localStorage.setItem("access_token", res.data.access_token);
+          this.$router.push("/main");
+        } else {
+          alert("로그인 정보가 맞지 않습니다. 다시 시도해주세요.");
+        }
+      });
     }
   }
 };

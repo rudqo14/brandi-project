@@ -45,6 +45,8 @@
 
 <script>
 import axios from "axios";
+import { sip } from "../../../config";
+
 export default {
   created() {
     this.getOrderData();
@@ -52,17 +54,17 @@ export default {
   data() {
     return {
       order: [],
-      orderData: false,
-      accessToken: this.$store.state.serviceStore.accessToken
+      orderData: false
     };
   },
   methods: {
     getOrderData() {
       axios
-        .get("http://10.251.1.83:5000/user/mypage", {
+        .get(`${sip}/user/mypage`, {
           headers: {
-            Authorization: this.accessToken
-            //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
+            //localStorage.getItem("access_token")
+            Authorization:
+              "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
         .then(res => {
@@ -176,6 +178,7 @@ export default {
       }
 
       .productDetail {
+        width: 750px;
         font-size: 17px;
         margin: 8px 0 8px 35px;
 
@@ -194,7 +197,6 @@ export default {
       .orderPrice {
         font-size: 20px;
         font-weight: bold;
-        margin-left: 165px;
       }
 
       .orderStatus {
