@@ -28,13 +28,7 @@
         >
       </div>
       <div class="editorContainer">
-        <ckeditor
-          :editor="editor"
-          v-model="editorData"
-          :config="editorConfig"
-        ></ckeditor>
-        <!-- <Editor height="500px" @input="inputEdiorText" />
-        <Viewer /> -->
+        <ckeditor v-model="editorData" :config="editorConfig"></ckeditor>
       </div>
     </div>
   </div>
@@ -44,10 +38,6 @@
 import axios from "axios";
 import { mapMutations } from "vuex";
 import "codemirror/lib/codemirror.css";
-import "@toast-ui/editor/dist/toastui-editor.css";
-import { Editor, Viewer } from "@toast-ui/vue-editor";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-// import CKEditor from "@ckeditor/ckeditor5-vue";
 import CKEditor from "ckeditor4-vue";
 
 const AdminStore = "adminStore";
@@ -55,14 +45,11 @@ const AdminStore = "adminStore";
 export default {
   components: {
     ckeditor: CKEditor.component,
-    Editor,
-    Viewer,
   },
 
   data() {
     return {
       defaultValue: "에디터사용",
-      editor: ClassicEditor,
       editorData: "<p>Content of the editor.</p>",
       editorConfig: {
         // The configuration of the editor.
