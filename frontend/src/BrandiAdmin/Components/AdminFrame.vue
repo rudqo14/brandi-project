@@ -22,10 +22,7 @@
               <!-- More 버튼 생성 -->
               <template v-slot:activator>
                 <v-list-item-content>
-                  <v-list-item-title
-                    style=" font-size: 16px;font-weight: 400;"
-                    >{{ item.text }}</v-list-item-title
-                  >
+                  <v-list-item-title style=" font-size: 16px;font-weight: 400;">{{ item.text }}</v-list-item-title>
                 </v-list-item-content>
               </template>
 
@@ -38,8 +35,7 @@
               >
                 <v-list-item-title
                   style="padding-left : 14px;font-size: 15px;font-weight: 400;"
-                  >{{ child.text }}</v-list-item-title
-                >
+                >{{ child.text }}</v-list-item-title>
               </v-list-item>
             </v-list-group>
           </template>
@@ -47,10 +43,8 @@
       </v-navigation-drawer>
       <!-- 보여지는 페이지 공간 -->
       <div class="about">
-        <div class="container">
-          <div class="box">
-            <router-view></router-view>
-          </div>
+        <div class="box">
+          <router-view></router-view>
         </div>
       </div>
     </div>
