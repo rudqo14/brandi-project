@@ -25,7 +25,7 @@ const config = {
       },
       {
         //이미지 로더하기 위해 사용
-        test: /\.(png|jpg|gif)$/i,
+        test: /\.(png|jpg|gif|svg)$/i,
         loader: "file-loader",
         options: {
           publicPath: "/some/path/",

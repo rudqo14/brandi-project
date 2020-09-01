@@ -2,39 +2,35 @@
   <main>
     <article class="ProductInfo">
       <agile class="agile" :dots="false">
-        <div
-          class="imgContainer"
-          v-for="(item, index) in detailData.image_list"
-          v-bind:key="index"
-        >
-          <img alt="product  image" :src="item" />
+        <div class="imgContainer" v-for="(item, index) in detailData.image_list" v-bind:key="index">
+          <img alt="product  image" :src="item.image_large" />
         </div>
         <div class="prevBtn" slot="prevButton"></div>
         <div class="nextBtn" slot="nextButton"></div>
       </agile>
       <div class="detailInfoContainer">
-        <p class="title">{{ detailData.product_name }}</p>
+        <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
           <span class="percent">{{ detailData.discount_rate }}%</span>
           <span class="price">
             {{
-              (
-                detailData.price -
-                detailData.price * (detailData.discount_rate / 100)
-              ).toLocaleString(5) + "원"
+            (
+            detailData.price -
+            detailData.price * (detailData.discount_rate / 100)
+            ).toLocaleString(5) + "원"
             }}
           </span>
-          <span class="cost">{{
+          <span class="cost">
+            {{
             Math.floor(detailData.price).toLocaleString(5) + "원"
-          }}</span>
+            }}
+          </span>
         </div>
         <hr />
         <div v-on:click="onColorClick" class="option">
           <div>{{ colorToggleData }}</div>
           <div class="imgContainer">
-            <img
-              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
-            />
+            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
           </div>
           <div
             v-bind:class="{
@@ -44,13 +40,11 @@
           >
             <div class="defaultToggle">[색상]을 선택하세요.</div>
             <div
-              v-for="(item, index) in detailData.option_colors"
+              v-for="(item, index) in detailData.colors"
               class="colorToggle"
               v-bind:key="index"
-              @click="colorToggleData = detailData.option_colors[index]"
-            >
-              {{ item }}
-            </div>
+              @click="colorToggleData = detailData.colors[index]"
+            >{{ item }}</div>
           </div>
         </div>
         <!-- 사이즈 옵션 -->
@@ -60,13 +54,9 @@
               title: disabledSizeToggle,
               none: !disabledSizeToggle,
             }"
-          >
-            {{ sizeToggleData }}
-          </div>
+          >{{ sizeToggleData }}</div>
           <div class="imgContainer">
-            <img
-              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
-            />
+            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
           </div>
           <div
             v-bind:class="{
@@ -76,13 +66,11 @@
           >
             <div class="defaultToggle">[사이즈]를 선택하세요.</div>
             <div
-              v-for="(item, index) in detailData.option_sizes"
+              v-for="(item, index) in detailData.options"
               class="colorToggle"
               v-bind:key="index"
               @click="optionSizeHandler(detailData, index)"
-            >
-              {{ item }}
-            </div>
+            >{{ item.size }}</div>
           </div>
         </div>
         <div
@@ -94,34 +82,24 @@
           <div class="selectTitle">
             <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
             <div @click="removeSelectHandler()" class="imgContainer">
-              <img
-                src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png"
-              />
+              <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
             </div>
           </div>
           <div class="selectPrice">
             <div class="caculatar">
-              <button
-                class="numberBtn"
-                name="minus"
-                @click="calculationHandler"
-              >
-                -
-              </button>
+              <button class="numberBtn" name="minus" @click="calculationHandler">-</button>
               <span class="border"></span>
               <input class="productNumber" :value="input" readonly />
               <span class="border"></span>
-              <button class="numberBtn" name="plus" @click="calculationHandler">
-                +
-              </button>
+              <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
             </div>
             <p>
               {{
-                (
-                  (detailData.price -
-                    detailData.price * (detailData.discount_rate / 100)) *
-                  input
-                ).toLocaleString(5) + "원"
+              (
+              (detailData.price -
+              detailData.price * (detailData.discount_rate / 100)) *
+              input
+              ).toLocaleString(5) + "원"
               }}
             </p>
           </div>
@@ -132,18 +110,16 @@
             총 금액
             <strong>
               {{
-                (
-                  (detailData.price -
-                    detailData.price * (detailData.discount_rate / 100)) *
-                  input
-                ).toLocaleString(5) + "원"
+              (
+              (detailData.price -
+              detailData.price * (detailData.discount_rate / 100)) *
+              input
+              ).toLocaleString(5) + "원"
               }}
             </strong>
           </p>
         </div>
-        <button @click="buyNowHandler()" class="purchaseBtn">
-          바로 구매하기
-        </button>
+        <button @click="buyNowHandler()" class="purchaseBtn">바로 구매하기</button>
       </div>
     </article>
     <article class="detailProduct">
@@ -159,14 +135,24 @@
 
 <script>
 import { ip } from "../../../config.js";
+import { minhoIp } from "../../../config.js";
 import axios from "axios";
 import detailData from "../../../Data/Detail.json";
 import detailOption from "../../../Data/DetailOption.json";
 import { VueAgile } from "vue-agile";
 
 export default {
+  created() {
+    axios.get(`${minhoIp}/product/1`).then((res) => {
+      this.detailData = res.data.data;
+      console.log(this.detailData);
+      console.log(this.detailData.price);
+    });
+  },
+
   data() {
     return {
+      detailData: [],
       colorToggleData: "[색상]을 선택하세요.",
       isColorToggle: false,
       sizeToggleData: "[사이즈]를 선택하세요.",
@@ -204,7 +190,7 @@ export default {
 
     //옵션 사이즈 토글에서 원하는 사이즈 선택시 적용
     optionSizeHandler(detailData, index) {
-      this.sizeToggleData = detailData.option_sizes[index];
+      this.sizeToggleData = detailData.options.size;
       this.purchaseInputNumber = this.input;
       this.input = 1;
       this.purchaseColor = this.colorToggleData;
