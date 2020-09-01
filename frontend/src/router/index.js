@@ -14,6 +14,7 @@ import OrderList from "../BrandiService/Mypage/OrderList.vue";
 import Coupon from "../BrandiService/Mypage/Coupon.vue";
 import Point from "../BrandiService/Mypage/Point.vue";
 import OrderDetail from "../BrandiService/OrderDetail/OrderDetail.vue";
+import UserManagement from "../BrandiAdmin/UserManagement/UserManagement.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -99,6 +100,11 @@ export const router = new VueRouter({
           path: "ProductManagement",
           component: ProductManagement,
           name: "ProductManagement",
+        },
+        {
+          path: "UserManagement",
+          component: UserManagement,
+          name: "UserManagement",
         },
       ],
     },

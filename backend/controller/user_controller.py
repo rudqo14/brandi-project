@@ -156,9 +156,9 @@ def create_user_endpoints(user_service):
             if db_connection:
                 db_connection.close()
 
-    @user_app.route('/mypage', methods=['GET'])
+    @user_app.route('/mypage/orderlist', methods=['GET'])
     @login_required
-    def mypage(user_info):
+    def get_user_orderlist(user_info):
         """
 
         유저 no에 따른 주문 정보를 리턴합니다.

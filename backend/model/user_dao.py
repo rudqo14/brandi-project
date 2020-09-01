@@ -255,13 +255,19 @@ class UserDao:
                 users.email,
                 users.last_access,
                 users.created_at,
-                user_shipping_details.phone_number
+                user_shipping_details.phone_number,
+                social_networks.name AS social_name
             FROM
                 users
             LEFT JOIN
                 user_shipping_details
             ON
                 users.user_no = user_shipping_details.user_id
+            LEFT JOIN
+                social_networks
+            ON
+                users.social_id = social_networks.social_network_no
+
             WHERE
                 users.is_deleted = 0
             LIMIT
