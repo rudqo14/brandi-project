@@ -9,10 +9,12 @@ from flask_request_validator    import (
     GET,
     PATH,
     Param,
+    Pattern,
     validate_params
 )
 
 from connection import get_connection, get_s3_connection
+from utils      import catch_exception
 
 def create_admin_product_endpoints(product_service):
 
@@ -76,23 +78,27 @@ def create_admin_product_endpoints(product_service):
 
             db_connection = get_connection()
 
-            # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
-            s3_connection = get_s3_connection()
-            images        = request.files
-
-            # 상품이미지를 사이즈 별로 S3에 저장하는 Function 실행  
-            product_image_upload_result  = product_service.upload_product_image(images, s3_connection)
-
             if db_connection:
 
                 # form-data request를 product_info라는 Dictionary 변수에 담기
                 product_info = request.form.to_dict(flat=False)
 
-                # 1-5번의 사이즈 별 상품이미지를 product_info에 추가
-                product_info['image_url'] = product_image_upload_result
+                # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
+                s3_connection = get_s3_connection()
+                images        = request.files
 
                 # 상품정보를 DB에 저장하는 Function 실행
-                product_service.create_product(product_info, db_connection)
+                product_id = product_service.create_product(product_info, db_connection)
+
+                # 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
+                product_service.upload_product_image(
+                    images,
+                    product_id,
+                    s3_connection,
+                    db_connection
+                )
+
+                # Exception이 발생하지 않았다면, commit 처리
                 db_connection.commit()
 
                 return jsonify({'message' : 'SUCCESS'}), 200
@@ -245,6 +251,7 @@ def create_admin_product_endpoints(product_service):
                 db_connection.close()
 
     @admin_product_app.route('/category/<main_category_id>', methods=['GET'])
+    @catch_exception
     @validate_params(
         Param('main_category_id', PATH, int)
     )
@@ -253,7 +260,7 @@ def create_admin_product_endpoints(product_service):
         """
 
         [ 상품관리 > 상품등록] Sub Category Return 엔드포인트
-        [GET] http://ip:5000/admin/product/sub-category
+        [GET] http://ip:5000/admin/product/category/<main_category_id>
 
         Args:
             Parameter:
@@ -292,6 +299,95 @@ def create_admin_product_endpoints(product_service):
                 sub_category = product_service.get_sub_category_list(main_category_id, db_connection)
 
                 return jsonify({'data' : sub_category}), 200
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('', methods=['GET'])
+    @catch_exception
+    @validate_params(
+        Param('offset', GET, rules = [Pattern(r'^[1-9]\d*$')]),
+        Param('limit', GET, int)
+    )
+    def registered_product_list(*args):
+
+        """
+
+        [ 상품관리 > 상품등록] Sub Category Return 엔드포인트
+        [GET] http://ip:5000/admin/product
+
+        Args:
+            Parameter:
+                sellYN       : 판매 여부
+                exhibitionYn : 진열 여부
+                discountYn   : 할인 여부
+                registDate   : 등록 일자(기준 시작일, 기준 종료일)
+                {
+                    startDate : "YYYY-mm-dd",
+                    endDate   : "YYYY-mm-dd"
+                }
+                productName  : 상품 이름
+                productNo    : 상품 번호
+                productCode  : 상품 코드
+                limit        : 페이지 당 상품 수
+                offset       : 페이지 리스트 시작 기준
+
+        Returns:
+            200 :
+                "data": [
+                    [
+                        {
+                            "discountPrice": 할인가
+                            "discountRate": null,
+                            "productExhibitYn": "진열",
+                            "productName": "플레어 나시 블라우스 (4color)_더모닌 - 더모닌",
+                            "productNo": 20,
+                            "productRegistDate": "2020-09-01 20:58:05",
+                            "productSellYn": "판매",
+                            "productSmallImageUrl": SMALL SIZE IMAGE URL
+                            "sellPrice": 14700.0
+                        }
+                    ],
+                        {
+                            "total": 20
+                        }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-31 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+
+                if args[1] > 1000 or args[1] < 0:
+                    raise Exception('INVALID_PARAMETERLIMIT')
+
+                filter_info = {
+                    'offset' : int(args[0]) - 1,
+                    'limit'  : args[1]
+                }
+
+                # sub_category_list 함수 호출해 Sub Category List 받아오기
+                product_list = product_service.get_registered_product_list(filter_info, db_connection)
+                print(product_list)
+
+                return jsonify({'data' : product_list}), 200
 
         except Exception as e:
             return jsonify({'message' : e}), 400

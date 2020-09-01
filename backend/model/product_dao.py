@@ -1,3 +1,5 @@
+import uuid
+
 class ProductDao:
 
     def insert_product(self, db_connection):
@@ -19,6 +21,7 @@ class ProductDao:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
             2020-08-26 (sincerity410@gmail.com) : controller, service, model role 재정의에 따른 함수수정,
                                                   예외처리 추가
+            2020-09-02 (sincerity410@gmail.com) : product_code 등록 추가
 
         """
 
@@ -29,15 +32,17 @@ class ProductDao:
                 insert_product_query = """
                 INSERT INTO products (
                     created_at,
-                    is_deleted
+                    is_deleted,
+                    product_code
                 ) VALUES (
                     DEFAULT,
-                    DEFAULT
+                    DEFAULT,
+                    %s
                     )
                 """
 
                 # insert query execute
-                affected_row = cursor.execute(insert_product_query)
+                affected_row = cursor.execute(insert_product_query, str(uuid.uuid4()))
 
                 # check query execution
                 if affected_row <= 0:
@@ -875,3 +880,126 @@ class ProductDao:
             } for element in etc_options]
             print(colors)
             return etc_options
+
+    def select_registered_product_list(self, filter_info, db_connection):
+
+        """
+
+        [상품관리 > 상품관리]
+        관리자 페이지에서 등록된 상품의 List를 Return 합니다.
+
+        Args:
+            filter_info   : Parameter로 들어온 filter의 Dictionary 객체
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-01 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_list_query = """
+            SELECT
+                SQL_CALC_FOUND_ROWS
+                P.created_at as productRegistDate,
+                I.image_small as productSmallImageUrl,
+                PD.name as productName,
+                P.product_no as productNo,
+                P.product_code as ProductCode,
+                ROUND(PD.price, -1) as sellPrice,
+                CASE
+                	WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
+                		THEN PD.discount_rate
+                	WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
+                		THEN PD.discount_rate
+                	ELSE NULL
+                END AS discountRate,
+                CASE
+                	WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
+                		THEN ROUND(PD.price * (100-PD.discount_rate)/100, -1)
+                	WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
+                		THEN ROUND(PD.price * (100-PD.discount_rate)/100, -1)
+                	ELSE PD.price
+                END AS discountPrice,
+                IF(PD.is_displayed = 1, "진열", "미진열") as productExhibitYn,
+                IF(PD.is_activated = 1, "판매", "미판매") as productSellYn
+
+            FROM products as P
+
+            INNER JOIN product_images as PI
+            ON P.product_no = PI.product_id
+
+            INNER JOIN images as I
+            ON PI.image_id = I.image_no
+
+            INNER JOIN product_details as PD
+            ON PD.product_id = P.product_no
+
+            WHERE
+                PI.is_main = 1 and
+                PI.close_time > now() and
+                PD.close_time > now()
+
+            ORDER BY
+                P.product_no DESC
+
+            LIMIT
+                %(limit)s
+            OFFSET
+                %(offset)s
+            """
+
+            cursor.execute(select_product_list_query, filter_info)
+            product_list = cursor.fetchall()
+
+            select_product_count = """
+            SELECT FOUND_ROWS() as total
+            """
+
+            cursor.execute(select_product_count)
+            total = cursor.fetchone()
+
+            return product_list, total
+
+    def select_product_code(self, product_id, db_connection):
+
+        """
+
+        상품 테이블(products)의 product_code 값을 Return 합니다.
+
+        Args:
+            product_id : products 테이블의 PK
+
+        Returns:
+            product_code : products Table의 product_code(Unique Value)
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-02 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_product_code_query = """
+            SELECT
+                product_code
+
+            FROM products
+
+            WHERE
+                product_no = %s
+            """
+
+            cursor.execute(select_product_code_query, product_id)
+            product_code = cursor.fetchone()
+
+            return product_code
