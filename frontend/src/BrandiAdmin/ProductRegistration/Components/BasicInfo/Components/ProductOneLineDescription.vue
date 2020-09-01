@@ -5,7 +5,6 @@
     </div>
     <div class="inputPlace">
       <input
-        :value="simpleDescription"
         @input="inputSimpleDescription"
         label="한줄 상품 설명을 입력해주세요."
         solo
@@ -16,18 +15,14 @@
 </template>
 
 <script>
-import { mapMutations, mapState } from "vuex";
+import { mapMutations } from "vuex";
 
 const AdminStore = "adminStore";
 
 export default {
-  computed: {
-    ...mapState(AdminStore, {
-      simpleDescription: (state) => state.simpleDescription,
-    }),
-  },
   methods: {
     ...mapMutations(AdminStore, ["updateSimpleDescription"]),
+    
     inputSimpleDescription(e) {
       this.updateSimpleDescription(e.target.value);
     },

@@ -6,7 +6,7 @@
     </div>
     <div class="inputPlace">
       <div class="inputBox">
-        <input type="text" :value="productName" @input="inputProductName" />
+        <input type="text" @input="inputProductName" />
       </div>
       <div class="alertText">
         <i class="fas fa-exclamation-triangle"></i> 상품명에는 쌍따옴표(") 또는
@@ -29,11 +29,8 @@ export default {
   data() {
     return {};
   },
-  computed: {
-    ...mapState(AdminStore, {
-      productName: (state) => state.productName,
-    }),
-  },
+
+  // 상품명 입력 값으로 상품명 state 를 변경해주는 메소드
   methods: {
     ...mapMutations(AdminStore, ["updateProductName"]),
     inputProductName(e) {

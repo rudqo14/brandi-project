@@ -29,7 +29,7 @@
           <div
             class="deleteBtnBox"
             @click="imageDelete1"
-            v-if="this.imageURL1.length > 1"
+            v-if="this.imageURL1.length > 1 && this.deleteBtn1"
           >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
@@ -58,7 +58,7 @@
           <div
             class="deleteBtnBox"
             @click="imageDelete2"
-            v-if="this.imageURL2.length > 1"
+            v-if="this.imageURL2.length > 1 && this.deleteBtn2"
           >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
@@ -87,7 +87,7 @@
           <div
             class="deleteBtnBox"
             @click="imageDelete3"
-            v-if="this.imageURL3.length > 1"
+            v-if="this.imageURL3.length > 1 && this.deleteBtn3"
           >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
@@ -116,7 +116,7 @@
           <div
             class="deleteBtnBox"
             @click="imageDelete4"
-            v-if="this.imageURL4.length > 1"
+            v-if="this.imageURL4.length > 1 && this.deleteBtn4"
           >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
@@ -145,7 +145,7 @@
           <div
             class="deleteBtnBox"
             @click="imageDelete5"
-            v-if="this.imageURL5.length > 1"
+            v-if="this.imageURL5.length > 1 && this.deleteBtn5"
           >
             <v-btn type="button" normal color="error">
               <span class="deleteImg">삭제</span>
@@ -162,8 +162,9 @@
 </template>
 
 <script>
-import Axios from "axios";
+import axios from "axios";
 import { mapMutations, mapState } from "vuex";
+import { ADMIN_API_URL } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -175,6 +176,11 @@ export default {
       imageURL3: "",
       imageURL4: "",
       imageURL5: "",
+      deleteBtn1: false,
+      deleteBtn2: false,
+      deleteBtn3: false,
+      deleteBtn4: false,
+      deleteBtn5: false,
     };
   },
 
@@ -207,13 +213,14 @@ export default {
     onChangeImages1(e) {
       const file = e.target.files[0];
       this.imageURL1 = URL.createObjectURL(file);
-
-      // mapMutations 를 사용해서 this.$store.commit("getProductImage1", file) 대신 아래처럼 짧아진 코드
       this.getProductImage1(file);
+      this.deleteBtn1 = true;
     },
+
     imageDelete1() {
       this.imageURL1 = "null";
       this.deleteProductImage1(null);
+      this.deleteBtn1 = false;
     },
     onClickImageUpload2() {
       this.$refs.imageInput2.click();
@@ -222,10 +229,12 @@ export default {
       const file = e.target.files[0];
       this.imageURL2 = URL.createObjectURL(file);
       this.getProductImage2(file);
+      this.deleteBtn2 = true;
     },
     imageDelete2() {
       this.imageURL2 = "null";
       this.deleteProductImage2(null);
+      this.deleteBtn2 = false;
     },
     onClickImageUpload3() {
       this.$refs.imageInput3.click();
@@ -234,10 +243,12 @@ export default {
       const file = e.target.files[0];
       this.imageURL3 = URL.createObjectURL(file);
       this.getProductImage3(file);
+      this.deleteBtn3 = true;
     },
     imageDelete3() {
       this.imageURL3 = "null";
       this.deleteProductImage3(null);
+      this.deleteBtn3 = false;
     },
     onClickImageUpload4() {
       this.$refs.imageInput4.click();
@@ -246,10 +257,12 @@ export default {
       const file = e.target.files[0];
       this.imageURL4 = URL.createObjectURL(file);
       this.getProductImage4(file);
+      this.deleteBtn4 = true;
     },
     imageDelete4() {
       this.imageURL4 = "null";
       this.deleteProductImage4(null);
+      this.deleteBtn4 = false;
     },
     onClickImageUpload5() {
       this.$refs.imageInput5.click();
@@ -258,10 +271,12 @@ export default {
       const file = e.target.files[0];
       this.imageURL5 = URL.createObjectURL(file);
       this.getProductImage5(file);
+      this.deleteBtn5 = true;
     },
     imageDelete5() {
       this.imageURL5 = "null";
       this.deleteProductImage5(null);
+      this.deleteBtn5 = false;
     },
     // handleChange: function (e) {
     //   const file = e.target.files[0];

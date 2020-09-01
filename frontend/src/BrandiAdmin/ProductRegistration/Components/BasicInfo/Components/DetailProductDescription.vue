@@ -6,9 +6,9 @@
     </div>
     <div class="inputPlace">
       <div class="radioContainer">
-        <v-radio-group v-model="row" row>
+        <v-radio-group v-model="defaultValue" row>
           <v-radio label="간편 업로드" value="radio-1"></v-radio>
-          <v-radio label="에디터 사용 (html 가능)" value="radio-2"></v-radio>
+          <v-radio label="에디터 사용 (html 가능)" value="에디터사용"></v-radio>
         </v-radio-group>
         <div>
           ( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)
@@ -28,8 +28,13 @@
         >
       </div>
       <div class="editorContainer">
-        <Editor height="500px" @change="dataCheck()" v-model="editorText" />
-        <Viewer />
+        <ckeditor
+          :editor="editor"
+          v-model="editorData"
+          :config="editorConfig"
+        ></ckeditor>
+        <!-- <Editor height="500px" @input="inputEdiorText" />
+        <Viewer /> -->
       </div>
     </div>
   </div>
@@ -37,25 +42,38 @@
 
 <script>
 import axios from "axios";
+import { mapMutations } from "vuex";
 import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor, Viewer } from "@toast-ui/vue-editor";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import CKEditor from "@ckeditor/ckeditor5-vue";
 
 const AdminStore = "adminStore";
 
 export default {
   components: {
+    ckeditor: CKEditor.component,
     Editor,
     Viewer,
   },
+
   data() {
     return {
-      editorText: "텍스트를 입력해주세요.",
+      defaultValue: "에디터사용",
+      editor: ClassicEditor,
+      editorData: "<p>Content of the editor.</p>",
+      editorConfig: {
+        // The configuration of the editor.
+      },
     };
   },
+
   methods: {
-    dataCheck() {
-      console.log("editorText: ", this.editorText);
+    ...mapMutations(AdminStore, ["detailInformation"]),
+
+    inputEdiorText(e) {
+      this.detailInformation(e.target.value);
     },
   },
 };

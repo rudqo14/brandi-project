@@ -35,7 +35,8 @@
 </template>
 
 <script>
-import { mapActions, mapMutations } from "vuex";
+import axios from "axios";
+import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
@@ -45,6 +46,7 @@ const AdminStore = "adminStore";
 
 export default {
   created() {},
+  computed: {},
 
   components: {
     BasicInfo,
@@ -55,14 +57,58 @@ export default {
   data() {
     return {
       mainCategory: [],
+      stateData: this.$store.state.adminStore,
     };
   },
 
   methods: {
-    ...mapMutations(AdminStore, ["registration", "postProductImages"]),
+    ...mapGetters(AdminStore, ["getData"]),
+    ...mapMutations(AdminStore, ["registration"]),
+
+    // 상품 등록 실행 메소드
     registrationHandler() {
-      this.registration();
-      this.postProductImages();
+      const productDatas = this.getData();
+
+      const registOk = confirm("상품 등록을 하시겠습니까?");
+      if (registOk === true) {
+        const form = new FormData();
+        form.append("sellYn", productDatas.sellYn);
+        form.append("exhibitionYn", productDatas.exhibitionYn);
+        form.append("productName", productDatas.productName);
+        form.append("simpleDescription", productDatas.simpleDescription);
+        form.append("product_image_1", productDatas.product_image_1);
+        form.append("product_image_2", productDatas.product_image_2);
+        form.append("product_image_3", productDatas.product_image_3);
+        form.append("product_image_4", productDatas.product_image_4);
+        form.append("product_image_5", productDatas.product_image_5);
+        form.append("detailInformation", productDatas.detailInformation);
+
+        // form 데이터 key, value 조회
+        // for (var pair of form.entries()) {
+        //   console.log(pair[0] + ", " + pair[1]);
+        // }
+        //form 데이터 값 조회
+        console.log("detailInformation: ", form.get("detailInformation"));
+
+        // 상품 등록 데이터 POST 로 서버에 보내기
+        axios
+          .post(`${ADMIN_API_URL}/admin/product`, form, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then((res) => {
+            console.log("res: ", res);
+            if (res) {
+              alert("등록이 완료 되었습니다.");
+              this.$router.push("/main");
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+            alert("필수사항을 올바르게 입력해 주세요.");
+          });
+      }
     },
   },
 };

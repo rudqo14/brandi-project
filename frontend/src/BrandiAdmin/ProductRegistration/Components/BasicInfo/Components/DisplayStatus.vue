@@ -5,10 +5,10 @@
     </div>
     <div class="inputPlace">
       <div class="radioContainer">
-        <v-radio-group v-model="row" row>
+        <v-radio-group v-model="defaultValue" row>
           <v-radio
             label="진열"
-            value="radio-1"
+            value="진열"
             @click="exhibitionYesHandler"
           ></v-radio>
           <v-radio
@@ -32,13 +32,23 @@ import { mapMutations } from "vuex";
 const AdminStore = "adminStore";
 
 export default {
+  data() {
+    return {
+      defaultValue: "진열",
+    };
+  },
+
   methods: {
-    ...mapMutations(AdminStore, ["exhibitionYes, exhibitionNo"]),
+    ...mapMutations(AdminStore, ["exhibitionYes", "exhibitionNo"]),
+
+    // 진열여부를 "진열" 로 선택하는 메소드
     exhibitionYesHandler() {
-      this.exhibitionYes;
+      this.exhibitionYes();
     },
+
+    // 진열여부를 "미진열" 로 선택하는 메소드
     exhibitionNoHandler() {
-      this.exhibitionNo;
+      this.exhibitionNo();
     },
   },
 };

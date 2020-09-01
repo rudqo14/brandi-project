@@ -6,15 +6,11 @@
       </div>
       <div class="inputPlace">
         <div class="radioContainer">
-          <v-radio-group v-model="row" row>
-            <v-radio
-              label="판매"
-              value="radio-1"
-              @click="sellYesHandler"
-            ></v-radio>
+          <v-radio-group v-model="defaultValue" row>
+            <v-radio label="판매" value="판매" @click="sellYesSelect"></v-radio>
             <v-radio
               label="미판매"
-              value="radio-2"
+              value="미판매"
               @click="sellNoHandler"
             ></v-radio>
           </v-radio-group>
@@ -29,22 +25,34 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapState } from "vuex";
 
 const AdminStore = "adminStore";
 
 export default {
   data() {
-    return {};
+    return {
+      defaultValue: "판매",
+    };
   },
-  computed: {},
+
+  computed: {
+    ...mapState(AdminStore, {
+      sellYn: (state) => state.sellYn,
+    }),
+  },
+
   methods: {
-    ...mapMutations(AdminStore, ["sellYesHandler, sellNoHandler"]),
-    sellYesHandler() {
-      this.sellYesHandler;
+    ...mapMutations(AdminStore, ["sellYesHandler", "sellNoHandler"]),
+
+    // 판매여부를 "판매" 로 선택하는 메소드
+    sellYesSelect() {
+      this.sellYesHandler();
     },
-    sellNoHandler() {
-      this.sellNoHandler;
+
+    // 판매여부를 "미판매" 로 선택하는 메소드
+    sellNoSelect() {
+      this.sellNoHandler();
     },
   },
 };
