@@ -47,7 +47,8 @@ import "codemirror/lib/codemirror.css";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import { Editor, Viewer } from "@toast-ui/vue-editor";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import CKEditor from "@ckeditor/ckeditor5-vue";
+// import CKEditor from "@ckeditor/ckeditor5-vue";
+import CKEditor from "ckeditor4-vue";
 
 const AdminStore = "adminStore";
 
