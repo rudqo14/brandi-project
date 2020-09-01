@@ -56,18 +56,18 @@ import AdminHeader from "./AdminHeader";
 import { items } from "../../../itemConfig";
 export default {
   components: {
-    AdminHeader,
+    AdminHeader
   },
   data() {
     return {
-      items: items,
+      items: items
     };
   },
   methods: {
     detailPage(path) {
       this.$router.push(`${path}`);
-    },
-  },
+    }
+  }
 };
 </script>
 

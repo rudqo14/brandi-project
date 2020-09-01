@@ -75,6 +75,8 @@ class OrderDao:
 
             INNER JOIN option_details AS P10
             ON P8.product_option_no = P10.product_option_id
+            AND P3.start_time >= P10.start_time
+            AND P10.close_time >= P3.start_time
 
             INNER JOIN sizes AS P4
             ON P10.size_id = P4.size_no
@@ -88,12 +90,16 @@ class OrderDao:
                 select_list += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
+                AND P3.start_time >= P6.start_time
+                AND P6.close_time >= P3.start_time
                 AND P6.name = %(product_name)s
                 """
             else:
                 select_list += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
+                AND P3.start_time >= P6.start_time
+                AND P6.close_time >= P3.start_time
                 """
 
             # JOIN 추가
@@ -224,6 +230,8 @@ class OrderDao:
 
             INNER JOIN option_details AS P10
             ON P8.product_option_no = P10.product_option_id
+            AND P3.start_time >= P10.start_time
+            AND P10.close_time >= P3.start_time
 
             INNER JOIN sizes AS P4
             ON P10.size_id = P4.size_no
@@ -237,6 +245,8 @@ class OrderDao:
                 count_num += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
+                AND P3.start_time >= P6.satrt_time
+                AND P6.close_time >= P3.start_time
                 AND P6.name = %(product_name)s
                 """
             else:

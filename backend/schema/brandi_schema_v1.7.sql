@@ -786,35 +786,35 @@ INSERT INTO option_details
     1,
     1,
     1,
-    '2020-07-21 14:00:00',
+    '2020-04-20 14:00:00',
     '2020-08-11 15:00:00'
 ), (
     2,
     2,
     1,
     2,
-    DEFAULT,
+    '2020-04-20 14:00:00',
     DEFAULT
 ), (
     3,
     3,
     2,
     3,
-    DEFAULT,
+    '2020-04-20 14:00:00',
     DEFAULT
 ), (
     4,
     4,
     1,
     4,
-    DEFAULT,
+    '2020-04-20 14:00:00',
     DEFAULT
 ), (
     5,
     5,
     2,
     5,
-    DEFAULT,
+    '2020-04-20 14:00:00',
     DEFAULT
 ), (
     6,
@@ -1481,8 +1481,8 @@ INSERT INTO product_details
     1,
     20,
     10,
-    '2020-07-20 12:00:00',
-    CURRENT_TIMESTAMP
+    '2020-04-20 12:00:00',
+    '2020-08-18 15:00:00'
 ), (
     2,
     2,
@@ -1496,7 +1496,7 @@ INSERT INTO product_details
     1,
     20,
     20,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     3,
@@ -1511,7 +1511,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     4,
@@ -1526,7 +1526,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     5,
@@ -1541,7 +1541,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     6,
@@ -1556,7 +1556,7 @@ INSERT INTO product_details
     1,
     20,
     10,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     7,
@@ -1571,7 +1571,7 @@ INSERT INTO product_details
     1,
     20,
     20,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     8,
@@ -1586,7 +1586,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     9,
@@ -1601,7 +1601,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     10,
@@ -1616,7 +1616,7 @@ INSERT INTO product_details
     1,
     20,
     10,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     11,
@@ -1631,7 +1631,7 @@ INSERT INTO product_details
     1,
     20,
     20,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     12,
@@ -1646,7 +1646,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     13,
@@ -1661,7 +1661,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     14,
@@ -1676,7 +1676,7 @@ INSERT INTO product_details
     1,
     20,
     10,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     15,
@@ -1691,7 +1691,7 @@ INSERT INTO product_details
     1,
     20,
     20,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     16,
@@ -1706,7 +1706,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     17,
@@ -1721,7 +1721,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     18,
@@ -1736,7 +1736,7 @@ INSERT INTO product_details
     1,
     20,
     10,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     19,
@@ -1751,7 +1751,7 @@ INSERT INTO product_details
     1,
     20,
     20,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     20,
@@ -1766,7 +1766,7 @@ INSERT INTO product_details
     1,
     20,
     NULL,
-    CURRENT_TIMESTAMP,
+    '2020-04-20 12:00:00',
     DEFAULT
 ), (
     21,
@@ -1781,7 +1781,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    CURRENT_TIMESTAMP,
+    '2020-08-18 15:00:00',
     DEFAULT
 );
 
