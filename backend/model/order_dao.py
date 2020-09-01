@@ -17,6 +17,8 @@ class OrderDao:
 
         History:
             2020-08-24 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-01 (tnwjd060124@gmail.com) : 수정
+                주문 시 유효한 데이터만 조회하도록 조건 추가
 
         """
 
@@ -182,6 +184,8 @@ class OrderDao:
 
         History:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-01 (tnwjd060124@gmail.com) : 수정
+                주문시 유효한 데이터 조회하도록 조건 추가
 
         """
 
@@ -245,7 +249,7 @@ class OrderDao:
                 count_num += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
-                AND P3.start_time >= P6.satrt_time
+                AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
                 AND P6.name = %(product_name)s
                 """
@@ -253,6 +257,8 @@ class OrderDao:
                 count_num += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
+                AND P3.start_time >= P6.start_time
+                AND P6.close_time >= P3.start_time
                 """
 
             # JOIN 추가
