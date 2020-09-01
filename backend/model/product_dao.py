@@ -719,13 +719,21 @@ class ProductDao:
 
             WHERE
                 P.product_no = %s
-                AND P.is_deleted = False;
+                AND P.is_deleted = False
+
+            ORDER BY
+                I.image_no;
             """
 
             cursor.execute(select_product_images_query, product_id)
             product_images = cursor.fetchall()
 
-            return product_images
+            # 이미지들을 리스트로 나열
+            images = [
+                element['image_large']
+            for element in product_images]
+
+            return images
 
     def select_product_option_colors(self, product_id, db_connection):
 
@@ -754,6 +762,7 @@ class ProductDao:
 
             select_product_options_query = """
             SELECT DISTINCT
+                C.color_no AS color_id,
                 C.name AS color_name
 
             FROM products AS P
@@ -775,16 +784,18 @@ class ProductDao:
                 AND P.is_deleted = False
 
             ORDER BY
-                C.color_no;
+                color_id;
+
             """
 
             cursor.execute(select_product_options_query, product_id)
             product_details = cursor.fetchall()
-
+            print(product_details)
+            # 최종적으로 colors라는 키 값에 배열로 색상들을 주기 위해 데이터 가공
             colors = [{
-                'color' : list(element.values())[0]
+                'color_name' : element['color_name'],
+                'color_id'   : element['color_id']
             } for element in product_details]
-
 
             return colors
 
