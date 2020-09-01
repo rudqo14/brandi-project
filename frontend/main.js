@@ -1,6 +1,6 @@
 import Vue from "vue";
 import App from "./src/App.vue";
-import { store } from "./src/BrandiAdmin/Store/store";
+import store from "./src/Store/index";
 import { router } from "./src/router/index.js";
 import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";

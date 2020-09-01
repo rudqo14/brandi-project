@@ -315,10 +315,9 @@ class ProductService:
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
-            2020-08-30 (minho.lee0716@gmail.com) : 추가
-                이미지 리스트를 details에 추가.
-            2020-08-31 (minho.lee0716@gmail.com) : 추가
-                상품 옵션들을 details에 추가.
+            2020-08-30 (minho.lee0716@gmail.com) : 이미지 리스트를 details에 추가.
+            2020-08-31 (minho.lee0716@gmail.com) : 상품 옵션들을 details에 추가.
+            2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션들중 색상만 주는걸로 변경.
 
         """
 
@@ -326,7 +325,59 @@ class ProductService:
         # 상세정보중 이미지들과 옵션들은 따로 가져와서 details에 추가.
         details = self.product_dao.select_product_details(product_id, db_connection)
         details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
-        details['options']    = self.product_dao.select_product_options(product_id, db_connection)
+        details['colors']    = self.product_dao.select_product_option_colors(product_id, db_connection)
 
         # 해당 상품의 상세정보들을 리턴
         return details
+
+    def get_etc_options(self, product_info, db_connection):
+
+        """
+
+        상품 상세정보에서 색상 선택시 컬러를 리턴
+
+        Args:
+            product_id    : 상품 고유의 id(pk)
+            color_name    : 상품 색상의 이름
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품의 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-01 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션에서 색상을 받으면 사이즈를 리턴
+
+        """
+        # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
+        etc_options = self.product_dao.select_etc_options(product_info, db_connection)
+
+        # 해당 상품의 상세정보들을 리턴
+        return etc_options
+
+    def get_order_product_info(self, product_info, db_connection):
+        """
+
+        상품 상세정보 > 구매 클릭시 나오는 구매할 상품 정보
+
+        Args:
+            product_info : 구매할 상품에 대한 정보(id, color, size, quantity, total_price)
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품의 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        purchase_info = self.product_dao.FUNCTION_NAME(product_info, db_connection)
+
+        return purchase_info

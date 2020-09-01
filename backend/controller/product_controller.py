@@ -1,9 +1,15 @@
-from utils      import ResizeImage
+from utils import ResizeImage, login_required
 
 from flask import (
     request,
     Blueprint,
     jsonify
+)
+from flask_request_validator    import (
+    GET,
+    PATH,
+    Param,
+    validate_params
 )
 
 from connection import get_connection, get_s3_connection
@@ -191,13 +197,13 @@ def create_admin_product_endpoints(product_service):
             if db_connection:
                 db_connection.close()
 
-    @admin_product_app.route('/main-category', methods=['GET'])
+    @admin_product_app.route('/category', methods=['GET'])
     def main_category_list():
 
         """
 
         [ 상품관리 > 상품등록] Main Category Return 엔드포인트
-        [GET] http://ip:5000/admin/product/main-category
+        [GET] http://ip:5000/admin/product/category
 
         Returns:
             200 :
@@ -231,24 +237,27 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : main_category}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : e}), 400
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
 
-    @admin_product_app.route('/sub-category', methods=['POST'])
-    def sub_category_list():
+    @admin_product_app.route('/category/<main_category_id>', methods=['GET'])
+    @validate_params(
+        Param('main_category_id', PATH, int)
+    )
+    def sub_category_list(*args):
 
         """
 
         [ 상품관리 > 상품등록] Sub Category Return 엔드포인트
-        [POST] http://ip:5000/admin/product/sub-category
+        [GET] http://ip:5000/admin/product/sub-category
 
         Args:
-            request.body:
-                mainCategoryId : 메인 카테고리 ID
+            Parameter:
+                mainCategoryId : (int) 메인 카테고리 ID
 
         Returns:
             200 :
@@ -277,15 +286,15 @@ def create_admin_product_endpoints(product_service):
 
             if db_connection:
 
-                main_cetegory_id = request.json['mainCategoryId']
+                main_category_id = args[0]
 
                 # sub_category_list 함수 호출해 Sub Category List 받아오기
-                sub_category = product_service.get_sub_category_list(main_cetegory_id, db_connection)
+                sub_category = product_service.get_sub_category_list(main_category_id, db_connection)
 
                 return jsonify({'data' : sub_category}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : e}), 400
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
@@ -307,7 +316,29 @@ def service_product_endpoint(product_service):
         [GET] http://ip:5000/product
 
         Returns:
-            200 : data, [ 서비스 > 상품 전체 리스트 ]
+            200 : "data": [
+                        {
+                          "discount_rate": 30,
+                          "price": 11250.0,
+                          "product_name": "반팔티",
+                          "product_no": 1,
+                          "thumbnail_image": "(생략)~M.jpg"
+                        },
+                        {
+                          "discount_rate": 20,
+                          "price": 11110.0,
+                          "product_name": "티셔츠",
+                          "product_no": 2,
+                          "thumbnail_image": "(생략)~M.jpg"
+                        },
+                        {
+                          "discount_rate": 30,
+                          "price": 13700.0,
+                          "product_name": "티셔츠",
+                          "product_no": 3,
+                          "thumbnail_image": "(생략)~M.jpg"
+                        }
+                  ]
             400 : VALIDATION_ERROR
             500 : NO_DATABASE_CONNECTION_ERROR
 
@@ -362,7 +393,7 @@ def service_product_endpoint(product_service):
         [GET] http://ip:5000/product/product_id
 
         Returns:
-            200 : data, [ 서비스 > 상품 상세정보 ]
+            200 : 상품에 대한 상세정보
             400 : VALIDATION_ERROR
             500 : NO_DATABASE_CONNECTION_ERROR
 
@@ -380,10 +411,127 @@ def service_product_endpoint(product_service):
         try:
             db_connection = get_connection()
 
+            # DB에 연결이 됐다면
             if db_connection:
-                print(product_id)
+
+                # service에서 상세정보, 이미지, 옵션을 묶은 정보들을 details에 저장
                 details = product_service.get_product_details(product_id, db_connection)
                 return jsonify({'data' : details}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @service_product_app.route('/<int:product_id>', methods=['POST'])
+    def product_etc_options(product_id):
+
+        # product_id는 query parameter로 받아옵니다.
+        # color_name은 body에 담겨서 온
+        color_name = request.json['color_name']
+        product_info = {}
+        product_info['product_id'] = product_id
+        product_info['color_name'] = color_name
+
+        """
+
+        [ 서비스 > 상품 상세정보 > 나머지 옵션 ] 엔드포인트
+        [GET] http://ip:5000/product/1
+
+        Returns:
+            200 : 상품 상세정보에 대한 사이즈와 수량
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # service에서 상세정보, 이미지, 옵션을 묶은 정보들을 details에 저장
+                etc_options = product_service.get_etc_options(product_info, db_connection)
+                return jsonify({'etc' : etc_options}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @service_product_app.route('/purchase', methods=['POST'])
+    #@login_required
+    def product_click_buying():
+
+        """
+
+        [ 서비스 > 상품 상세정보 ] 엔드포인트
+        [POST] http://ip:5000/product/purchase
+
+        Args:
+            header:
+                Authorization : access_token
+
+            request.form:
+                product_id  : 구매할 상품의 ID(번호)
+                color       : 구매할 상품의 색상
+                size        : 구매할 상품의 사이즈
+                quantity    : 구매할 상품의 개수
+                total_price : 구매할 상품의 총 가격
+
+        Returns:
+            200 : data, api를 구현 후 작성 예정
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # body로 들어온 정보를 product_info에 담기.
+                product_info = request.json
+                print(product_info)
+
+                # 구매하기 클릭시, 상품 구매정보를 purchase_info에 담아서 return
+                # purchase_info = product_service.get_order_product_info(product_info)
+                purchase_info = {'test' : 'this is test'}
+                return jsonify({'data' : purchase_info}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
         except Exception as e:
             return jsonify({'message' : e}), 400

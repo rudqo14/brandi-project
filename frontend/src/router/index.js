@@ -14,6 +14,7 @@ import OrderList from "../BrandiService/Mypage/OrderList.vue";
 import Coupon from "../BrandiService/Mypage/Coupon.vue";
 import Point from "../BrandiService/Mypage/Point.vue";
 import OrderManagement from "../BrandiAdmin/OrderManagement/OrderManagement.vue";
+import OrderDetail from "../BrandiService/OrderDetail/OrderDetail.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -75,6 +76,10 @@ export const router = new VueRouter({
           name: "faq",
         },
       ],
+    },
+    {
+      path: "/order/detail",
+      component: OrderDetail,
     },
     {
       //초기 url을 main으로 적용
