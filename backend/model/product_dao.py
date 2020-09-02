@@ -533,8 +533,6 @@ class ProductDao:
                 )
                 """
 
-                #print(option)
-
                 affected_row = cursor.execute(
                     insert_option_details_query,
                     (product_option_id, option['colorId'], option['sizeId'])
@@ -887,47 +885,69 @@ class ProductDao:
         """
 
         [상품관리 > 상품관리]
-        관리자 페이지에서 등록된 상품의 List를 Return 합니다.
+        관리자 페이지에서 등록된 상품의 List와 Total Count를 Return 합니다.
 
         Args:
             filter_info   : Parameter로 들어온 filter의 Dictionary 객체
             db_connection : DATABASE Connection Instance
 
         Returns:
+            data: [
+                [
+                    {
+                        discountPrice        : 할인가
+                        discountRate         : 할인율
+                        discountYn           : 할인 여부
+                        productCode          : 상품 코드
+                        productExhibitYn     : 진열 여부
+                        productName          : 상품 이름
+                        productNo            : 상품 번호
+                        productRegistDate    : 상품 등록 일시
+                        productSellYn        : 판매 여부
+                        productSmallImageUrl : SMALL SIZE IMAGE URL
+                        sellPrice            : 상품 가격
+                    }
+                ],
+                    {
+                        "total": 검색된 상품 개수
+                    }
+            ]
 
         Author:
             sincerity410@gmail.com (이곤호)
 
         History:
             2020-09-01 (sincerity410@gmail.com) : 초기생성
+            2020-09-03 (sincerity410@gmail.com) : Filtering 조건 추가
 
         """
 
         with db_connection.cursor() as cursor:
 
             select_product_list_query = """
+            -- 상품 조회 Query Start
             SELECT
                 SQL_CALC_FOUND_ROWS
                 P.created_at as productRegistDate,
                 I.image_small as productSmallImageUrl,
                 PD.name as productName,
                 P.product_no as productNo,
-                P.product_code as ProductCode,
+                P.product_code as productCode,
                 ROUND(PD.price, -1) as sellPrice,
+                @discountRate := (
                 CASE
-                	WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
-                		THEN PD.discount_rate
-                	WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
-                		THEN PD.discount_rate
-                	ELSE NULL
-                END AS discountRate,
+                    WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
+                        THEN PD.discount_rate
+                    WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
+                        THEN PD.discount_rate
+                    ELSE 0
+                END) AS discountRate,
+                ROUND(PD.price * (100-@discountRate)/100, -1) AS discountPrice,
                 CASE
-                	WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
-                		THEN ROUND(PD.price * (100-PD.discount_rate)/100, -1)
-                	WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
-                		THEN ROUND(PD.price * (100-PD.discount_rate)/100, -1)
-                	ELSE PD.price
-                END AS discountPrice,
+                    WHEN @discountRate = 0
+                        THEN "미할인"
+                    ELSE "할인"
+                END AS discountYn,
                 IF(PD.is_displayed = 1, "진열", "미진열") as productExhibitYn,
                 IF(PD.is_activated = 1, "판매", "미판매") as productSellYn
 
@@ -943,10 +963,76 @@ class ProductDao:
             ON PD.product_id = P.product_no
 
             WHERE
-                PI.is_main = 1 and
-                PI.close_time > now() and
-                PD.close_time > now()
+                PI.is_main = 1
+                AND PI.close_time > now()
+                AND PD.close_time > now()
 
+            """
+
+            # Filtering 시작
+
+            # 판매 여부 필터링
+            if filter_info.get('sellYn') != None :
+                select_product_list_query += """
+                AND PD.is_activated = %(sellYn)s
+                """
+
+            # 할인 여부 필터링
+            if filter_info.get('discountYn') != None :
+                select_product_list_query += """
+                AND (CASE
+                	WHEN
+                	(CASE
+                        WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
+                            THEN PD.discount_rate
+                        WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
+                            THEN PD.discount_rate
+                        ELSE 0
+                    END) = 0
+                    THEN FALSE
+                    ELSE TRUE
+                    END) = %(discountYn)s
+                """
+
+            # 진열 여부 필터링
+            if filter_info.get('exhibitionYn') != None :
+                select_product_list_query += """
+                AND PD.is_displayed = %(exhibitionYn)s
+                """
+
+            # 상품 등록 기간 시작일자 필터링
+            if filter_info.get('startDate') != None :
+                select_product_list_query += """
+                AND P.created_at >= %(startDate)s
+                """
+
+            # 상품 등록 기간 종료일자 필터링
+            if filter_info.get('endDate') != None :
+                select_product_list_query += """
+                AND P.created_at <= %(endDate)s
+                """
+
+            # 상품명 일부 일치 조건 필터링
+            if filter_info.get('productName') != None :
+                filter_info['productName'] = f"%{filter_info['productName']}%"
+                select_product_list_query += """
+                AND PD.name like %(productName)s
+                """
+
+            # 상품 번호 일치 조건 필터링
+            if filter_info.get('productNo') != None :
+                select_product_list_query += """
+                AND P.product_no = %(productNo)s
+                """
+
+            # 상품 코드 일치 조건 필터링
+            if filter_info.get('productCode') != None :
+                select_product_list_query += """
+                AND P.product_code = %(productCode)s
+                """
+
+            # 정렬 및 Page Nation 적용
+            select_product_list_query += """
             ORDER BY
                 P.product_no DESC
 
@@ -976,6 +1062,7 @@ class ProductDao:
 
         Args:
             product_id : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
 
         Returns:
             product_code : products Table의 product_code(Unique Value)

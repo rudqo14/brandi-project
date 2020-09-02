@@ -14,7 +14,7 @@ from flask_request_validator    import (
 )
 
 from connection import get_connection, get_s3_connection
-from utils      import catch_exception
+from utils      import DatetimeRule, catch_exception
 
 def create_admin_product_endpoints(product_service):
 
@@ -68,6 +68,7 @@ def create_admin_product_endpoints(product_service):
             2020-08-26 (sincerity410@gmail.com) : controller, service, model role 재정의에 따른 함수수정
             2020-08-28 (sincerity410@gmail.com) : product_images, images 저장 기능추가
             2020-08-30 (sincerity410@gmail.com) : product option 별 재고수량 저장 기능추가
+            2020-09-02 (sincerity410@gmail.com) : product_code column 추가에 따른 구조 수정
 
         """
 
@@ -271,9 +272,17 @@ def create_admin_product_endpoints(product_service):
                 db_connection.close()
 
     @admin_product_app.route('', methods=['GET'])
-    @catch_exception
+    #@catch_exception
     @validate_params(
-        Param('offset', GET, rules = [Pattern(r'^[1-9]\d*$')]),
+        Param('sellYn', GET, bool, required=False),
+        Param('discountYn', GET, bool, required=False),
+        Param('exhibitionYn', GET, bool, required=False),
+        Param('startDate', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('endDate', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('productName', GET, str, required=False),
+        Param('productNo', GET, int, required=False),
+        Param('productCode', GET, str, required=False),
+        Param('page', GET, rules = [Pattern(r'^[1-9]\d*$')]),
         Param('limit', GET, int)
     )
     def registered_product_list(*args):
@@ -290,33 +299,35 @@ def create_admin_product_endpoints(product_service):
                 discountYn   : 할인 여부
                 registDate   : 등록 일자(기준 시작일, 기준 종료일)
                 {
-                    startDate : "YYYY-mm-dd",
-                    endDate   : "YYYY-mm-dd"
+                    startDate : "YYYYmmdd",
+                    endDate   : "YYYYmmdd"
                 }
                 productName  : 상품 이름
                 productNo    : 상품 번호
                 productCode  : 상품 코드
                 limit        : 페이지 당 상품 수
-                offset       : 페이지 리스트 시작 기준
+                page         : 페이지 리스트 시작 기준
 
         Returns:
             200 :
                 "data": [
                     [
                         {
-                            "discountPrice": 할인가
-                            "discountRate": null,
-                            "productExhibitYn": "진열",
-                            "productName": "플레어 나시 블라우스 (4color)_더모닌 - 더모닌",
-                            "productNo": 20,
-                            "productRegistDate": "2020-09-01 20:58:05",
-                            "productSellYn": "판매",
-                            "productSmallImageUrl": SMALL SIZE IMAGE URL
-                            "sellPrice": 14700.0
+                            discountPrice        : 할인가
+                            discountRate         : 할인율
+                            discountYn           : 할인 여부
+                            productCode          : 상품 코드
+                            productExhibitYn     : 진열 여부
+                            productName          : 상품 이름
+                            productNo            : 상품 번호
+                            productRegistDate    : 상품 등록 일시
+                            productSellYn        : 판매 여부
+                            productSmallImageUrl : SMALL SIZE IMAGE URL
+                            sellPrice            : 상품 가격
                         }
                     ],
                         {
-                            "total": 20
+                            "total": 검색된 상품 개수
                         }
                 ]
             400 : VALIDATION_ERROR
@@ -338,22 +349,29 @@ def create_admin_product_endpoints(product_service):
 
             if db_connection:
 
-                if args[1] > 1000 or args[1] < 0:
-                    raise Exception('INVALID_PARAMETERLIMIT')
+                if args[9] > 100 or args[9] < 0:
+                    raise Exception('INVALID_PARAMETER_LIMIT')
 
                 filter_info = {
-                    'offset' : int(args[0]) - 1,
-                    'limit'  : args[1]
+                    'sellYn'       : args[0],
+                    'discountYn'   : args[1],
+                    'exhibitionYn' : args[2],
+                    'startDate'    : args[3],
+                    'endDate'      : args[4],
+                    'productName'  : args[5],
+                    'productNo'    : args[6],
+                    'productCode'  : args[7],
+                    'page'         : int(args[8]),
+                    'limit'        : args[9]
                 }
 
-                # sub_category_list 함수 호출해 Sub Category List 받아오기
+                # 
                 product_list = product_service.get_registered_product_list(filter_info, db_connection)
-                print(product_list)
 
                 return jsonify({'data' : product_list}), 200
 
-        except Exception as e:
-            return jsonify({'message' : e}), 400
+        #except Exception as e:
+        #    return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
