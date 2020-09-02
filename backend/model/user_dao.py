@@ -337,6 +337,8 @@ class UserDao:
                 """
 
             select_user_query += """
+            ORDER BY
+                users.user_no DESC
             LIMIT
                 %(limit)s
             OFFSET
