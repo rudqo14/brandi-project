@@ -111,21 +111,29 @@ def create_admin_product_endpoints(product_service):
             if db_connection:
                 db_connection.close()
 
-    @admin_product_app.route('/color', methods=['GET'])
-    def color_list():
+    @admin_product_app.route('/option', methods=['GET'])
+    def option_list():
 
         """
 
-        [ 상품관리 > 상품등록] 색상 List Return 엔드포인트
-        [GET] http://ip:5000/admin/product/color
+        [ 상품관리 > 상품등록] 옵션(색상, 사이즈) List Return 엔드포인트
+        [GET] http://ip:5000/admin/product/option
 
         Returns:
             200 :
                 "data" : [
-                    {
-                        "color_no" : {color_no} ,
-                        "name"     : "{color_nam}"
-                    }
+                    "color":[
+                        {
+                            "color_no" : {color_no} ,
+                            "name"     : "{color_nam}"
+                        }
+                    ]
+                    "size":[
+                        {
+                            "size_no" : {size_no},
+                            "name"    : "{size_name}"
+                        }
+                    ]
                 ]
             400 : VALIDATION_ERROR
             500 : NO_DATABASE_CONNECTION_ERROR
@@ -135,6 +143,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-29 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : 옵션(색상, 사이즈) 통합 형태로 제공
 
         """
 
@@ -145,56 +154,10 @@ def create_admin_product_endpoints(product_service):
             db_connection = get_connection()
             if db_connection:
 
-                # get_size_list 함수 호출해 색상 List 받아오기
-                colors = product_service.get_color_list(db_connection)
+                # get_option_list 함수 호출해 색상 List 받아오기
+                options = product_service.get_option_list(db_connection)
 
-                return jsonify({'data' : colors}), 200
-
-        except Exception as e:
-            return jsonify({'message' : e}), 400
-
-        finally:
-            if db_connection:
-                db_connection.close()
-
-    @admin_product_app.route('/size', methods=['GET'])
-    def size_list():
-
-        """
-
-        [ 상품관리 > 상품등록] 사이즈 List Return 엔드포인트
-        [GET] http://ip:5000/admin/product/size
-
-        Returns:
-            200 :
-                "data": [
-                    {
-                        "size_no" : {size_no},
-                        "name"    : "{size_name}"
-                    }
-                ]
-            400 : VALIDATION_ERROR
-            500 : NO_DATABASE_CONNECTION_ERROR
-
-        Author:
-            sincerity410@gmail.com (이곤호)
-
-        History:
-            2020-08-29 (sincerity410@gmail.com) : 초기생성
-
-        """
-
-        # finally error 발생 방지
-        db_connection = None
-
-        try:
-            db_connection = get_connection()
-            if db_connection:
-
-                # get_size_list 함수 호출해 사이즈 List 받아오기
-                sizes = product_service.get_size_list(db_connection)
-
-                return jsonify({'data' : sizes}), 200
+                return jsonify({'data' : options}), 200
 
         except Exception as e:
             return jsonify({'message' : e}), 400

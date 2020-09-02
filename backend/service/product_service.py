@@ -84,7 +84,7 @@ class ProductService:
 
         Authors:
             minho.lee0716@gmail.com(이민호)
-colors = self.product_dao.select_color_list(db_conn
+
         History:
             2020-08-25 (minho.lee0716@gmail.com) : 초기 생성
 
@@ -163,21 +163,29 @@ colors = self.product_dao.select_color_list(db_conn
         except Exception as e:
             raise e
 
-    def get_color_list(self, db_connection) :
+    def get_option_list(self, db_connection) :
 
         """
 
-        색상 목록을 Return 하는Business Layer(service) function
+        옵션(색상, 사이즈) 목록을 List로 Return 하는Business Layer(service) function
 
         Args:
             db_connection : DATABASE Connection Instance
 
         Returns:
             "data": [
-                {
-                    "color_no" : {color_no} ,
-                    "name"     : "{color_nam}"
-                }
+                "color":[
+                    {
+                        "color_no" : {color_no} ,
+                        "name"     : "{color_nam}"
+                    }
+                ]
+                "size":[
+                    {
+                        "size_no" : {size_no},
+                        "name"    : "{size_name}"
+                    }
+                ]
             ]
 
         Author:
@@ -185,45 +193,16 @@ colors = self.product_dao.select_color_list(db_conn
 
         History:
             2020-08-29 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : 상품 옵션정보(색상, 사이즈) 통합
 
         """
 
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        # DB connection으로 각 옵션 정보 Return 하는 함수 호출
         colors = self.product_dao.select_color_list(db_connection)
+        sizes  = self.product_dao.select_size_list(db_connection)
 
-        # 모든 색상 정보 Return
-        return colors
-
-    def get_size_list(self, db_connection) :
-
-        """
-
-        사이즈 목록을 Return 하는Business Layer(service) function
-
-        Args:
-            db_connection : DATABASE Connection Instance
-
-        Returns:
-            "data": [
-                {
-                    "size_no" : {size_no},
-                    "name"    : "{size_name}"
-                }
-            ]
-
-        Author:
-            sincerity410@gmail.com (이곤호)
-
-        History:
-            2020-08-29 (sincerity410@gmail.com) : 초기생성
-
-        """
-
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
-        sizes = self.product_dao.select_size_list(db_connection)
-
-        # 모든 사이즈 정보 Return
-        return sizes
+        # 모든 옵션 정보 Return
+        return {'color' : colors, 'size' : sizes}
 
     def get_main_category_list(self, db_connection) :
 
