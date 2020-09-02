@@ -392,3 +392,79 @@ class OrderDao:
             order_detail = cursor.fetchone()
 
             return order_detail
+
+    def get_seller_product_info(self, product_info, db_connection):
+
+        """
+
+        서비스 페이지의 상품 상세정보중 사이즈와 수량을 리턴합니다.
+
+        Args:
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품에 대한 상세정보의 옵션중 사이즈와 수량을 리턴
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
+            2020-09-01 (minho.lee0716@gmail.com) : 수정
+                DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
+
+        """
+
+        try:
+
+            # 전달받은 객체에 product_id라는 키가 없으면 KEY_ERROR 메세지를 보내줍니다.
+            if not product_info['product_id']:
+                raise Exception('KEY_ERROR')
+
+            with db_connection.cursor() as cursor:
+
+                select_seller_product_info_query = """
+                SELECT
+                    P.product_no AS product_id,
+                    PD.name,
+                    PD.discount_rate,
+                    PD.price,
+                    I.image_small
+
+                FROM products AS P
+
+                LEFT JOIN product_details AS PD
+                ON P.product_no = PD.product_id
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+                AND CURRENT_TIMESTAMP >= PD.start_time
+                AND CURRENT_TIMESTAMP <= PD.close_time
+
+                LEFT JOIN product_images AS PI
+                ON P.product_no = PI.product_id
+                AND PI.is_main = True
+                AND CURRENT_TIMESTAMP >= PI.start_time
+                AND CURRENT_TIMESTAMP <= PI.close_time
+
+                LEFT JOIN images AS I
+                ON PI.image_id = I.image_no
+                AND I.is_deleted = False
+
+                WHERE
+                    P.is_deleted = False
+                    AND P.product_no = %(product_id)s;
+                """
+                print(product_info['product_id'])
+
+                # cursor객체 실행 시, 인자로 객체를 넘겨주고 키 값을 사용하려고 하기 때문에
+                # 따로 product_id라는 인자를 주지 않고 객체를 넘겨주었습니다.
+                cursor.execute(select_seller_product_info_query, product_info)
+                seller_product_info = cursor.fetchone()
+
+                return seller_product_info
+
+        except KeyError as e:
+            raise e
+        except  Exception as e:
+            raise e
