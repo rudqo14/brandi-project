@@ -360,16 +360,24 @@ class ProductService:
         History:
             2020-09-01 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션에서 색상을 받으면 사이즈를 리턴
+            2020-09-01 (minho.lee0716@gmail.com) : 상품에 해당 색상이 없을 시 에러 처리
 
         """
 
-        # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
-        etc_options = self.product_dao.select_etc_options(product_info, db_connection)
-        print(etc_options)
-        if not etc_options:
-            etc_options = "NO_DATA"
-        # 해당 상품의 상세정보들을 리턴
-        return etc_options
+        try:
+
+            # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
+            etc_options = self.product_dao.select_etc_options(product_info, db_connection)
+
+            # 해당 상품의 색상이 존재하지 않을 경우
+            if not etc_options:
+                raise Exception('THIS_COLOR_DOES_NOT_EXISTS')
+
+            # 해당 상품의 상세정보들을 리턴
+            return etc_options
+
+        except Exception as e:
+            raise e
 
     def get_order_product_info(self, product_info, db_connection):
         """
