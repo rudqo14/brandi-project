@@ -489,8 +489,8 @@ def service_product_endpoint(product_service):
         [GET] http://ip:5000/product/1
 
         Args:
-            [ Query Parameter ]
-            product_id : 상품의 id
+            Query Parameter:
+                product_id : 상품의 id
 
         Returns:
             200 : 상품에 대한 상세정보
@@ -501,9 +501,9 @@ def service_product_endpoint(product_service):
         [GET] http://ip:5000/product/1?color_id=1
 
         Args:
-            [ Query Parameter ]
-            product_id : 상품의 id
-            color_id   : 상품에 대한 색상의 id
+            Query Parameter:
+                product_id : 상품의 id
+                color_id   : 상품에 대한 색상의 id
 
         Returns:
             200 : 상품의 색상에 해당되는 색상과 재고
@@ -566,67 +566,6 @@ def service_product_endpoint(product_service):
             return jsonify({'message' : 'KEY_ERROR'}), 400
         except Exception as e:
             return jsonify({'message' : f"{e}"}), 400
-
-        finally:
-            if db_connection:
-                db_connection.close()
-
-    @service_product_app.route('/purchase', methods=['POST'])
-    #@login_required
-    def product_click_buying():
-
-        """
-
-        [ 서비스 > 상품 상세정보 ] 엔드포인트
-        [POST] http://ip:5000/product/purchase
-
-        Args:
-            header:
-                Authorization : access_token
-
-            request.form:
-                product_id  : 구매할 상품의 ID(번호)
-                color       : 구매할 상품의 색상
-                size        : 구매할 상품의 사이즈
-                quantity    : 구매할 상품의 개수
-                total_price : 구매할 상품의 총 가격
-
-        Returns:
-            200 : data, api를 구현 후 작성 예정
-            400 : VALIDATION_ERROR
-            500 : NO_DATABASE_CONNECTION_ERROR
-
-        Author:
-            minho.lee0716@gmail.com (이민호)
-
-        History:
-            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
-
-        """
-
-        # finally error 발생 방지
-        db_connection = None
-
-        try:
-            db_connection = get_connection()
-
-            # DB에 연결이 됐다면
-            if db_connection:
-
-                # body로 들어온 정보를 product_info에 담기.
-                product_info = request.json
-                print(product_info)
-
-                # 구매하기 클릭시, 상품 구매정보를 purchase_info에 담아서 return
-                # purchase_info = product_service.get_order_product_info(product_info)
-                purchase_info = {'test' : 'this is test'}
-                return jsonify({'data' : purchase_info}), 200
-
-            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
-            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
-
-        except Exception as e:
-            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:

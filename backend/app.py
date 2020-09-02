@@ -20,7 +20,8 @@ from controller       import (
     create_admin_user_endpoints,
     create_admin_order_endpoints,
     service_product_endpoint,
-    create_admin_product_endpoints
+    create_admin_product_endpoints,
+    create_service_order_endpoints,
 )
 
 class CustomJSONEncoder(JSONEncoder):
@@ -89,5 +90,6 @@ def create_app():
     app.register_blueprint(create_admin_order_endpoints(order_service))
     app.register_blueprint(service_product_endpoint(product_service))
     app.register_blueprint(create_admin_product_endpoints(product_service))
+    app.register_blueprint(create_service_order_endpoints(order_service))
 
     return app

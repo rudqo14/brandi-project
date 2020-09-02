@@ -130,3 +130,77 @@ def create_admin_order_endpoints(order_service):
                 db_connection.close()
 
     return admin_order_app
+
+def create_service_order_endpoints(order_service):
+    service_order_app = Blueprint('service_order_app', __name__, url_prefix='/order')
+
+    @service_order_app.route('/checkout', methods=['GET'])
+    #@login_required
+    # 테스트를 하기위한 임의의 유저 id를 지정
+    def product_info_to_purchase():
+
+        """
+
+        [ 서비스 > 상품 상세정보 ] 엔드포인트
+        [POST] http://ip:5000/product/checkout?product_id=1&color_id=1&size_id=1&quantity=100
+
+        Args:
+            header:
+                Authorization : access_token
+
+            Query Parameter:
+                product_id  : 구매할 상품의 ID(번호)
+                color       : 구매할 상품의 색상
+                size        : 구매할 상품의 사이즈
+                quantity    : 구매할 상품의 개수
+
+        Returns:
+            200 : data, api를 구현 후 작성 예정
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
+            2020-09-02 (minho.lee0716@gmail.com) : 메소드 변경 POST > GET
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # Query Parameter로 들어온 정보를 product_info에 담기.
+                product_info = request.args
+
+                # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
+                purchase_info = order_service.get_product_info_to_purchase(product_info, db_connection)
+
+                # 필요없는 정보라 삭제했습니다.
+                del purchase_info['discount_rate']
+                del purchase_info['price']
+
+                purchase_info['color']    = product_info['color_id']
+                purchase_info['size']     = product_info['size_id']
+                purchase_info['quantity'] = product_info['quantity']
+
+                return jsonify({'data' : purchase_info}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    return service_order_app

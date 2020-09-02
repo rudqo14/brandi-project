@@ -263,6 +263,8 @@ class ProductDao:
             2020-08-28 (tnwjd060124@gmail.com) : 현재 이력만 조회하는 조건 추가
             2020-08-28 (minho.lee0716@gmail.com) : 수정
                 Image 테이블 필드명을 나누어 image > image_medium으로 바꿈
+            2020-09-01 (minho.lee0716@gmail.com) : 수정
+                상품을 최신 등록순으로 보여주기 위해 내림차순(DESC)으로 정렬
 
         """
 
@@ -802,13 +804,7 @@ class ProductDao:
 
             # 가져온 데이터들을 product_details라는 변수에 담은 후,
             cursor.execute(select_product_options_query, product_id)
-            product_details = cursor.fetchall()
-
-            # 최종적으로 프론트에게 넘겨주기 위해 원하는 key:value의 형태로 데이터 가공
-            colors = [{
-                'color_name' : element['color_name'],
-                'color_id'   : element['color_id']
-            } for element in product_details]
+            colors = cursor.fetchall()
 
             return colors
 
@@ -844,6 +840,7 @@ class ProductDao:
             select_product_etc_options_query = """
             SELECT
                 S.name AS size,
+                S.size_no AS size_id,
                 Q.quantity
 
             FROM products AS P
@@ -1007,3 +1004,4 @@ class ProductDao:
             product_code = cursor.fetchone()
 
             return product_code
+
