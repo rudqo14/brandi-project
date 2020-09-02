@@ -55,6 +55,7 @@
               <td class="phoneNumber">휴대폰</td>
               <td class="email">이메일</td>
               <td class="event">이벤트/마케팅 알림</td>
+              <td class="night">야간 혜택 알림</td>
               <td class="accessOS">접속 OS</td>
               <td class="lastAccess">최종접속일</td>
               <td class="createdAt">등록일</td>
@@ -82,6 +83,7 @@
                 <input v-model="filters.email" />
               </td>
               <td class="event"></td>
+              <td class="night"></td>
               <td class="accessOS"></td>
               <td class="lastAccess">
                 <div>
@@ -120,6 +122,7 @@
               <td class="phoneNumber">{{ user.phone_number }}</td>
               <td class="email">{{ user.email }}</td>
               <td class="event">동의</td>
+              <td class="night">거부</td>
               <td class="accessOS">확인불가</td>
               <td class="lastAccess">{{ user.last_access }}</td>
               <td class="createdAt">{{ user.created_at }}</td>
@@ -134,7 +137,7 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td class="noData" colspan="11">No data available in table</td>
+              <td class="noData" colspan="12">No data available in table</td>
             </tr>
           </tbody>
         </table>
@@ -403,7 +406,7 @@ header {
   overflow: scroll;
 
   .userTableContainer {
-    min-width: 1780px;
+    min-width: 1554px;
     border: 1px solid lightgray;
     border-radius: 5px;
 
@@ -459,6 +462,7 @@ header {
       margin-left: 10px;
       border-collapse: collapse;
       text-align: left;
+
       .headTop {
         background-color: rgb(235, 234, 234);
         font-weight: bold;
