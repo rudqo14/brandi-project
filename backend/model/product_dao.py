@@ -294,8 +294,10 @@ class ProductDao:
                 P.is_deleted = False
 
             ORDER BY
-                P.product_no
+                P.product_no DESC;
             """
+
+            # 상품을 등록하고, row를 고려해 전체 리스트에서는 상품 id의 역순으로 리턴해줍니다.
 
             cursor.execute(select_products_query)
             products = cursor.fetchall()
@@ -353,6 +355,7 @@ class ProductDao:
                 AND P.product_no = %s;
             """
 
+            # 데이터들을 가져온 후, product_details라는 변수에 담아 리턴해줍니다.
             cursor.execute(select_product_details_query, product_id)
             product_details = cursor.fetchone()
 
@@ -722,13 +725,16 @@ class ProductDao:
                 AND P.is_deleted = False
 
             ORDER BY
-                I.image_no;
+                I.image_no ASC;
             """
 
+            # 이미지를 순서대로(이미지 id의 오름차순) 정렬해줍니다
+
+            # 데이터들을 가져온 후, product_images라는 변수에 담은 후,
             cursor.execute(select_product_images_query, product_id)
             product_images = cursor.fetchall()
 
-            # 이미지들을 리스트로 나열
+            # 최종적으로 프론트에게 배열로 사진들을 주기 위헤 images라는 배열에 담습니다.
             images = [
                 element['image_large']
             for element in product_images]
@@ -784,14 +790,16 @@ class ProductDao:
                 AND P.is_deleted = False
 
             ORDER BY
-                color_id;
-
+                color_id ASC;
             """
 
+            # color_id를 오름차순으로 정렬해줍니다.
+
+            # 가져온 데이터들을 product_details라는 변수에 담은 후,
             cursor.execute(select_product_options_query, product_id)
             product_details = cursor.fetchall()
-            print(product_details)
-            # 최종적으로 colors라는 키 값에 배열로 색상들을 주기 위해 데이터 가공
+
+            # 최종적으로 프론트에게 넘겨주기 위해 원하는 key:value의 형태로 데이터 가공
             colors = [{
                 'color_name' : element['color_name'],
                 'color_id'   : element['color_id']
@@ -821,6 +829,8 @@ class ProductDao:
         History:
             2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
+            2020-09-01 (minho.lee0716@gmail.com) : 수정
+                DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
 
         """
 
@@ -856,22 +866,16 @@ class ProductDao:
             WHERE
                 P.product_no = %(product_id)s
                 AND P.is_deleted = False
-                AND C.name = %(color_name)s
+                AND C.color_no = %(color_id)s
 
             ORDER BY
-                S.size_no;
+                S.size_no DESC;
             """
 
+            # 사이즈는 큰 순서로 넣어줬기 때문에 역순으로 정렬하였습니다.
+
+            # 불러온 데이터를 etc_options 라는 변수에 담아온 후, 리턴을 해줍니다.
             cursor.execute(select_product_etc_options_query, product_info)
             etc_options = cursor.fetchall()
 
-            #print(etc_options[0]['size'])
-            #print(etc_options[0]['quantity'])
-            #print(etc_options[1])
-            #print(etc_options[2])
-            colors = [{
-                'size'     : element['size'],
-                'quantity' : element['quantity']
-            } for element in etc_options]
-            print(colors)
             return etc_options
