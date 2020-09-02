@@ -26,7 +26,7 @@
         </v-btn>
       </div>
       <div class="CancleBtn">
-        <v-btn depressed color="error">
+        <v-btn depressed color="error" @click="registCansleHandler">
           <span>취소</span>
         </v-btn>
       </div>
@@ -83,12 +83,8 @@ export default {
         form.append("product_image_5", productDatas.product_image_5);
         form.append("detailInformation", productDatas.detailInformation);
 
-        // form 데이터 key, value 조회
-        // for (var pair of form.entries()) {
-        //   console.log(pair[0] + ", " + pair[1]);
-        // }
-        //form 데이터 값 조회
-        console.log("detailInformation: ", form.get("detailInformation"));
+        // AdminStore 전체 데이터 확인용 메소드
+        this.registration();
 
         // 상품 등록 데이터 POST 로 서버에 보내기
         axios
@@ -101,13 +97,20 @@ export default {
             console.log("res: ", res);
             if (res) {
               alert("등록이 완료 되었습니다.");
-              this.$router.push("/main");
+              this.$router.push("admin/productManagement");
             }
           })
           .catch((error) => {
             console.log(error);
             alert("필수사항을 올바르게 입력해 주세요.");
           });
+      }
+    },
+
+    registCansleHandler() {
+      const registCancleOk = confirm("정말로 상품 등록을 취소하시겠습니까?");
+      if (registCancleOk === true) {
+        this.$router.push("/admin/productManagement");
       }
     },
   },

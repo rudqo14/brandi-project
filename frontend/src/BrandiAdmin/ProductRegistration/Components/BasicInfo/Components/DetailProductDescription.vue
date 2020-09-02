@@ -28,7 +28,9 @@
         >
       </div>
       <div class="editorContainer">
-        <ckeditor v-model="editorData" :config="editorConfig"></ckeditor>
+        <ckeditor @input="upDateDetailInformation" :config="editorConfig"
+          ><text-area></text-area
+        ></ckeditor>
       </div>
     </div>
   </div>
@@ -36,9 +38,10 @@
 
 <script>
 import axios from "axios";
-import { mapMutations } from "vuex";
+import { mapMutations, mapState } from "vuex";
 import "codemirror/lib/codemirror.css";
 import CKEditor from "ckeditor4-vue";
+import { ADMIN_API_URL } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -52,16 +55,37 @@ export default {
       defaultValue: "에디터사용",
       editorData: "<p>Content of the editor.</p>",
       editorConfig: {
-        // The configuration of the editor.
+        height: 430,
+        toolbarGroups: [
+          { name: "styles" },
+          { name: "colors" },
+          { name: "basicstyles" },
+          { name: "insert" },
+          { name: "tools" },
+          { name: "align" },
+        ],
+        colorButton: "colors",
+
+        extraPlugins: "font,colorbutton,justify",
+        filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product`,
+
+        // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
+        filebrowserImageBrowseUrl:
+          "/apps/ckfinder/3.4.5/ckfinder.html?type=Images",
+        //  filebrowserUploadUrl : String
+        //  파일 업로드를 처리하는 스크립트의 위치 설정하면 업로드 탭이 링크 , 이미지 및 플래시 대화 상자 창에 나타남
+        // filebrowserUploadUrl:
+        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files",
+        // uploadUrl:
+        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files&responseType=json",
       },
     };
   },
-
   methods: {
-    ...mapMutations(AdminStore, ["detailInformation"]),
+    ...mapMutations(AdminStore, ["upDateDetailInformation"]),
 
     inputEdiorText(e) {
-      this.detailInformation(e.target.value);
+      this.upDateDetailInformation(e.target.value);
     },
   },
 };

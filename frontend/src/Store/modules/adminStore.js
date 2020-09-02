@@ -76,13 +76,12 @@ const adminStore = {
     deleteProductImage5(state, productImage5) {
       state.product_image_5 = productImage5;
     },
-    detailInformation(state, detailInformation) {
+    upDateDetailInformation(state, detailInformation) {
       state.detailInformation = detailInformation;
     },
 
-    // state 데이터 확인용
+    // ProductRegistration.vue 에서 state 데이터 확인용
     registration(state) {
-      state.productName;
       console.log("state.sellYn: ", state.sellYn);
       console.log("state.exhibitionYn: ", state.exhibitionYn);
       console.log("state.productName: ", state.productName);
