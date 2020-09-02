@@ -3,11 +3,18 @@ from flask                  import request, Blueprint, jsonify
 from flask_request_validator import (
     validate_params,
     Param,
-    PATH
+    PATH,
+    GET
 )
 
 from connection import get_connection
-from utils      import login_required, catch_exception
+from utils      import (
+    login_required,
+    catch_exception,
+    PageRule,
+    LimitRule,
+    DatetimeRule
+)
 
 def create_user_endpoints(user_service):
 
@@ -272,8 +279,22 @@ def create_user_endpoints(user_service):
 def create_admin_user_endpoints(user_service):
     admin_user_app = Blueprint('admin_user_app', __name__, url_prefix='/admin/user')
 
-    @admin_user_app.route('/userlist', methods=['GET'])
-    def user_list():
+    @admin_user_app.route('/userlist', methods=['GET'], endpoint='user_list')
+    @catch_exception
+    @validate_params(
+        Param('page', GET, int, rules=[PageRule()]),
+        Param('limit', GET, int, rules=[LimitRule()]),
+        Param('lastAccessFrom', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('lastAccessTo', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('createdAtFrom', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('createdAtTo', GET, int, required=False, rules=[DatetimeRule()]),
+        Param('userNo', GET, int, required=False),
+        Param('userName', GET, str, required=False),
+        Param('socialNetwork', GET, str, required=False),
+        Param('phoneNumber', GET, int, required=False),
+        Param('email', GET, str, required=False)
+    )
+    def user_list(*args):
 
         """
 
@@ -282,6 +303,15 @@ def create_admin_user_endpoints(user_service):
         Args:
             page : 가져올 페이지
             limit : 가져올 갯수
+            lastAccessFrom : 최종접속시간(from) filter
+            lastAccessTo : 최종접속시간(to) filter
+            createdAtFrom : 등록일 (from) filter
+            createdAtTo : 등록일 (to) filter
+            userNo : 회원번호 filter
+            userName : 회원명 filter
+            socialNetwork : 계정 정보 filter
+            phoneNumber : 핸드폰 번호 filter
+            email : 이메일 filter
 
         Returns:
             200, {
@@ -314,17 +344,34 @@ def create_admin_user_endpoints(user_service):
 
             if db_connection:
 
-                # request로 들어온 page, limit 정보 저장
-                page    = request.args.get('page', default=1, type=int)
-                limit   = request.args.get('limit', default=10, type=int)
+                # request로 들어온 page, limit, filter 정보 저장
+                filter_info = {
+                    'page'            : args[0],
+                    'limit'           : args[1],
+                    'lastaccess_from' : args[2],
+                    'lastaccess_to'   : args[3],
+                    'created_from'    : args[4],
+                    'created_to'      : args[5],
+                    'user_no'         : args[6],
+                    'user_name'       : args[7],
+                    'social_network'  : args[8],
+                    'phone_number'    : args[9],
+                    'email'           : args[10]
+                }
 
                 # 총 유저의 수를 가져와서 total_user에 저장
-                total_user = user_service.get_total_user_number(db_connection)
+                total_user = user_service.get_total_user_number(filter_info, db_connection)
 
-                # 유저 리스트 가져와서 result에 저장
-                result = user_service.get_user_list(page, limit, db_connection)
+                # 총 유저가 존재할 경우에만 유저리스트 가져옴
+                if total_user['total_number']:
 
-                return jsonify({"total_user_number" : total_user['total_number'], "data" : result}), 200
+                    # 유저 리스트 가져와서 result에 저장
+                    result = user_service.get_user_list(filter_info, db_connection)
+
+                    return jsonify({"total_user_number" : total_user['total_number'], "data" : result}), 200
+
+                # 총 유저가 없을 경우 빈 배열 리턴
+                return jsonify({"total_user_number" : 0, "data" : []}), 200
 
             # db 연결 되지 않았을 때
             return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
