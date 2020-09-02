@@ -123,7 +123,7 @@ class UserService:
 
         return user
 
-    def get_user_list(self, page, limit, db_connection):
+    def get_user_list(self, filter_info, db_connection):
 
         """
 
@@ -144,27 +144,26 @@ class UserService:
             2020-08-22 (tnwjd060124@gmail.com) : 수정
                 dao 메소드 실행 시 db_connection을 parameter로 전달
             2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
+            2020-09-02 (tnwjd060124@gmail.com) : filter 기능 추가
 
         """
 
         # offset 설정
-        offset = (page*limit) - limit
+        filter_info['offset'] = (filter_info['page']*filter_info['limit']) - filter_info['limit']
 
         # 유저 리스트 가져오는 메소드 실행
-        users = self.user_dao.get_user_list({
-            "offset"    : offset,
-            "limit"     : limit
-        }, db_connection)
+        users = self.user_dao.get_user_list(filter_info, db_connection)
 
         return users
 
-    def get_total_user_number(self, db_connection):
+    def get_total_user_number(self, filter_info, db_connection):
 
         """
 
         총 유저의 수를 보여줍니다.
 
         Args:
+            filter_info : 필터 정보
             db_connection : 연결된 db 객체
 
         Returns:
@@ -175,11 +174,12 @@ class UserService:
 
         History:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-02 (tnwjd060124@gmail.com) : 필터 기능 추가
 
         """
 
         # 총 유저의 수를 가져오는 메소드 실행
-        total_number = self.user_dao.get_total_user(db_connection)
+        total_number = self.user_dao.get_total_user(filter_info, db_connection)
 
         return total_number
 

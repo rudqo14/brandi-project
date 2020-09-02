@@ -25,11 +25,9 @@ class DatetimeRule(AbstractRule):
 
         Authors:
             tnwjd060124@gmail.com  (손수정)
-            sincerity410@gmail.com (이곤호)
 
         History:
             2020-08-27 (tnwjd060124@gmail.com)  : 초기 생성
-            2020-08-27 (sincerity410@gmail.com) : S3 URL return을 위한 추가 설정
 
         """
 
@@ -37,6 +35,68 @@ class DatetimeRule(AbstractRule):
 
         # 날짜가 8자리가 맞는지 확인 (2020913 이면 error)
         if len(str(value)) != 8:
+            errors.append(value)
+
+        return errors
+
+class PageRule(AbstractRule):
+
+    def validate(self, value):
+
+        """
+
+        page 정보로 들어온 숫자가 1 이상인지 확인합니다.
+
+        Args:
+            value: query string page
+
+        Returns:
+            errors: page가 0 이하이면 value를 담은 list
+                    유효성 검사를 통과하면 빈 list
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-02 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        errors = []
+
+        # 숫자가 1 이상인지 확인
+        if value < 1:
+            errors.append(value)
+
+        return errors
+
+class LimitRule(AbstractRule):
+
+    def validate(self, value):
+
+        """
+
+        limit 정보로 들어온 숫자의 한계를 제한합니다.
+
+        Args:
+            value: query string limit
+
+        Returns:
+            errors: limit이 150 을 넘으면 value를 담은 list
+                    유효성 검사를 통과하면 빈 list
+
+        Authors:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-02 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        errors = []
+
+        # limiit이 150 초과하는지 확인
+        if value > 150:
             errors.append(value)
 
         return errors
