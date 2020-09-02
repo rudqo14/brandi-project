@@ -20,14 +20,17 @@
           <i class="fas fa-users"></i>
           <span>회원 리스트</span>
         </div>
-        <div class="filterContainer">
+        <div class="filterContainer" v-if="this.users.data.length">
           <div class="pageInfo">
             <span>Page</span>
-            <button><</button>
-            <input :value="page" />
-            <button @click="movePage">></button>
-            <span>of {{ page }} | View</span>
-            <select name="selectedLimit">
+            <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
+            <input v-model="page" />
+            <button
+              @click="movePage('plus')"
+              :class="[ this.page === getTotalPage ? 'prevent' : '']"
+            >></button>
+            <span>of {{ getTotalPage }} | View</span>
+            <select v-model="selectedLimit">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="10">10</option>
@@ -39,6 +42,7 @@
             <span>records | Found total {{ userTotal }} records</span>
           </div>
         </div>
+        <div class="filterContainer" v-else>No records found to show</div>
         <table>
           <thead>
             <tr class="headTop">
@@ -59,53 +63,53 @@
             <tr class="headSearch">
               <td class="check"></td>
               <td class="userNo">
-                <input />
+                <input v-model="filters.userNo" />
               </td>
               <td class="userName">
-                <input />
+                <input v-model="filters.userName" />
               </td>
               <td class="socialNetwork">
-                <select>
-                  <option>Select...</option>
+                <select v-model="filters.socialNetwork">
+                  <option value=" " selected>Select...</option>
                   <option value="브랜디">브랜디</option>
                   <option value="구글">구글</option>
                 </select>
               </td>
               <td class="phoneNumber">
-                <input />
+                <input v-model="filters.phoneNumber" />
               </td>
               <td class="email">
-                <input />
+                <input v-model="filters.email" />
               </td>
               <td class="event"></td>
               <td class="accessOS"></td>
               <td class="lastAccess">
                 <div>
-                  <input type="date" value />
+                  <a-date-picker v-model="lastAccessFrom" :format="dateFormat" placeholder="From" />
                 </div>
                 <div>
-                  <input type="date" value />
+                  <a-date-picker v-model="lastAccessTo" :format="dateFormat" placeholder="To" />
                 </div>
               </td>
               <td class="createdAt">
                 <div>
-                  <input type="date" placeholder="From" />
+                  <a-date-picker v-model="createdAtFrom" placeholder="From" :format="dateFormat" />
                 </div>
                 <div>
-                  <input type="date" placeholder="To" />
+                  <a-date-picker v-model="createdAtTo" placeholder="To" :format="dateFormat" />
                 </div>
               </td>
               <td class="actions">
-                <button class="search">
+                <button class="search" @click="searchData">
                   <i class="fas fa-search"></i>Search
                 </button>
-                <button class="reset">
+                <button class="reset" @click="resetFilter">
                   <i class="fas fa-times"></i>Reset
                 </button>
               </td>
             </tr>
           </thead>
-          <tbody>
+          <tbody v-if="this.users.data.length">
             <tr v-for="user in users.data">
               <td class="check">
                 <input type="checkbox" />
@@ -128,17 +132,30 @@
               </td>
             </tr>
           </tbody>
+          <tbody v-else>
+            <tr>
+              <td>No data available in table</td>
+            </tr>
+          </tbody>
         </table>
         <div class="filterContainer">
           <div class="pageInfo">
             <span>Page</span>
-            <button><</button>
-            <input :value="page" />
-            <button>></button>
-            <span>of {{ page }} | View</span>
-            <select name="page">
+            <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
+            <input v-model="page" />
+            <button
+              @click="movePage('plus')"
+              :class="[ this.page === getTotalPage ? 'prevent' : '']"
+            >></button>
+            <span>of {{ getTotalPage }} | View</span>
+            <select name="page" v-model="selectedLimit">
               <option value="1">1</option>
               <option value="2">2</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="150">150</option>
             </select>
             <span>records | Found total {{ userTotal }} records</span>
           </div>
@@ -158,29 +175,197 @@ export default {
   },
   data() {
     return {
+      dateFormat: "YYYY/MM/DD",
       users: [],
-      page: 1,
       userTotal: 0,
-      filters: ""
+      query: "",
+      filters: {
+        lastAccessFrom: null,
+        lastAccessTo: null,
+        createdAtFrom: null,
+        createdAtTo: null,
+        userNo: null,
+        userName: null,
+        socialNetwork: null,
+        phoneNumber: null,
+        email: null
+      },
+      page: 1,
+      selectedLimit: 1,
+      offset: 1,
+      lastAccessFrom: null,
+      lastAccessTo: null,
+      createdAtFrom: null,
+      createdAtTo: null
     };
   },
   methods: {
     getUserData() {
       axios
-        .get(`${sip}/admin/user/userlist?page=1&limit=10`)
+        .get(
+          `${sip}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}${this.query}`
+        )
         .then(res => {
           this.users = res.data;
           this.userTotal = res.data.total_user_number;
+          this.offset = this.getOffset();
         })
         .catch(error => {
           console.log(error);
         });
     },
-    getTotalPage() {
-      return;
+
+    movePage(value) {
+      if (value === "plus") {
+        if (this.page === this.getTotalPage) {
+          event.prevent;
+        } else {
+          this.page++;
+        }
+      } else {
+        if (this.page === 1) {
+          event.prevent;
+        } else {
+          this.page--;
+        }
+      }
     },
-    movePage() {
-      console.log(selectedLimit);
+    getOffset() {
+      return (this.page - 1) * this.selectedLimit + 1;
+    },
+    getDateformat(val) {
+      const newDate = new Date(val);
+      let month = newDate.getMonth() + 1;
+      let date = newDate.getDate();
+      if (month < 10) {
+        month = `0${month}`;
+      }
+      if (date < 10) {
+        date = `0${date}`;
+      }
+      return `${newDate.getFullYear()}${month}${date}`;
+    },
+    resetFilter() {
+      this.query = "";
+      this.filters.lastAccessFrom = null;
+      this.filters.lastAccessTo = null;
+      this.filters.createdAtFrom = null;
+      this.filters.createdAtTo = null;
+      this.filters.userNo = null;
+      this.filters.userName = null;
+      this.filters.socialNetwork = null;
+      this.filters.phoneNumber = null;
+      this.filters.email = null;
+      if (this.lastAccessFrom) {
+        this.lastAccessFrom = null;
+      }
+      if (this.lastAccessTo) {
+        this.lastAccessTo = null;
+      }
+      if (this.createdAtFrom) {
+        this.createdAtFrom = null;
+      }
+      if (this.createdAtTo) {
+        this.createdAtTo = null;
+      }
+    },
+    searchData() {
+      for (const key in this.filters) {
+        if (this.filters[key]) {
+          this.query += `&${key}=${this.filters[key]}`;
+        }
+      }
+      this.page = 1;
+      this.selectedLimit = 1;
+      this.getUserData();
+    }
+  },
+  computed: {
+    getTotalPage() {
+      if (Math.ceil(this.userTotal / this.selectedLimit) === 0) {
+        return 1;
+      }
+      return Math.ceil(this.userTotal / this.selectedLimit);
+    }
+  },
+  watch: {
+    selectedLimit: {
+      handler: function(val, oldvalue) {
+        this.page = Math.ceil(this.offset / this.selectedLimit);
+        this.getUserData();
+      },
+      deep: true
+    },
+    page: {
+      handler: function(val, oldvalue) {
+        this.getUserData();
+      },
+      deep: true
+    },
+    lastAccessFrom(val) {
+      if (val) {
+        if (this.lastAccessTo) {
+          if (this.lastAccessTo < val._d) {
+            alert("날짜를 확인해주세요");
+            this.lastAccessFrom = null;
+          } else {
+            this.filters.lastAccessFrom = this.getDateformat(val._d);
+          }
+        } else {
+          this.filters.lastAccessFrom = this.getDateformat(val._d);
+        }
+      } else {
+        this.filters.lastAccessFrom = null;
+      }
+    },
+    lastAccessTo(val) {
+      if (val) {
+        if (this.lastAccessFrom) {
+          if (this.lastAccessFrom > val._d) {
+            alert("날짜를 확인해주세요");
+            this.lastAccessTo = null;
+          } else {
+            this.filters.lastAccessTo = this.getDateformat(val._d);
+          }
+        } else {
+          this.filters.lastAccessTo = this.getDateformat(val._d);
+        }
+      } else {
+        this.filters.lastAccessTo = null;
+      }
+    },
+    createdAtFrom(val) {
+      if (val) {
+        if (this.createdAtTo) {
+          if (this.createdAtTo < val._d) {
+            alert("날짜를 확인해주세요");
+            this.createdAtFrom = null;
+          } else {
+            this.filters.createdAtFrom = this.getDateformat(val._d);
+          }
+        } else {
+          this.filters.createdAtFrom = this.getDateformat(val._d);
+        }
+      } else {
+        this.filters.createdAtFrom = null;
+      }
+    },
+    createdAtTo(val) {
+      console.log(val);
+      if (val) {
+        if (this.createdAtFrom) {
+          if (this.createdAtFrom > val._d) {
+            alert("날짜를 확인해주세요");
+            this.createdAtTo = null;
+          } else {
+            this.filters.createdAtTo = this.getDateformat(val._d);
+          }
+        } else {
+          this.filters.createdAtTo = this.getDateformat(val._d);
+        }
+      } else {
+        this.filters.createdAtTo = null;
+      }
     }
   }
 };
@@ -213,9 +398,13 @@ header {
 }
 .pageContents {
   padding: 20px;
+  overflow: scroll;
+
   .userTableContainer {
+    min-width: 1780px;
     border: 1px solid lightgray;
     border-radius: 5px;
+
     .containerTitle {
       border-radius: 5px 0 0 0;
       background-color: rgb(235, 234, 234);
@@ -228,6 +417,11 @@ header {
       padding: 10px 10px;
       .pageInfo {
         font-size: 13px;
+
+        .prevent {
+          color: gray;
+        }
+
         button {
           border: 1px solid lightgray;
           width: 25px;
@@ -252,9 +446,11 @@ header {
         }
       }
     }
+
     table,
     tr,
     td {
+      color: black;
       border: 1px solid lightgray;
     }
     table {

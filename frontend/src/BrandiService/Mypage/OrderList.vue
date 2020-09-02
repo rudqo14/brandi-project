@@ -1,5 +1,5 @@
 <template>
-  <div v-if="order.data.length">
+  <div v-if="order.length">
     <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
       <div class="orderTop">
         <div class="topLeft">
@@ -60,11 +60,10 @@ export default {
   methods: {
     getOrderData() {
       axios
-        .get(`${sip}/user/mypage`, {
+        .get(`${sip}/user/mypage/orderlist`, {
           headers: {
-            //localStorage.getItem("access_token")
-            Authorization:
-              "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
+            Authorization: localStorage.getItem("access_token")
+            //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
         .then(res => {
