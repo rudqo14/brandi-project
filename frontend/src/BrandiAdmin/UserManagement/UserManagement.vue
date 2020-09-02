@@ -20,7 +20,7 @@
           <i class="fas fa-users"></i>
           <span>회원 리스트</span>
         </div>
-        <div class="filterContainer" v-if="this.users.data.length">
+        <div class="filterContainer" v-if="this.userTotal">
           <div class="pageInfo">
             <span>Page</span>
             <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
@@ -109,7 +109,7 @@
               </td>
             </tr>
           </thead>
-          <tbody v-if="this.users.data.length">
+          <tbody class="noData" v-if="this.userTotal">
             <tr v-for="user in users.data">
               <td class="check">
                 <input type="checkbox" />
@@ -134,11 +134,11 @@
           </tbody>
           <tbody v-else>
             <tr>
-              <td>No data available in table</td>
+              <td class="noData" colspan="11">No data available in table</td>
             </tr>
           </tbody>
         </table>
-        <div class="filterContainer">
+        <div class="filterContainer" v-if="this.userTotal">
           <div class="pageInfo">
             <span>Page</span>
             <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
@@ -160,6 +160,7 @@
             <span>records | Found total {{ userTotal }} records</span>
           </div>
         </div>
+        <div class="filterContainer" v-else>No records found to show</div>
       </div>
     </section>
   </div>
@@ -191,7 +192,7 @@ export default {
         email: null
       },
       page: 1,
-      selectedLimit: 1,
+      selectedLimit: 10,
       offset: 1,
       lastAccessFrom: null,
       lastAccessTo: null,
@@ -268,6 +269,7 @@ export default {
       if (this.createdAtTo) {
         this.createdAtTo = null;
       }
+      this.getUserData();
     },
     searchData() {
       for (const key in this.filters) {
@@ -464,6 +466,14 @@ header {
       }
       tbody {
         font-size: 13px;
+
+        .noData {
+          text-align: center;
+          height: 30px;
+          padding: 10px;
+          font-size: 14px;
+          background-color: rgb(235, 234, 234);
+        }
       }
       .check {
         padding: 13px;
