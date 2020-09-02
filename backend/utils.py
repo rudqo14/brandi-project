@@ -1,4 +1,4 @@
-import time, jwt, io, uuid
+import time, jwt, io
 from PIL        import Image
 from functools  import wraps
 
@@ -84,7 +84,8 @@ class ResizeImage:
     이미지를 Large, Medium, Small 사이즈로 resize 한 후, s3에 업로드 합니다.
 
     Args:
-        images:
+        product_code  : products_table 의 product_code Column Value(Unique Value)
+        images        :
             {
                 'product_image_1' : image 파일,
                 'product_image_2' : image 파일,
@@ -92,6 +93,7 @@ class ResizeImage:
                 'product_image_4' : image 파일,
                 'product_image_5' : image 파일
             }
+        s3_connection : s3 연결 Instance
 
     Returns:
         {
@@ -132,7 +134,8 @@ class ResizeImage:
 
     """
 
-    def __init__(self, images, s3_connection):
+    def __init__(self, product_code, images, s3_connection):
+        self.product_code   = product_code
         self.images         = images
         self.s3_connection  = s3_connection
         self.large_width    = 640
@@ -150,17 +153,14 @@ class ResizeImage:
             # image 사이즈 측정
             width, height = image.size
 
-            # uuid 생성
-            unique_id = str(uuid.uuid4().int)
-
             # large size로 resizing 하는 메소드 실행
-            large_size_image = self.resize_image_to_large(values, width, height, unique_id, self.s3_connection)
+            large_size_image = self.resize_image_to_large(values, width, height, self.product_code, self.s3_connection)
 
             # medium size로 resizing 하는 메소드 실행
-            medium_size_image = self.resize_image_to_medium(values, width, height, unique_id, self.s3_connection)
+            medium_size_image = self.resize_image_to_medium(values, width, height, self.product_code, self.s3_connection)
 
             # small size로 resizing 하는 메소드 실행
-            small_size_image = self.resize_image_to_small(values, width, height, unique_id, self.s3_connection)
+            small_size_image = self.resize_image_to_small(values, width, height, self.product_code, self.s3_connection)
 
             # resize_images dictionary에 결과 저장
             self.resize_images[key] = {
@@ -169,7 +169,7 @@ class ResizeImage:
                 'product_image_S' : small_size_image
             }
 
-    def resize_image_to_large(self, image_file, width, height, unique_id, s3_connection):
+    def resize_image_to_large(self, image_file, width, height, product_code, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -184,15 +184,15 @@ class ResizeImage:
         s3_connection.put_object(
             Body        = buffer,
             Bucket      = 'brandi-project',
-            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_L",
+            Key         = f"{product_code}_{image_file.name.split('product_')[1]}_L",
             ContentType = image_file.content_type
         )
 
-        image_L_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_L"
+        image_L_url = f"{S3['aws_url']}{product_code}_{image_file.name.split('product_')[1]}_L"
 
         return image_L_url
 
-    def resize_image_to_medium(self, image_file, width, height, unique_id, s3_connection):
+    def resize_image_to_medium(self, image_file, width, height, product_code, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -207,15 +207,15 @@ class ResizeImage:
         s3_connection.put_object(
             Body        = buffer,
             Bucket      = 'brandi-project',
-            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_M",
+            Key         = f"{product_code}_{image_file.name.split('product_')[1]}_M",
             ContentType = image_file.content_type
         )
 
-        image_M_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_M"
+        image_M_url = f"{S3['aws_url']}{product_code}_{image_file.name.split('product_')[1]}_M"
 
         return image_M_url
 
-    def resize_image_to_small(self, image_file, width, height, unique_id, s3_connection):
+    def resize_image_to_small(self, image_file, width, height, product_code, s3_connection):
 
         # image 파일 open
         image = Image.open(image_file)
@@ -230,11 +230,11 @@ class ResizeImage:
         s3_connection.put_object(
             Body        = buffer,
             Bucket      = 'brandi-project',
-            Key         = f"{unique_id}_{image_file.name.split('product_')[1]}_S",
+            Key         = f"{product_code}_{image_file.name.split('product_')[1]}_S",
             ContentType = image_file.content_type
         )
 
-        image_S_url = f"{S3['aws_url']}{unique_id}_{image_file.name.split('product_')[1]}_S"
+        image_S_url = f"{S3['aws_url']}{product_code}_{image_file.name.split('product_')[1]}_S"
 
         return image_S_url
 
