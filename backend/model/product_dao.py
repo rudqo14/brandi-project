@@ -934,24 +934,30 @@ class ProductDao:
                 P.product_no as productNo,
                 P.product_code as productCode,
                 ROUND(PD.price, -1) as sellPrice,
-                @discountRate := (
+                discountRate,
+                ROUND(PD.price * (100-discountRate)/100, -1) AS discountPrice,
                 CASE
-                    WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
-                        THEN PD.discount_rate
-                    WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
-                        THEN PD.discount_rate
-                    ELSE 0
-                END) AS discountRate,
-                ROUND(PD.price * (100-@discountRate)/100, -1) AS discountPrice,
-                CASE
-                    WHEN @discountRate = 0
+                    WHEN discountRate = 0
                         THEN "미할인"
                     ELSE "할인"
                 END AS discountYn,
                 IF(PD.is_displayed = 1, "진열", "미진열") as productExhibitYn,
-                IF(PD.is_activated = 1, "판매", "미판매") as productSellYn
+                IF(PD.is_activated = 1, "판매", "미판매") as productSellYn,
 
-            FROM products as P
+            FROM (
+                SELECT products.*,
+                CASE
+                	WHEN (product_details.discount_end_date IS NULL AND product_details.discount_start_date IS NULL) AND product_details.discount_rate IS NOT NULL
+                		THEN product_details.discount_rate
+                	WHEN (product_details.discount_end_date IS NOT NULL AND product_details.discount_start_date IS NOT NULL) AND (product_details.discount_start_date >= now() AND product_details.discount_end_date <= now())
+                		THEN product_details.discount_rate
+                	ELSE 0
+                END AS discountRate
+                FROM products
+
+            INNER JOIN product_details
+            ON PD.product_id = products.product_no
+            ) AS P
 
             INNER JOIN product_images as PI
             ON P.product_no = PI.product_id
@@ -972,62 +978,56 @@ class ProductDao:
             # Filtering 시작
 
             # 판매 여부 필터링
-            if filter_info.get('sellYn') != None :
+            if filter_info.get('sellYn') is not None :
                 select_product_list_query += """
                 AND PD.is_activated = %(sellYn)s
                 """
 
             # 할인 여부 필터링
-            if filter_info.get('discountYn') != None :
+            if filter_info.get('discountYn') is not None :
                 select_product_list_query += """
-                AND (CASE
-                	WHEN
-                	(CASE
-                        WHEN (PD.discount_end_date IS NULL AND PD.discount_start_date IS NULL) AND PD.discount_rate IS NOT NULL
-                            THEN PD.discount_rate
-                        WHEN (PD.discount_end_date IS NOT NULL AND PD.discount_start_date IS NOT NULL) AND (PD.discount_start_date >= now() AND PD.discount_end_date <= now())
-                            THEN PD.discount_rate
-                        ELSE 0
-                    END) = 0
-                    THEN FALSE
+                AND (
+                CASE
+                    WHEN discountRate = 0
+                        THEN FALSE
                     ELSE TRUE
-                    END) = %(discountYn)s
+                END) = %(discountYn)s
                 """
 
             # 진열 여부 필터링
-            if filter_info.get('exhibitionYn') != None :
+            if 'exhibitionYn' in filter_info :
                 select_product_list_query += """
                 AND PD.is_displayed = %(exhibitionYn)s
                 """
 
             # 상품 등록 기간 시작일자 필터링
-            if filter_info.get('startDate') != None :
+            if 'startDate' in filter_info :
                 select_product_list_query += """
                 AND P.created_at >= %(startDate)s
                 """
 
             # 상품 등록 기간 종료일자 필터링
-            if filter_info.get('endDate') != None :
+            if 'endDate' in filter_info :
                 filter_info['endDate'] += 1
                 select_product_list_query += """
-                AND P.created_at <= %(endDate)s
+                AND P.created_at < %(endDate)s
                 """
 
             # 상품명 일부 일치 조건 필터링
-            if filter_info.get('productName') != None :
+            if 'productName' in filter_info :
                 filter_info['productName'] = f"%{filter_info['productName']}%"
                 select_product_list_query += """
                 AND PD.name like %(productName)s
                 """
 
             # 상품 번호 일치 조건 필터링
-            if filter_info.get('productNo') != None :
+            if 'productNo' in filter_info :
                 select_product_list_query += """
                 AND P.product_no = %(productNo)s
                 """
 
             # 상품 코드 일치 조건 필터링
-            if filter_info.get('productCode') != None :
+            if 'productCode' in filter_info :
                 select_product_list_query += """
                 AND P.product_code = %(productCode)s
                 """
