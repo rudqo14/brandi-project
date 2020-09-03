@@ -11,52 +11,74 @@ CREATE TABLE products
     `product_no`  INT         NOT NULL    AUTO_INCREMENT COMMENT 'pk', 
     `created_at`  DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시', 
     `is_deleted`  TINYINT     NOT NULL    DEFAULT FALSE COMMENT '삭제여부', 
+    `product_code`  VARCHAR(50)    NOT NULL    COMMENT '상품 코드',
     PRIMARY KEY (product_no)
 );
 
 INSERT INTO products
 (
-    product_no
+    product_no,
+    product_code
 ) VALUES (
-    1
+    1,
+   '447acee5-1a6f-45d3-a630-fa9db6cec51a' 
 ), (
-    2
+    2,
+    'cd998fc3-43cc-4f3b-9a70-b2ad67fde612'
 ), (
-    3
+    3,
+    '34059e97-775d-4176-8b9c-467687e28fa6'
 ), (
-    4
+    4,
+    'cd5c18b2-ffba-4b70-98a5-1ff76c9b4cf8'
 ), (
-    5
+    5,
+    'd2be6842-23c4-48af-b667-32046585b292'
 ), (
-    6
+    6,
+    '63caf721-0bcb-415d-80b5-7fc6852f9e5e'
 ), (
-    7
+    7,
+    '7ac1f9c4-e34e-4013-a8ff-fd7e8d34cb8a'
 ), (
-    8
+    8,
+    '8d0e3b90-2a27-40af-8a2a-92e14b05402d'
 ), (
-    9
+    9,
+    '0839b2c9-e741-41d6-bed8-eb10c034478d'
 ), (
-    10
+    10,
+    'edbdbe99-2011-4d4b-ac1d-6b24b25b01b6'
 ), (
-    11
+    11,
+    '5ae73934-d0e4-4cff-8785-d973f7ec0553'
 ), (
-    12
+    12,
+    'd75475e3-4a30-43b6-96b2-a9e71e23044c'
 ), (
-    13
+    13,
+    'd5549f63-48fd-4c0c-b70d-521a677d7bae'
 ), (
-    14
+    14,
+    '715fbe44-7109-48c1-83c6-7f55789a44ea'
 ), (
-    15
+    15,
+    '0a8ed894-7489-4bfb-9b28-88aa8a760e80'
 ), (
-    16
+    16,
+    '7b12a5a3-99c2-4f36-b8dc-c2ceb764cd4e'
 ), (
-    17
+    17,
+    '0d5ed9ae-bd8d-4974-907c-927d1858fd2e'
 ), (
-    18
+    18,
+    'cc0bc286-f632-438a-8117-f6e106c61ca3'
 ), (
-    19
+    19,
+    'aa616244-ec2c-4d0e-8d37-595b238df355'
 ), (
-    20
+    20,
+    '5ca04d97-8178-40ea-8cc8-d3f20a5640d4'
 );
 
 -- colors Table Create SQL
@@ -745,6 +767,75 @@ INSERT INTO product_options
 ), (
     5,
     5
+), (
+    6,
+    6
+), (
+    7,
+    7
+), (
+    8,
+    8
+), (
+    9,
+    9
+), (
+    10,
+    10
+), (
+    11,
+    11
+), (
+    12,
+    12
+), (
+    13,
+    13
+), (
+    14,
+    14
+), (
+    15,
+    15
+), (
+    16,
+    16
+), (
+    17,
+    17
+), (
+    18,
+    18
+), (
+    19,
+    19
+), (
+    20,
+    20
+), (
+    21,
+    1
+), (
+    22,
+    1
+), (
+    23,
+    1
+), (
+    24,
+    1
+), (
+    25,
+    1
+), (
+    26,
+    1
+), (
+    27,
+    1
+), (
+    28,
+    1
 );
 
 -- option_details Table Create SQL
@@ -791,29 +882,29 @@ INSERT INTO option_details
 ), (
     2,
     2,
-    1,
-    2,
+    3,
+    3,
     '2020-04-20 14:00:00',
     DEFAULT
 ), (
     3,
     3,
-    2,
+    3,
     3,
     '2020-04-20 14:00:00',
     DEFAULT
 ), (
     4,
     4,
-    1,
-    4,
+    3,
+    3,
     '2020-04-20 14:00:00',
     DEFAULT
 ), (
     5,
     5,
-    2,
-    5,
+    3,
+    3,
     '2020-04-20 14:00:00',
     DEFAULT
 ), (
@@ -822,6 +913,160 @@ INSERT INTO option_details
     8,
     8,
     '2020-08-11 15:00:00',
+    DEFAULT
+), (
+    7,
+    7,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    8,
+    8,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    9,
+    9,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    10,
+    10,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    11,
+    11,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    12,
+    12,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    13,
+    13,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    14,
+    14,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    15,
+    15,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    16,
+    16,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    17,
+    17,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    18,
+    18,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    19,
+    19,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    20,
+    20,
+    3,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    21,
+    21,
+    1,
+    2,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    22,
+    22,
+    1,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    23,
+    23,
+    1,
+    4,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    24,
+    24,
+    1,
+    5,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    25,
+    25,
+    2,
+    3,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    26,
+    26,
+    2,
+    4,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    27,
+    27,
+    2,
+    5,
+    '2020-09-01 19:00:00',
+    DEFAULT
+), (
+    28,
+    28,
+    3,
+    3,
+    '2020-09-01 19:00:00',
     DEFAULT
 );
 
@@ -1307,104 +1552,104 @@ INSERT INTO images
     image_small
 ) VALUES (
     1,
-    "http://image.brandi.me/cproduct/2020/07/06/17993567_1594029654_image2_L.jpg",
     "http://image.brandi.me/cproduct/2020/07/06/17993567_1594029654_image2_M.jpg",
-    "http://image.brandi.me/cproduct/2020/07/06/17993567_1594029654_image2_S.jpg"
+    "http://image.brandi.me/cproduct/2020/07/06/17993567_1594029654_image2_M.jpg",
+    "http://image.brandi.me/cproduct/2020/07/06/17993567_1594029654_image2_M.jpg"
 ), (
     2,
-    "http://image.brandi.me/cproduct/2020/08/20/16814508_1597899641_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/08/20/16814508_1597899641_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/08/20/16814508_1597899641_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/08/20/16814508_1597899641_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/08/20/16814508_1597899641_image1_M.jpg"
 ), (
     3,
-    "http://image.brandi.me/cproduct/2020/05/31/16896246_1590931916_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/05/31/16896246_1590931916_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/05/31/16896246_1590931916_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/05/31/16896246_1590931916_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/05/31/16896246_1590931916_image1_M.jpg"
 ), (
     4,
-    "http://image.brandi.me/cproduct/2020/05/29/16841528_1590732351_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/05/29/16841528_1590732351_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/05/29/16841528_1590732351_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/05/29/16841528_1590732351_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/05/29/16841528_1590732351_image1_M.jpg"
 ), (
     5,
-    "http://image.brandi.me/cproduct/2020/06/28/17786204_1593354326_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/06/28/17786204_1593354326_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/06/28/17786204_1593354326_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/06/28/17786204_1593354326_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/06/28/17786204_1593354326_image1_M.jpg"
 ), (
     6,
-    "http://image.brandi.me/cproduct/2020/06/21/17426352_1592713625_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/06/21/17426352_1592713625_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/06/21/17426352_1592713625_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/06/21/17426352_1592713625_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/06/21/17426352_1592713625_image1_M.jpg"
 ), (
     7,
-    "http://image.brandi.me/cproduct/2020/05/18/16379275_1589813844_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/05/18/16379275_1589813844_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/05/18/16379275_1589813844_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/05/18/16379275_1589813844_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/05/18/16379275_1589813844_image1_M.jpg"
 ), (
     8,
-    "http://image.brandi.me/cproduct/2020/08/16/18960858_1597566426_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/08/16/18960858_1597566426_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/08/16/18960858_1597566426_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/08/16/18960858_1597566426_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/08/16/18960858_1597566426_image1_M.jpg"
 ), (
     9,
-    "http://image.brandi.me/cproduct/2020/05/19/16448262_1589891341_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/05/19/16448262_1589891341_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/05/19/16448262_1589891341_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/05/19/16448262_1589891341_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/05/19/16448262_1589891341_image1_M.jpg"
 ), (
     10,
-    "http://image.brandi.me/cproduct/2020/06/08/17184315_1591610586_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/06/08/17184315_1591610586_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/06/08/17184315_1591610586_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/06/08/17184315_1591610586_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/06/08/17184315_1591610586_image1_M.jpg"
 ), (
     11,
-    "http://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/06/26/17741364_1593101362_image1_M.jpg"
 ), (
     12,
-    "http://image.brandi.me/cproduct/2019/08/01/9907221_1564645496_image1_L.jpg",
     "http://image.brandi.me/cproduct/2019/08/01/9907221_1564645496_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2019/08/01/9907221_1564645496_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2019/08/01/9907221_1564645496_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2019/08/01/9907221_1564645496_image1_M.jpg"
 ), (
     13,
-    "http://image.brandi.me/cproduct/2020/08/10/18846870_1597024374_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/08/10/18846870_1597024374_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/08/10/18846870_1597024374_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/08/10/18846870_1597024374_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/08/10/18846870_1597024374_image1_M.jpg"
 ), (
     14,
-    "http://image.brandi.me/cproduct/2020/03/05/5583139_1583400501_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/03/05/5583139_1583400501_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/03/05/5583139_1583400501_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/03/05/5583139_1583400501_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/03/05/5583139_1583400501_image1_M.jpg"
 ), (
     15,
-    "http://image.brandi.me/cproduct/2019/08/19/10059176_1566214986_image1_L.jpg",
     "http://image.brandi.me/cproduct/2019/08/19/10059176_1566214986_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2019/08/19/10059176_1566214986_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2019/08/19/10059176_1566214986_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2019/08/19/10059176_1566214986_image1_M.jpg"
 ), (
     16,
-    "http://image.brandi.me/cproduct/2020/04/28/15899675_1588044782_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/04/28/15899675_1588044782_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/04/28/15899675_1588044782_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/04/28/15899675_1588044782_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/04/28/15899675_1588044782_image1_M.jpg"
 ), (
     17,
-    "http://image.brandi.me/cproduct/2020/08/15/18895387_1597493091_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/08/15/18895387_1597493091_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/08/15/18895387_1597493091_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/08/15/18895387_1597493091_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/08/15/18895387_1597493091_image1_M.jpg"
 ), (
     18,
-    "http://image.brandi.me/cproduct/2020/04/09/15346962_1586364000_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/04/09/15346962_1586364000_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/04/09/15346962_1586364000_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/04/09/15346962_1586364000_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/04/09/15346962_1586364000_image1_M.jpg"
 ), (
     19,
-    "http://image.brandi.me/cproduct/2020/07/10/15153293_1594373068_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/07/10/15153293_1594373068_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/07/10/15153293_1594373068_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/07/10/15153293_1594373068_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/07/10/15153293_1594373068_image1_M.jpg"
 ), (
     20,
-    "http://image.brandi.me/cproduct/2020/06/12/17326713_1591894323_image1_L.jpg",
     "http://image.brandi.me/cproduct/2020/06/12/17326713_1591894323_image1_M.jpg",
-    "http://image.brandi.me/cproduct/2020/06/12/17326713_1591894323_image1_S.jpg"
+    "http://image.brandi.me/cproduct/2020/06/12/17326713_1591894323_image1_M.jpg",
+    "http://image.brandi.me/cproduct/2020/06/12/17326713_1591894323_image1_M.jpg"
 ), (
     21,
     "https://weplash.s3.ap-northeast-2.amazonaws.com/17993567_1594029654_image2_L.jpg",
@@ -1482,7 +1727,7 @@ INSERT INTO product_details
     20,
     10,
     '2020-04-20 12:00:00',
-    '2020-08-18 15:00:00'
+    '2020-08-19 15:00:00'
 ), (
     2,
     2,
@@ -1781,7 +2026,7 @@ INSERT INTO product_details
     1,
     20,
     30,
-    '2020-08-18 15:00:00',
+    '2020-08-19 15:00:00',
     DEFAULT
 );
 
@@ -2049,7 +2294,7 @@ INSERT INTO quantities
 ), (
     2,
     2,
-    10
+    40
 ), (
     3,
     3,
@@ -2062,4 +2307,96 @@ INSERT INTO quantities
     5,
     5,
     150
+), (
+    6,
+    6,
+    150
+), (
+    7,
+    7,
+    150
+), (
+    8,
+    8,
+    2000
+), (
+    9,
+    9,
+    150
+), (
+    10,
+    10,
+    1500
+), (
+    11,
+    11,
+    1300
+), (
+    12,
+    12,
+    46
+), (
+    13,
+    13,
+    17
+), (
+    14,
+    14,
+    13
+), (
+    15,
+    15,
+    1
+), (
+    16,
+    16,
+    1234
+), (
+    17,
+    17,
+    345
+), (
+    18,
+    18,
+    856
+), (
+    19,
+    19,
+    935
+), (
+    20,
+    20,
+    375
+), (
+    21,
+    21,
+    12
+), (
+    22,
+    22,
+    1212
+), (
+    23,
+    23,
+    3000
+), (
+    24,
+    24,
+    300
+), (
+    25,
+    25,
+    0
+), (
+    26,
+    26,
+    150
+), (
+    27,
+    27,
+    99
+), (
+    28,
+    28,
+    20
 );

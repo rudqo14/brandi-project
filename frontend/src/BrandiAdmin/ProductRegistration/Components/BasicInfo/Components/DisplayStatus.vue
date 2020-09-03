@@ -5,13 +5,22 @@
     </div>
     <div class="inputPlace">
       <div class="radioContainer">
-        <v-radio-group v-model="row" row>
-          <v-radio label="진열" value="radio-1" @click="exhibitionYesHandler"></v-radio>
-          <v-radio label="미진열" value="radio-2" @click="exhibitionNoHandler"></v-radio>
+        <v-radio-group v-model="defaultValue" row>
+          <v-radio
+            label="진열"
+            value="진열"
+            @click="exhibitionYesHandler"
+          ></v-radio>
+          <v-radio
+            label="미진열"
+            value="radio-2"
+            @click="exhibitionNoHandler"
+          ></v-radio>
         </v-radio-group>
       </div>
       <div class="alertText">
-        <i class="fas fa-exclamation-triangle"></i> 미진열 선택시 앱에서 Sold Out으로 표시 됩니다.
+        <i class="fas fa-exclamation-triangle"></i> 미진열 선택시 앱에서 Sold
+        Out으로 표시 됩니다.
       </div>
     </div>
   </div>
@@ -20,14 +29,26 @@
 <script>
 import { mapMutations } from "vuex";
 
+const AdminStore = "adminStore";
+
 export default {
+  data() {
+    return {
+      defaultValue: "진열",
+    };
+  },
+
   methods: {
-    ...mapMutations(["exhibitionYes, exhibitionNo"]),
+    ...mapMutations(AdminStore, ["exhibitionYes", "exhibitionNo"]),
+
+    // 진열여부를 "진열" 로 선택하는 메소드
     exhibitionYesHandler() {
-      this.$store.commit("exhibitionYes");
+      this.exhibitionYes();
     },
+
+    // 진열여부를 "미진열" 로 선택하는 메소드
     exhibitionNoHandler() {
-      this.$store.commit("exhibitionNo");
+      this.exhibitionNo();
     },
   },
 };

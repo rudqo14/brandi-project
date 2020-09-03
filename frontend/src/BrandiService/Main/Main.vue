@@ -11,22 +11,33 @@
             </h1>
           </div>
           <article class="productList">
+<<<<<<< HEAD
             <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
               <div class="productImage" @click="linkToDetail(product)">
+=======
+            <div
+              class="product"
+              v-for="product in product.data"
+              v-bind:key="product.product_id"
+            >
+              <div class="productImage" @click="linkToDetail">
+>>>>>>> master
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
-                <span class="discountRate" v-if="product.discount_rate">{{ product.discount_rate }}%</span>
+                <span class="discountRate" v-if="product.discount_rate"
+                  >{{ product.discount_rate }}%</span
+                >
                 <span class="discountPrice" v-if="product.discount_rate">
                   {{
-                  numberWithCommas(
-                  Math.round(
-                  (parseInt(product.price) *
-                  ((100 - product.discount_rate) / 100)) /
-                  10
-                  ) * 10
-                  )
+                    numberWithCommas(
+                      Math.round(
+                        (parseInt(product.price) *
+                          ((100 - product.discount_rate) / 100)) /
+                          10
+                      ) * 10
+                    )
                   }}
                 </span>
                 <span
@@ -34,7 +45,8 @@
                     noneDisCountPrice: !product.discount_rate,
                     price: product.discount_rate,
                   }"
-                >{{ numberWithCommas(Math.floor(product.price)) }}</span>
+                  >{{ numberWithCommas(Math.floor(product.price)) }}</span
+                >
               </div>
             </div>
           </article>
@@ -46,6 +58,7 @@
 <script>
 import axios from "axios";
 import Banner from "../Components/Banner";
+import { SERVICE_API_URL } from "../../../config";
 import { sip } from "../../../config";
 
 export default {
@@ -62,16 +75,25 @@ export default {
   },
   methods: {
     getProductData() {
+<<<<<<< HEAD
       axios.get(`${sip}/product`).then((res) => {
         console.log(res);
+=======
+      axios.get(`${SERVICE_API_URL}/product`).then((res) => {
+>>>>>>> master
         this.product = res.data;
       });
     },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
+<<<<<<< HEAD
     linkToDetail(product) {
       this.$router.push(`/detail/${product.product_no}`);
+=======
+    linkToDetail() {
+      this.$router.push("/detail");
+>>>>>>> master
     },
   },
 };
@@ -137,6 +159,7 @@ main {
               font-weight: 600;
               padding-right: 6px;
             }
+
             .discountPrice {
               font-size: 20px;
               font-weight: 600;

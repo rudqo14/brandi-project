@@ -29,25 +29,17 @@ class ProductService:
                 discountEndDate   : 할인 종료일
                 minSalesQuantity  : 최소판매 수량
                 maxSalesQuantity  : 최대판매 수량
-                image_url         : 상품이미지(Dict)
-                    {
-                        'product_image_(No.)' : {
-                            'product_image_L' : Large 사이즈 url,
-                            'product_image_M' : Medium 사이즈 url,
-                            'product_image_S' : Small 사이즈 url
-                        }
-                    }
                 optionQuantity    : 옵션별 수량 List
-                    {
-                        colorId  : 상품 색상 id
-                        sizeId   : 상품 사이즈 id
-                        quantity : 상품 재고수량
-                    }
+                {
+                    colorId  : 상품 색상 id
+                    sizeId   : 상품 사이즈 id
+                    quantity : 상품 재고수량
+                }
 
             db_connection : DATABASE Connection Instance
 
         Returns :
-            None
+            product_id : products Table의 PK
 
         Author :
             sincerity410@gmail.com (이곤호)
@@ -58,17 +50,13 @@ class ProductService:
             2020-08-28 (sincerity410@gmail.com) : images, product_images insert 수행
             2020-08-30 (sincerity410@gmail.com) : option 별 재고수량 관련 테이블(product_options, option_details,
                                                   quantities) insert 수행
+            2020-09-02 (sincerity410@gmail.com) : product_code(unique 값)의 insert로 구조 수정
 
         """
 
         # product에 insert 한 id를 product_info에 포함 > 상세정보 insert query 실행
         product_info['product_id'] = self.product_dao.insert_product(db_connection)
         self.product_dao.insert_product_detail(product_info, db_connection)
-
-        # 사진크기 별 product_image(최대 5개)에 대해 image URL insert & product_images(매핑테이블) insert
-        for product_image_no, image_url in product_info['image_url'].items() :
-            image_no = self.product_dao.insert_image(image_url, db_connection)
-            self.product_dao.insert_product_image(product_info['product_id'], image_no, product_image_no, db_connection)
 
         # nested JSON 구조인 optionQuantity를 form-data로 받아 JSON 변환
         options = json.loads(product_info['optionQuantity'][0])
@@ -79,7 +67,8 @@ class ProductService:
             option_detail_id  = self.product_dao.insert_option_detail(product_option_id, option, db_connection)
             self.product_dao.insert_quantity(option_detail_id, option, db_connection)
 
-        return None
+        # Image S3 Upload 및 RDB에 URL Link insert를 위해 product_id return
+        return product_info['product_id']
 
     def get_product_list(self, db_connection):
 
@@ -107,7 +96,7 @@ class ProductService:
         # 모든 상품을 리턴
         return products
 
-    def upload_product_image(self, images, s3_connection):
+    def upload_product_image(self, images, product_id, s3_connection, db_connection):
 
         """
 
@@ -121,20 +110,14 @@ class ProductService:
             s3_connection : S3 Connection Instance
 
         Returns:
-            Image URL List:
-            {
-                'product_image_(No.)' : {
-                    'product_image_L' : Large 사이즈 url,
-                    'product_image_M' : Medium 사이즈 url,
-                    'product_image_S' : Small 사이즈 url
-                }
-            }
+            None
 
         Author:
             sincerity410@gmail.com (이곤호)
 
         History:
             2020-08-27 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : product_code 추가에 따른 구조 수정
 
         """
 
@@ -165,28 +148,46 @@ class ProductService:
                     if width < 640 or height < 720 :
                         raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
 
+            # image file name에 등록되는 product_code 조회
+            product_code = self.product_dao.select_product_code(product_id, db_connection)
+
             # 상품 이미지 받아오기 및 유효성 검사 이후 S3 upload
-            resizing = ResizeImage(product_images, s3_connection)
-            return resizing()
+            resizing      = ResizeImage(product_code['product_code'], product_images, s3_connection)
+            resized_image = resizing()
+
+            # 사진크기 별 product_image(최대 5개)에 대해 image URL insert & product_images(매핑테이블) insert
+            for product_image_no, image_url in resized_image.items() :
+                image_no = self.product_dao.insert_image(image_url, db_connection)
+                self.product_dao.insert_product_image(product_id, image_no, product_image_no, db_connection)
+
+            return None
 
         except Exception as e:
             raise e
 
-    def get_color_list(self, db_connection) :
+    def get_option_list(self, db_connection) :
 
         """
 
-        색상 목록을 Return 하는Business Layer(service) function
+        옵션(색상, 사이즈) 목록을 List로 Return 하는Business Layer(service) function
 
         Args:
             db_connection : DATABASE Connection Instance
 
         Returns:
             "data": [
-                {
-                    "color_no" : {color_no} ,
-                    "name"     : "{color_nam}"
-                }
+                "color":[
+                    {
+                        "color_no" : {color_no} ,
+                        "name"     : "{color_nam}"
+                    }
+                ]
+                "size":[
+                    {
+                        "size_no" : {size_no},
+                        "name"    : "{size_name}"
+                    }
+                ]
             ]
 
         Author:
@@ -194,45 +195,16 @@ class ProductService:
 
         History:
             2020-08-29 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : 상품 옵션정보(색상, 사이즈) 통합
 
         """
 
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        # DB connection으로 각 옵션 정보 Return 하는 함수 호출
         colors = self.product_dao.select_color_list(db_connection)
+        sizes  = self.product_dao.select_size_list(db_connection)
 
-        # 모든 색상 정보 Return
-        return colors
-
-    def get_size_list(self, db_connection) :
-
-        """
-
-        사이즈 목록을 Return 하는Business Layer(service) function
-
-        Args:
-            db_connection : DATABASE Connection Instance
-
-        Returns:
-            "data": [
-                {
-                  "name"            : "{sub_category_name}",
-                  "sub_category_no" : {sub_category_no}
-                }
-            ]
-
-        Author:
-            sincerity410@gmail.com (이곤호)
-
-        History:
-            2020-08-29 (sincerity410@gmail.com) : 초기생성
-
-        """
-
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
-        sizes = self.product_dao.select_size_list(db_connection)
-
-        # 모든 사이즈 정보 Return
-        return sizes
+        # 모든 옵션 정보 Return
+        return {'color' : colors, 'size' : sizes}
 
     def get_main_category_list(self, db_connection) :
 
@@ -318,6 +290,7 @@ class ProductService:
             2020-08-30 (minho.lee0716@gmail.com) : 이미지 리스트를 details에 추가.
             2020-08-31 (minho.lee0716@gmail.com) : 상품 옵션들을 details에 추가.
             2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션들중 색상만 주는걸로 변경.
+            2020-09-01 (minho.lee0716@gmail.com) : 이미지나 색상이 없을 경우 빈 배열을 리턴하도록 수정.
 
         """
 
@@ -325,7 +298,16 @@ class ProductService:
         # 상세정보중 이미지들과 옵션들은 따로 가져와서 details에 추가.
         details = self.product_dao.select_product_details(product_id, db_connection)
         details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
-        details['colors']    = self.product_dao.select_product_option_colors(product_id, db_connection)
+        details['colors']     = self.product_dao.select_product_option_colors(product_id, db_connection)
+
+        # 이미지가 없을 때, (배열 안에 null이 들어 있습니다.)
+        # 첫번째 요소가 null이면 빈 배열 반환
+        if not details['image_list'][0]:
+            details['image_list'] = []
+
+        # 마찬가지로 색상이 없을 경우, 빈 배열을 리턴
+        if not details['colors'][0]:
+            details['colors'] = []
 
         # 해당 상품의 상세정보들을 리턴
         return details
@@ -350,34 +332,83 @@ class ProductService:
         History:
             2020-09-01 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션에서 색상을 받으면 사이즈를 리턴
+            2020-09-01 (minho.lee0716@gmail.com) : 상품에 해당 색상이 없을 시 에러 처리
 
         """
-        # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
-        etc_options = self.product_dao.select_etc_options(product_info, db_connection)
 
-        # 해당 상품의 상세정보들을 리턴
-        return etc_options
+        try:
 
-    def get_order_product_info(self, product_info, db_connection):
+            # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
+            etc_options = self.product_dao.select_etc_options(product_info, db_connection)
+
+            # 해당 상품의 색상이 존재하지 않을 경우
+            if not etc_options:
+                raise Exception('THIS_COLOR_DOES_NOT_EXISTS')
+
+            # 해당 상품의 상세정보들을 리턴
+            return etc_options
+
+        except Exception as e:
+            raise e
+
+    def get_registered_product_list(self, filter_info, db_connection) :
+
         """
 
-        상품 상세정보 > 구매 클릭시 나오는 구매할 상품 정보
+        Filtering을 통한 상품 List와 Total Count를 Return 하는Business Layer(service) function
 
         Args:
-            product_info : 구매할 상품에 대한 정보(id, color, size, quantity, total_price)
-            db_connection : 연결된 db 객체
+            product_info:
+                sellYN       : 판매 여부
+                exhibitionYn : 진열 여부
+                discountYn   : 할인 여부
+                registDate   : 등록 일자(기준 시작일, 기준 종료일)
+                {
+                    startDate : "YYYYmmdd",
+                    endDate   : "YYYYmmdd"
+                }
+                productName  : 상품 이름
+                productNo    : 상품 번호
+                productCode  : 상품 코드
+                limit        : 페이지 당 상품 수
+                page         : 페이지 리스트 시작 기준
+
+            db_connection    : DATABASE Connection Instance
 
         Returns:
-            해당 상품의 이미지들
+            data: [
+                [
+                    {
+                        discountPrice        : 할인가
+                        discountRate         : 할인율
+                        discountYn           : 할인 여부
+                        productCode          : 상품 코드
+                        productExhibitYn     : 진열 여부
+                        productName          : 상품 이름
+                        productNo            : 상품 번호
+                        productRegistDate    : 상품 등록 일시
+                        productSellYn        : 판매 여부
+                        productSmallImageUrl : SMALL SIZE IMAGE URL
+                        sellPrice            : 상품 가격
+                    }
+                ],
+                    {
+                        "total": 검색된 상품 개수
+                    }
+            ]
 
-        Authors:
-            minho.lee0716@gmail.com(이민호)
+        Author:
+            sincerity410@gmail.com (이곤호)
 
         History:
-            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (sincerity410@gmail.com) : 초기생성
 
         """
 
-        purchase_info = self.product_dao.FUNCTION_NAME(product_info, db_connection)
+        # page 값으로 offset 정보 획득
+        filter_info['offset'] = filter_info['page'] * filter_info['limit'] - filter_info['limit']
 
-        return purchase_info
+        # DB connection으로 (상품 List & Total Count) Return 하는 select_registered_product_list 함수 호출
+        product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
+
+        return product_list

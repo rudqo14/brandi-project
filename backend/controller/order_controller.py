@@ -13,7 +13,7 @@ from flask_request_validator    import (
 )
 
 from connection import get_connection
-from utils      import DatetimeRule, catch_exception
+from utils      import DatetimeRule, catch_exception, login_required
 
 def create_admin_order_endpoints(order_service):
     admin_order_app = Blueprint('admin_order_app', __name__, url_prefix='/admin/order')
@@ -130,3 +130,93 @@ def create_admin_order_endpoints(order_service):
                 db_connection.close()
 
     return admin_order_app
+
+def create_service_order_endpoints(order_service):
+    service_order_app = Blueprint('service_order_app', __name__, url_prefix='/order')
+
+    @service_order_app.route('/checkout', methods=['GET'])
+    #@login_required
+    # 테스트를 하기위한 임의의 유저 id를 지정
+    def product_info_to_purchase(user_no=4):
+
+        """
+
+        [ 서비스 > 구매할 상품 정보 ] 엔드포인트
+        [GET] http://ip:5000/order/checkout?product_id=1&color_id=1&size_id=1&quantity=100
+
+        Args:
+            header:
+                Authorization : access_token (여기서 user_no를 가져옴)
+
+            Query Parameter:
+                product_id  : 구매할 상품의 ID(번호)
+                color_id    : 구매할 상품의 색상
+                size_id     : 구매할 상품의 사이즈
+                quantity    : 구매할 상품의 개수
+
+        Returns:
+            200 : data, {
+                    "additional_address": "서울 어딘가",
+                    "address": "서울특별시",
+                    "color_name": "화이트",
+                    "discount_rate": 30,
+                    "image_small": "https://weplash.s3.ap-northeast-2.amazonaws.com/17993567_1594029656_image5_L.jpg",
+                    "name": "선분이력테스트 (요즘대세/여유핏) 카라 반크롭 반팔티(4color)_버튼나인 - 버튼나인",
+                    "orderer_email": "rudqo@rudqo.com",
+                    "orderer_name": "김경배",
+                    "phone_number": "01033334444",
+                    "price": 11250.0,
+                    "product_id": 1,
+                    "quantity": "3",
+                    "receiver": "김경배수령",
+                    "size_name": "M",
+                    "zip_code": "15279"
+                  }
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기생성
+            2020-09-02 (minho.lee0716@gmail.com) : 메소드 변경 POST > GET
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # Query Parameter로 들어온 정보를 product_info에 담기.
+                product_info = request.args
+                # 잘못 들어왔을 때 예외처리하기
+                #print(product_info)
+
+                # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
+                purchase_info = order_service.get_product_info_to_purchase(product_info, user_no, db_connection)
+
+                # 필요없는 정보라 삭제했습니다.
+                #del purchase_info['discount_rate']
+                #del purchase_info['price']
+
+                purchase_info['quantity'] = product_info['quantity']
+
+                return jsonify({'data' : purchase_info}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : e}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    return service_order_app

@@ -5,7 +5,6 @@
         <i class="fas fa-pencil-alt"></i>
         <span class="menuName">기본 정보</span>
       </div>
-      <SellerSelect />
       <SalesStatus />
       <DisplayStatus />
       <Category />
@@ -18,7 +17,6 @@
 </template>
 
 <script>
-import SellerSelect from "./Components/SellerSelect";
 import SalesStatus from "./Components/SalesStatus";
 import DisplayStatus from "./Components/DisplayStatus";
 import Category from "./Components/Category";
@@ -29,7 +27,6 @@ import DetailProductDescription from "./Components/DetailProductDescription";
 export default {
   mounted() {},
   components: {
-    SellerSelect,
     SalesStatus,
     DisplayStatus,
     Category,

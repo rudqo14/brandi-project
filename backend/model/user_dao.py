@@ -222,16 +222,14 @@ class UserDao:
 
             return cursor.lastrowid
 
-    def get_user_list(self, pagination, db_connection):
+    def get_user_list(self, filter_info, db_connection):
 
         """
 
         유저 리스트를 표출합니다.
 
         Args:
-            pagination :
-                limit : 가져올 row 개수
-                offset : 앞의 생략할 row의 개수
+            filter_info : 필터 정보
             db_connection : 연결된 db 객체
 
         Returns:
@@ -243,6 +241,7 @@ class UserDao:
         History:
             2020-08-21 (tnwjd060124@gmail.com) : 초기 생성
             2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
+            2020-09-02 (tnwjd060124@gmail.com) : 필터 기능 추가
 
         """
 
@@ -255,34 +254,116 @@ class UserDao:
                 users.email,
                 users.last_access,
                 users.created_at,
-                user_shipping_details.phone_number
+                user_shipping_details.phone_number,
+                social_networks.name AS social_name
             FROM
                 users
+            """
+
+            select_user_query += """
             LEFT JOIN
                 user_shipping_details
-            ON
-                users.user_no = user_shipping_details.user_id
+            ON users.user_no = user_shipping_details.user_id
+            """
+
+            # 계정 정보 filter 기능
+            if filter_info['social_network']:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                AND social_networks.name = %(social_network)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                """
+
+            # 삭제 되지 않은 데이터만 조회
+            select_user_query += """
             WHERE
                 users.is_deleted = 0
+            """
+
+            # 회원 번호 filter 기능
+            if filter_info['user_no']:
+                select_user_query += """
+                AND users.user_no = %(user_no)s
+                """
+
+            # 회원명 filter 기능
+            if filter_info['user_name']:
+                select_user_query += """
+                AND users.name = %(user_name)s
+                """
+
+            # 이메일 filter 기능
+            if filter_info['email']:
+                select_user_query += """
+                AND users.email = %(email)s
+                """
+
+            # 최종 접속일 filter 기능
+            if filter_info['lastaccess_from']:
+                select_user_query += """
+                AND users.last_access >= %(lastaccess_from)s
+                """
+
+            if filter_info['lastaccess_to']:
+                select_user_query += """
+                AND users.last_access <= %(lastaccess_to)s
+                """
+
+            # 등록일 filter 기능
+            if filter_info['created_from']:
+                select_user_query += """
+                AND users.created_at >= %(created_from)s
+                """
+
+            if filter_info['created_to']:
+                select_user_query += """
+                AND users.created_at <= %(created_to)s
+                """
+
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+            if filter_info['sort'] :
+                select_user_query += """
+                ORDER BY
+                    users.user_no DESC
+                """
+            else:
+                select_user_query += """
+                ORDER BY
+                    users.user_no ASC
+                """
+
+            select_user_query += """
             LIMIT
                 %(limit)s
             OFFSET
                 %(offset)s
             """
 
-            cursor.execute(select_user_query, pagination)
+            cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
 
             return users
 
-    def get_total_user(self, db_connection):
+    def get_total_user(self, filter_info, db_connection):
 
         """
 
         총 유저의 수를 보여줍니다.
 
         Args:
+            filter_info: filter 정보
             db_connection : 연결된 db 객체
 
         Returns:
@@ -293,21 +374,96 @@ class UserDao:
 
         History:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-02 (tnwjd060124@gmail.com) : 필터 기능 추가
 
         """
 
         with db_connection.cursor() as cursor:
 
-            select_number_query = """
+            select_user_query = """
             SELECT
                 COUNT(*) AS total_number
             FROM
                 users
+            """
+
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                """
+
+            # 계정 정보 filter 기능
+            if filter_info['social_network']:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                AND social_networks.name = %(social_network)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                """
+
+            # 삭제 되지 않은 데이터만 조회
+            select_user_query += """
             WHERE
                 users.is_deleted = 0
             """
 
-            cursor.execute(select_number_query)
+            # 회원 번호 filter 기능
+            if filter_info['user_no']:
+                select_user_query += """
+                AND users.user_no = %(user_no)s
+                """
+
+            # 회원명 filter 기능
+            if filter_info['user_name']:
+                select_user_query += """
+                AND users.name = %(user_name)s
+                """
+
+            # 이메일 filter 기능
+            if filter_info['email']:
+                select_user_query += """
+                AND users.email = %(email)s
+                """
+
+            # 최종 접속일 filter 기능
+            if filter_info['lastaccess_from']:
+                select_user_query += """
+                AND users.last_access >= %(lastaccess_from)s
+                """
+
+            if filter_info['lastaccess_to']:
+                select_user_query += """
+                AND users.last_access <= %(lastaccess_to)s
+                """
+
+            # 등록일 filter 기능
+            if filter_info['created_from']:
+                select_user_query += """
+                AND users.created_at >= %(created_from)s
+                """
+
+            if filter_info['created_to']:
+                select_user_query += """
+                AND users.created_at <= %(created_to)s
+                """
+
+            cursor.execute(select_user_query, filter_info)
 
             total_number = cursor.fetchone()
 
