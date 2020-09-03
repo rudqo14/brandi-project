@@ -397,36 +397,55 @@ class OrderDao:
 
         """
 
-        서비스 페이지의 상품 상세정보중 사이즈와 수량을 리턴합니다.
+        서비스 페이지에서 상품의 옵션과 수량을 선택 후, 구매하기를 누르면 나오는
+        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 api입니다.
 
         Args:
+            product_no  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
             db_connection : 연결된 db 객체
 
         Returns:
-            해당 상품에 대한 상세정보의 옵션중 사이즈와 수량을 리턴
+            상품 id를 받아와 상품에 대한 이름, 이미지(S 사이즈)를 리턴해 줍니다.
+            상품에 대한 가격과 할인률도 리턴해줍니다. 추후에 가격 확인을 위해 쓰입니다.
+            색상과 사이즈의 id값을 받아 해당 색상과 사이즈를 리턴해줍니다.
 
         Authors:
             minho.lee0716@gmail.com (이민호)
 
         History:
-            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
-            2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
-            2020-09-01 (minho.lee0716@gmail.com) : 수정
-                DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
+            2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (minho.lee0716@gmail.com) : 상품의 모든 정보를 받는 객체가 아닌 상품 id만 받는걸로 수정했습니다.
+            2020-09-03 (minho.lee0716@gmail.com) : 상품의 모든 정보를 담는 객체를 받아 색상과 사이즈 또한 리턴.
 
         """
 
         try:
 
-            # 전달받은 객체에 product_id라는 키가 없으면 KEY_ERROR 메세지를 보내줍니다.
+            # 구매할 상품정보에 필요한 각 키가 없으면 ERROR 메세지를 보내줍니다.
+            '''
             if not product_info['product_id']:
-                raise Exception('KEY_ERROR')
+                raise Exception('선택하신 상품이 없습니다.')
+
+            if not product_info['color_id']:
+                raise Exception('색상을 선택해 주세요.')
+
+            if not product_info['size_id']:
+                raise Exception('사이즈를 선택해 주세요.')
+
+            if not product_info['quantity']:
+                raise Exception('수량을 확인해 주세요.')
+
+            if not product_info['total_price']:
+                raise Exception('총 주문금액을 확인해 주세요.')
+            '''
 
             with db_connection.cursor() as cursor:
 
                 select_seller_product_info_query = """
                 SELECT
                     P.product_no AS product_id,
+                    C.name AS color_name,
+                    S.name AS size_name,
                     PD.name,
                     PD.discount_rate,
                     PD.price,
@@ -451,18 +470,94 @@ class OrderDao:
                 ON PI.image_id = I.image_no
                 AND I.is_deleted = False
 
+                LEFT JOIN product_options AS PO
+                ON P.product_no = PO.product_id
+                AND PO.is_deleted = False
+
+                LEFT JOIN option_details AS OD
+                ON PO.product_option_no = OD.product_option_id
+                AND CURRENT_TIMESTAMP >= OD.start_time
+                AND CURRENT_TIMESTAMP <= OD.close_time
+
+                LEFT JOIN colors AS C
+                ON OD.color_id = C.color_no
+
+                LEFT JOIN sizes AS S
+                ON OD.size_id = S.size_no
+
                 WHERE
                     P.is_deleted = False
-                    AND P.product_no = %(product_id)s;
+                    AND P.product_no = %(product_id)s
+                    AND C.color_no = %(color_id)s
+                    AND S.size_no = %(size_id)s;
                 """
-                print(product_info['product_id'])
 
-                # cursor객체 실행 시, 인자로 객체를 넘겨주고 키 값을 사용하려고 하기 때문에
-                # 따로 product_id라는 인자를 주지 않고 객체를 넘겨주었습니다.
+                # 상품 번호만 받아와 해당 상품의 정보들을 seller_product에 담아줍니다.
                 cursor.execute(select_seller_product_info_query, product_info)
                 seller_product_info = cursor.fetchone()
 
                 return seller_product_info
+
+        except KeyError as e:
+            raise e
+        except  Exception as e:
+            raise e
+
+    def get_orderer_info(self, user_no, db_connection):
+
+        """
+
+        해당 유저의 id 정보(user_no)를 받아와 유저의 이름와 이메일, 그리고 배송지 정보들을  리턴해 줍니다.
+        상품의 옵션을 선택 후, 구매하기를 눌렀을 때 나오는 '주문자 정보' + '배송지 정보'에 대한 정보입니다.
+
+        Args:
+            user_no       : 해당 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 유저의 이름과 이메일, 그리고 배송지 정보들을  리턴해 줍니다.
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (minho.lee0716@gmail.com) : 수정
+                get_shipping_address_info라는 함수를 없애고 한 번에 유저의 정보와 배송지 정보를 리턴하기로 했습니다.
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                select_orderer_info_query = """
+                SELECT
+                    U.name AS orderer_name,
+                    U.email AS orderer_email,
+                    USD.receiver,
+                    USD.phone_number,
+                    USD.address,
+                    USD.additional_address,
+                    USD.zip_code
+
+                FROM
+                users AS U
+
+                LEFT JOIN user_shipping_details AS USD
+                ON U.user_no = USD.user_id
+
+                WHERE
+                    U.is_deleted = False
+                    AND U.user_no = %s;
+                """
+
+                # 헤더의 토큰에서 유저의 id를 받아와 인자로 넣어주면,
+                # 해당 유저의 이름, 이메일, 그리고 배송지 정보들(존재하지 않으면 NULL)을 리턴해 줍니다.
+                cursor.execute(select_orderer_info_query, user_no)
+                orderer_info = cursor.fetchone()
+
+                return orderer_info
 
         except KeyError as e:
             raise e

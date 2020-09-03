@@ -126,28 +126,35 @@ class OrderService:
 
         return order_detail
 
-    def get_product_info_to_purchase(self, product_info, db_connection):
+    def get_product_info_to_purchase(self, product_info, user_no, db_connection):
 
         """
 
-        상품 상세정보 > 구매 클릭시 나오는 구매할 상품 정보
+        상품 상세정보에서 구매 클릭시 나오는 구매할 상품 정보, 주문자 정보, 배송지 정보를 리턴합니다.
 
         Args:
-            product_info : 구매할 상품에 대한 정보(product_id, color_id, size_id, quantity, total_price)
+            product_info  : 구매할 상품에 대한 정보(product_id, color_id, size_id, total_price > 추후에)
+            user_no       : 토큰에서 받은 유저 id입니다.
             db_connection : 연결된 db 객체
 
         Returns:
-            해당 상품의 이미지들
+            구매할 상품의 정보, 주문하려는 유저의 정보, 주문하려는 유저의 배송지 정보.
 
         Authors:
             minho.lee0716@gmail.com(이민호)
 
         History:
-            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-03 (minho.lee0716@gmail.com) : 주문자의 정보와 주문하는 사람의 배송지 정보를 합쳤습니다.
 
         """
 
+        # 셀러의 판매 상품(내가 고른 상품)에 대한 정보를 리턴해 줍니다.
         seller_product_info = self.order_dao.get_seller_product_info(product_info, db_connection)
 
-        return seller_product_info
+        # 유저의 정보를 넘겨줌으로써 유저의 정보와 배송지 정보를 리턴해 줍니다.
+        orderer_info = self.order_dao.get_orderer_info(user_no, db_connection)
+
+        # 셀러 상품의 정보와 주문자의 정보, 주문자의 배송지 정보까지 한번에 리턴해 줍니다.
+        return {**seller_product_info, **orderer_info}
 
