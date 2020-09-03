@@ -398,15 +398,14 @@ class OrderDao:
         """
 
         서비스 페이지에서 상품의 옵션과 수량을 선택 후, 구매하기를 누르면 나오는
-        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 api입니다.
+        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 정보입니다.
 
         Args:
-            product_no  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
+            product_info  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
             db_connection : 연결된 db 객체
 
         Returns:
             상품 id를 받아와 상품에 대한 이름, 이미지(S 사이즈)를 리턴해 줍니다.
-            상품에 대한 가격과 할인률도 리턴해줍니다. 추후에 가격 확인을 위해 쓰입니다.
             색상과 사이즈의 id값을 받아 해당 색상과 사이즈를 리턴해줍니다.
 
         Authors:
@@ -420,24 +419,6 @@ class OrderDao:
         """
 
         try:
-
-            # 구매할 상품정보에 필요한 각 키가 없으면 ERROR 메세지를 보내줍니다.
-            '''
-            if not product_info['product_id']:
-                raise Exception('선택하신 상품이 없습니다.')
-
-            if not product_info['color_id']:
-                raise Exception('색상을 선택해 주세요.')
-
-            if not product_info['size_id']:
-                raise Exception('사이즈를 선택해 주세요.')
-
-            if not product_info['quantity']:
-                raise Exception('수량을 확인해 주세요.')
-
-            if not product_info['total_price']:
-                raise Exception('총 주문금액을 확인해 주세요.')
-            '''
 
             with db_connection.cursor() as cursor:
 
@@ -496,10 +477,12 @@ class OrderDao:
                 cursor.execute(select_seller_product_info_query, product_info)
                 seller_product_info = cursor.fetchone()
 
+                # 셀러의 상품이(구매하려는 상품) 존재하지 않을 경우 예외처리
+                if not seller_product_info:
+                    raise Exception('THIS_PRODUCT_DOES_NOT_EXISTS')
+
                 return seller_product_info
 
-        except KeyError as e:
-            raise e
         except  Exception as e:
             raise e
 
@@ -531,6 +514,8 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
+                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # USD라는 테이블은 '배송지 정보'에 관한 정보입니다.
                 select_orderer_info_query = """
                 SELECT
                     U.name AS orderer_name,
@@ -557,9 +542,11 @@ class OrderDao:
                 cursor.execute(select_orderer_info_query, user_no)
                 orderer_info = cursor.fetchone()
 
+                # 유저의 정보가 존재하지 않는다면
+                if not orderer_info:
+                    raise Exception('UNAUTHORIZED')
+
                 return orderer_info
 
-        except KeyError as e:
-            raise e
-        except  Exception as e:
+        except Exception as e:
             raise e
