@@ -133,7 +133,7 @@ class OrderService:
         상품 상세정보에서 구매 클릭시 나오는 구매할 상품 정보, 주문자 정보, 배송지 정보를 리턴합니다.
 
         Args:
-            product_info  : 구매할 상품에 대한 정보(product_id, color_id, size_id, total_price > 추후에)
+            product_info  : 구매할 상품에 대한 정보(product_id, color_id, size_id)
             user_no       : 토큰에서 받은 유저 id입니다.
             db_connection : 연결된 db 객체
 
@@ -145,7 +145,8 @@ class OrderService:
 
         History:
             2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
-            2020-09-03 (minho.lee0716@gmail.com) : 주문자의 정보와 주문하는 사람의 배송지 정보를 합쳤습니다.
+            2020-09-03 (minho.lee0716@gmail.com) : 수정
+                (구매하려는 상품의 정보 + 주문자의 정보 + 주문자의 배송지 정보)를 합쳤습니다.
 
         """
 
@@ -157,4 +158,3 @@ class OrderService:
 
         # 셀러 상품의 정보와 주문자의 정보, 주문자의 배송지 정보까지 한번에 리턴해 줍니다.
         return {**seller_product_info, **orderer_info}
-
