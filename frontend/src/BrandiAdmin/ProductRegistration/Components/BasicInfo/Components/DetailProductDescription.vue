@@ -6,25 +6,31 @@
     </div>
     <div class="inputPlace">
       <div class="radioContainer">
-        <v-radio-group v-model="row" row>
+        <v-radio-group v-model="defaultValue" row>
           <v-radio label="간편 업로드" value="radio-1"></v-radio>
-          <v-radio label="에디터 사용 (html 가능)" value="radio-2"></v-radio>
+          <v-radio label="에디터 사용 (html 가능)" value="에디터사용"></v-radio>
         </v-radio-group>
-        <div>( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)</div>
+        <div>
+          ( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)
+        </div>
       </div>
       <div class="alertText">
-        <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold Out으로 표시 됩니다.
+        <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold
+        Out으로 표시 됩니다.
       </div>
       <div class="imageInputBtn">
         <v-btn normal>
           <i class="far fa-image"></i>
           <span>사진 삽입</span>
         </v-btn>
-        <span class="inputImageCheckMessage">이미지 확장자는 JPG, PNG만 등록 가능합니다.</span>
+        <span class="inputImageCheckMessage"
+          >이미지 확장자는 JPG, PNG만 등록 가능합니다.</span
+        >
       </div>
       <div class="editorContainer">
-        <Editor height="500px" @change="dataCheck()" v-model="editorText" />
-        <Viewer />
+        <ckeditor @input="upDateDetailInformation" :config="editorConfig"
+          ><text-area></text-area
+        ></ckeditor>
       </div>
     </div>
   </div>
@@ -32,23 +38,55 @@
 
 <script>
 import axios from "axios";
+import { mapMutations, mapState } from "vuex";
 import "codemirror/lib/codemirror.css";
-import "@toast-ui/editor/dist/toastui-editor.css";
-import { Editor, Viewer } from "@toast-ui/vue-editor";
+import CKEditor from "ckeditor4-vue";
+import { ADMIN_API_URL } from "../../../../../../config";
+
+const AdminStore = "adminStore";
 
 export default {
   components: {
-    Editor,
-    Viewer,
+    ckeditor: CKEditor.component,
   },
+
   data() {
     return {
-      editorText: "텍스트를 입력해주세요.",
+      defaultValue: "에디터사용",
+      editorData: "<p>Content of the editor.</p>",
+      editorConfig: {
+        height: 430,
+        toolbarGroups: [
+          { name: "styles" },
+          { name: "colors" },
+          { name: "basicstyles" },
+          { name: "insert" },
+          { name: "tools" },
+          { name: "align" },
+        ],
+        colorButton: "colors",
+
+        extraPlugins: "font,colorbutton,justify",
+        filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product`,
+
+        // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
+        filebrowserImageBrowseUrl:
+          "/apps/ckfinder/3.4.5/ckfinder.html?type=Images",
+
+        //  filebrowserUploadUrl : String
+        //  파일 업로드를 처리하는 스크립트의 위치 설정하면 업로드 탭이 링크 , 이미지 및 플래시 대화 상자 창에 나타남
+        // filebrowserUploadUrl:
+        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files",
+        // uploadUrl:
+        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files&responseType=json",
+      },
     };
   },
   methods: {
-    dataCheck() {
-      console.log("editorText: ", this.editorText);
+    ...mapMutations(AdminStore, ["upDateDetailInformation"]),
+
+    inputEdiorText(e) {
+      this.upDateDetailInformation(e.target.value);
     },
   },
 };
@@ -63,7 +101,7 @@ export default {
   .inputName {
     display: flex;
     align-items: center;
-    width: 305px;
+    width: 306px;
     height: 100%;
     padding-left: 15px;
     border-right: 1px solid lightgray;

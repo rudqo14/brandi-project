@@ -12,20 +12,38 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <select class="mainCategoryBox">
-              <option value="0">1차 카테고리를 선택해주세요</option>
+            <select
+              class="mainCategoryBox"
+              @change="getSubCategory($event)"
+              v-model="mainCategoryId"
+            >
+              <option value="" selected>1차 카테고리를 선택해주세요</option>
               <option
-                @click="selectMainCategory($event, list.main_category_no)"
                 v-for="list in mainCategory"
                 :key="list.main_category_no"
                 :value="list.main_category_no"
-              >{{list.name}}</option>
+                >{{ list.name }}</option
+              >
             </select>
           </div>
           <div class="secondaryCategory">
-            <select class="subCategoryBox">
-              <option value="0">2차 카테고리를 선택해주세요</option>
-              <option value="1">2차 카테고리를 선택해주세요</option>
+            <select
+              class="subCategoryBox"
+              @change="selectSubCategory($event)"
+              v-model="subCategoryId"
+            >
+              <option value="" v-if="!mainCategoryId"
+                >1차 카테고리를 먼저 선택해주세요</option
+              >
+              <option value="" selected v-if="mainCategoryId"
+                >2차 카테고리를 선택해주세요</option
+              >
+              <option
+                v-for="list in subCategory"
+                :key="list.sub_category_no"
+                :value="list.sub_category_no"
+                >{{ list.name }}</option
+              >
             </select>
           </div>
         </div>
@@ -36,6 +54,7 @@
 
 <script>
 import axios from "axios";
+import { ADMIN_API_URL } from "../../../../../../config";
 
 export default {
   created() {
@@ -45,17 +64,41 @@ export default {
   data() {
     return {
       mainCategory: [],
+      subCategory: [],
+      key: "",
+      mainCategoryId: "",
+      subCategoryId: "",
     };
   },
 
   methods: {
+    // 1차 카테고리를 가져오는 메소드 (첫 렌더링 때 사용)
     getMainCategoryData() {
-      axios.get("http://localhost:8080/Data/MainCategory.json").then((res) => {
+      axios.get(`${ADMIN_API_URL}/admin/product/category`).then((res) => {
         this.mainCategory = res.data.data;
       });
     },
-    selectMainCategory(event, id) {
-      console.log("asdfasdf");
+
+    // 1차 카테고리 ID 를 state 로 전달하고,
+    // 2차 카테고리 데이터를 가져오는 메소드 (1차 카테고리가 바뀔 때 마다 2차 카테고리 변경)
+    getSubCategory(event) {
+      this.mainCategoryId = event.target.value;
+
+      axios
+        .get(`${ADMIN_API_URL}/admin/product/category/${this.mainCategoryId}`)
+        .then((res) => {
+          this.subCategory = res.data.data;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+    // 2차 카테고리 ID 를 state 로 전달해주는 메소드
+    selectSubCategory(event) {
+      this.subCategoryId = event.target.value;
+      console.log("subCategoryId: ", this.subCategoryId);
+      console.log("mainCategoryId: ", this.mainCategoryId);
     },
   },
 };
@@ -116,6 +159,7 @@ export default {
           width: 50%;
 
           select {
+            appearance: menulist-button;
             background-color: white;
             border: 1px solid lightgray;
             padding-left: 3px;
@@ -129,5 +173,3 @@ export default {
   }
 }
 </style>
-
-

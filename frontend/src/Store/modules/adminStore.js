@@ -1,20 +1,31 @@
 const adminStore = {
   namespaced: true,
   state: {
-    sellYn: false,
-    exhibitionYn: true,
+    sellYn: null,
+    exhibitionYn: null,
     productName: "",
     simpleDescription: "",
-    productImages: {
-      product_image_1: "",
-      product_image_2: "",
-      product_image_3: "",
-      product_image_4: "",
-      product_image_5: "",
-    },
+    product_image_1: "",
+    product_image_2: "",
+    product_image_3: "",
+    product_image_4: "",
+    product_image_5: "",
+    formDatas: null,
+    detailInformation: null,
+    // price
+    // discountRate
+    // discountStartDate
+    // discountEndDate
+    // minSalesQuantity
+    // maxSalesQuantity
+    // optionQuantity
   },
 
-  getters: {},
+  getters: {
+    getData(state) {
+      return state;
+    },
+  },
 
   mutations: {
     sellYesHandler(state) {
@@ -36,72 +47,51 @@ const adminStore = {
       state.simpleDescription = simpleDescription;
     },
     getProductImage1(state, productImage1) {
-      state.productImages.product_image_1 = productImage1;
+      state.product_image_1 = productImage1;
     },
     deleteProductImage1(state, productImage1) {
-      state.productImages.product_image_1 = productImage1;
+      state.product_image_1 = productImage1;
     },
     getProductImage2(state, productImage2) {
-      state.productImages.product_image_2 = productImage2;
+      state.product_image_2 = productImage2;
     },
     deleteProductImage2(state, productImage2) {
-      state.productImages.product_image_2 = productImage2;
+      state.product_image_2 = productImage2;
     },
     getProductImage3(state, productImage3) {
-      state.productImages.product_image_3 = productImage3;
+      state.product_image_3 = productImage3;
     },
     deleteProductImage3(state, productImage3) {
-      state.productImages.product_image_3 = productImage3;
+      state.product_image_3 = productImage3;
     },
     getProductImage4(state, productImage4) {
-      state.productImages.product_image_4 = productImage4;
+      state.product_image_4 = productImage4;
     },
     deleteProductImage4(state, productImage4) {
-      state.productImages.product_image_4 = productImage4;
+      state.product_image_4 = productImage4;
     },
     getProductImage5(state, productImage5) {
-      state.productImages.product_image_5 = productImage5;
+      state.product_image_5 = productImage5;
     },
     deleteProductImage5(state, productImage5) {
-      state.productImages.product_image_5 = productImage5;
+      state.product_image_5 = productImage5;
     },
-    postProductImages(state) {
-      let formData = new FormData();
-      formData.append("imageFile", state.productImages);
-
-      // 데이터 확인 콘솔
-      console.log("imageFile:", ...formData);
-      new Response(formData).text().then(console.log);
-      for (var pair of formData.entries()) {
-        console.log(pair[0] + ", " + pair[1]);
-      }
+    upDateDetailInformation(state, detailInformation) {
+      state.detailInformation = detailInformation;
     },
 
+    // ProductRegistration.vue 에서 state 데이터 확인용
     registration(state) {
       console.log("state.sellYn: ", state.sellYn);
       console.log("state.exhibitionYn: ", state.exhibitionYn);
       console.log("state.productName: ", state.productName);
       console.log("state.simpleDescription: ", state.simpleDescription);
-      console.log(
-        "state.productImages.product_image_2: ",
-        state.productImages.product_image_2
-      );
-      console.log(
-        "state.productImages.product_image_3: ",
-        state.productImages.product_image_3
-      );
-      console.log(
-        "state.productImages.product_image_4: ",
-        state.productImages.product_image_4
-      );
-      console.log(
-        "state.productImages.product_image_5: ",
-        state.productImages.product_image_5
-      );
-      console.log(
-        "state.productImages.product_image_1: ",
-        state.productImages.product_image_1
-      );
+      console.log("state.product_image_1: ", state.product_image_2);
+      console.log("state.product_image_2: ", state.product_image_3);
+      console.log("state.product_image_3: ", state.product_image_4);
+      console.log("state.product_image_4: ", state.product_image_5);
+      console.log("state.product_image_5: ", state.product_image_1);
+      console.log("state.detailInformation: ", state.detailInformation);
     },
   },
 

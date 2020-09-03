@@ -26,7 +26,7 @@
         </v-btn>
       </div>
       <div class="CancleBtn">
-        <v-btn depressed color="error">
+        <v-btn depressed color="error" @click="registCansleHandler">
           <span>취소</span>
         </v-btn>
       </div>
@@ -35,14 +35,18 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import axios from "axios";
+import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
 import { ADMIN_API_URL } from "../../../config";
 
+const AdminStore = "adminStore";
+
 export default {
   created() {},
+  computed: {},
 
   components: {
     BasicInfo,
@@ -53,14 +57,66 @@ export default {
   data() {
     return {
       mainCategory: [],
+      stateData: this.$store.state.adminStore,
     };
   },
 
   methods: {
-    ...mapActions(["registration", "postProductImages"]),
+    ...mapGetters(AdminStore, ["getData"]),
+    ...mapMutations(AdminStore, ["registration"]),
+
+    // 상품 등록 실행 메소드
     registrationHandler() {
-      this.$store.commit("registration");
-      this.$store.commit("postProductImages");
+      const productDatas = this.getData();
+
+      const registOk = confirm("상품 등록을 하시겠습니까?");
+      if (registOk === true) {
+        const form = new FormData();
+        form.append("sellYn", productDatas.sellYn);
+        form.append("exhibitionYn", productDatas.exhibitionYn);
+        form.append("productName", productDatas.productName);
+        form.append("simpleDescription", productDatas.simpleDescription);
+        form.append("product_image_1", productDatas.product_image_1);
+        form.append("product_image_2", productDatas.product_image_2);
+        form.append("product_image_3", productDatas.product_image_3);
+        form.append("product_image_4", productDatas.product_image_4);
+        form.append("product_image_5", productDatas.product_image_5);
+        form.append("detailInformation", productDatas.detailInformation);
+
+        // AdminStore 전체 데이터 확인용 메소드
+        this.registration();
+
+        // 상품 등록 데이터 POST 로 서버에 보내기
+        axios
+          .post(`${ADMIN_API_URL}/admin/product`, form, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+
+          // 상품 등록이 완료되면 상품 관리 페이지로 이동
+          .then((res) => {
+            console.log("res: ", res);
+            if (res) {
+              alert("등록이 완료 되었습니다.");
+              this.$router.push("admin/productManagement");
+            }
+          })
+
+          // 상품 등록이 제대로 되지 않을 경우 경고 메시지
+          .catch((error) => {
+            console.log(error);
+            alert("필수사항을 올바르게 입력해 주세요.");
+          });
+      }
+    },
+
+    // 상품 등록 취소 메소드: 취소 누르면 상품 관리 페이지로 이동
+    registCansleHandler() {
+      const registCancleOk = confirm("정말로 상품 등록을 취소하시겠습니까?");
+      if (registCancleOk === true) {
+        this.$router.push("/admin/productManagement");
+      }
     },
   },
 };
