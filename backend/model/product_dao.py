@@ -1008,6 +1008,7 @@ class ProductDao:
 
             # 상품 등록 기간 종료일자 필터링
             if filter_info.get('endDate') != None :
+                filter_info['endDate'] += 1
                 select_product_list_query += """
                 AND P.created_at <= %(endDate)s
                 """
