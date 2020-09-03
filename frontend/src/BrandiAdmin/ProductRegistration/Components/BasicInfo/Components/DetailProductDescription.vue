@@ -72,6 +72,7 @@ export default {
         // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
         filebrowserImageBrowseUrl:
           "/apps/ckfinder/3.4.5/ckfinder.html?type=Images",
+
         //  filebrowserUploadUrl : String
         //  파일 업로드를 처리하는 스크립트의 위치 설정하면 업로드 탭이 링크 , 이미지 및 플래시 대화 상자 창에 나타남
         // filebrowserUploadUrl:

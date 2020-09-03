@@ -93,6 +93,8 @@ export default {
               "Content-Type": "multipart/form-data",
             },
           })
+
+          // 상품 등록이 완료되면 상품 관리 페이지로 이동
           .then((res) => {
             console.log("res: ", res);
             if (res) {
@@ -100,6 +102,8 @@ export default {
               this.$router.push("admin/productManagement");
             }
           })
+
+          // 상품 등록이 제대로 되지 않을 경우 경고 메시지
           .catch((error) => {
             console.log(error);
             alert("필수사항을 올바르게 입력해 주세요.");
@@ -107,6 +111,7 @@ export default {
       }
     },
 
+    // 상품 등록 취소 메소드: 취소 누르면 상품 관리 페이지로 이동
     registCansleHandler() {
       const registCancleOk = confirm("정말로 상품 등록을 취소하시겠습니까?");
       if (registCancleOk === true) {
