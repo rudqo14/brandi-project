@@ -54,6 +54,8 @@
 import axios from "axios";
 import Banner from "../Components/Banner";
 import { SERVICE_API_URL } from "../../../config";
+import { sip } from "../../../config";
+
 export default {
   components: {
     Banner,

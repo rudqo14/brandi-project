@@ -125,3 +125,29 @@ class OrderService:
         order_detail = self.order_dao.get_detail(order_detail, db_connection)
 
         return order_detail
+
+    def get_product_info_to_purchase(self, product_info, db_connection):
+
+        """
+
+        상품 상세정보 > 구매 클릭시 나오는 구매할 상품 정보
+
+        Args:
+            product_info : 구매할 상품에 대한 정보(product_id, color_id, size_id, quantity, total_price)
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 상품의 이미지들
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        seller_product_info = self.order_dao.get_seller_product_info(product_info, db_connection)
+
+        return seller_product_info
+

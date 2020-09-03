@@ -222,16 +222,14 @@ class UserDao:
 
             return cursor.lastrowid
 
-    def get_user_list(self, pagination, db_connection):
+    def get_user_list(self, filter_info, db_connection):
 
         """
 
         유저 리스트를 표출합니다.
 
         Args:
-            pagination :
-                limit : 가져올 row 개수
-                offset : 앞의 생략할 row의 개수
+            filter_info : 필터 정보
             db_connection : 연결된 db 객체
 
         Returns:
@@ -243,6 +241,7 @@ class UserDao:
         History:
             2020-08-21 (tnwjd060124@gmail.com) : 초기 생성
             2020-08-24 (tnwjd060124@gmail.com) : pagination 기능 추가
+            2020-09-02 (tnwjd060124@gmail.com) : 필터 기능 추가
 
         """
 
@@ -255,34 +254,111 @@ class UserDao:
                 users.email,
                 users.last_access,
                 users.created_at,
-                user_shipping_details.phone_number
+                user_shipping_details.phone_number,
+                social_networks.name AS social_name
             FROM
                 users
-            LEFT JOIN
-                user_shipping_details
-            ON
-                users.user_no = user_shipping_details.user_id
+            """
+
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                """
+
+            # 계정 정보 filter 기능
+            if filter_info['social_network']:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                AND social_networks.name = %(social_network)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                """
+
+            # 삭제 되지 않은 데이터만 조회
+            select_user_query += """
             WHERE
                 users.is_deleted = 0
+            """
+
+            # 회원 번호 filter 기능
+            if filter_info['user_no']:
+                select_user_query += """
+                AND users.user_no = %(user_no)s
+                """
+
+            # 회원명 filter 기능
+            if filter_info['user_name']:
+                select_user_query += """
+                AND users.name = %(user_name)s
+                """
+
+            # 이메일 filter 기능
+            if filter_info['email']:
+                select_user_query += """
+                AND users.email = %(email)s
+                """
+
+            # 최종 접속일 filter 기능
+            if filter_info['lastaccess_from']:
+                select_user_query += """
+                AND users.last_access >= %(lastaccess_from)s
+                """
+
+            if filter_info['lastaccess_to']:
+                select_user_query += """
+                AND users.last_access <= %(lastaccess_to)s
+                """
+
+            # 등록일 filter 기능
+            if filter_info['created_from']:
+                select_user_query += """
+                AND users.created_at >= %(created_from)s
+                """
+
+            if filter_info['created_to']:
+                select_user_query += """
+                AND users.created_at <= %(created_to)s
+                """
+
+            select_user_query += """
+            ORDER BY
+                users.user_no DESC
             LIMIT
                 %(limit)s
             OFFSET
                 %(offset)s
             """
 
-            cursor.execute(select_user_query, pagination)
+            cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
 
             return users
 
-    def get_total_user(self, db_connection):
+    def get_total_user(self, filter_info, db_connection):
 
         """
 
         총 유저의 수를 보여줍니다.
 
         Args:
+            filter_info: filter 정보
             db_connection : 연결된 db 객체
 
         Returns:
@@ -293,21 +369,96 @@ class UserDao:
 
         History:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-02 (tnwjd060124@gmail.com) : 필터 기능 추가
 
         """
 
         with db_connection.cursor() as cursor:
 
-            select_number_query = """
+            select_user_query = """
             SELECT
                 COUNT(*) AS total_number
             FROM
                 users
+            """
+
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    user_shipping_details
+                ON users.user_no = user_shipping_details.user_id
+                """
+
+            # 계정 정보 filter 기능
+            if filter_info['social_network']:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                AND social_networks.name = %(social_network)s
+                """
+            else:
+                select_user_query += """
+                LEFT JOIN
+                    social_networks
+                ON users.social_id = social_networks.social_network_no
+                """
+
+            # 삭제 되지 않은 데이터만 조회
+            select_user_query += """
             WHERE
                 users.is_deleted = 0
             """
 
-            cursor.execute(select_number_query)
+            # 회원 번호 filter 기능
+            if filter_info['user_no']:
+                select_user_query += """
+                AND users.user_no = %(user_no)s
+                """
+
+            # 회원명 filter 기능
+            if filter_info['user_name']:
+                select_user_query += """
+                AND users.name = %(user_name)s
+                """
+
+            # 이메일 filter 기능
+            if filter_info['email']:
+                select_user_query += """
+                AND users.email = %(email)s
+                """
+
+            # 최종 접속일 filter 기능
+            if filter_info['lastaccess_from']:
+                select_user_query += """
+                AND users.last_access >= %(lastaccess_from)s
+                """
+
+            if filter_info['lastaccess_to']:
+                select_user_query += """
+                AND users.last_access <= %(lastaccess_to)s
+                """
+
+            # 등록일 filter 기능
+            if filter_info['created_from']:
+                select_user_query += """
+                AND users.created_at >= %(created_from)s
+                """
+
+            if filter_info['created_to']:
+                select_user_query += """
+                AND users.created_at <= %(created_to)s
+                """
+
+            cursor.execute(select_user_query, filter_info)
 
             total_number = cursor.fetchone()
 
@@ -345,7 +496,7 @@ class UserDao:
                 P2.order_detail_no,
                 P2.start_time,
                 P7.image_small,
-                P12.name AS product_name,
+                P8.name AS product_name,
                 P9.name AS color,
                 P10.name AS size,
                 P3.quantity,
@@ -372,8 +523,8 @@ class UserDao:
             INNER JOIN product_images AS P6
             ON P4.product_id = P6.product_id
             AND P6.is_main = 1
-            AND CURRENT_TIMESTAMP >= P6.start_time
-            AND P6.close_time >= CURRENT_TIMESTAMP
+            AND P2.start_time >= P6.start_time
+            AND P6.close_time >= P2.start_time
 
             INNER JOIN images AS P7
             ON P7.image_no = P6.image_id
@@ -391,11 +542,6 @@ class UserDao:
 
             INNER JOIN order_status AS P11
             ON P11.order_status_no = P2.order_status_id
-
-            INNER JOIN product_details AS P12
-            ON P4.product_id = P12.product_id
-            AND CURRENT_TIMESTAMP >= P12.start_time
-            AND P12.close_time >= CURRENT_TIMESTAMP
 
             WHERE P1.user_id = %(user_no)s
 
@@ -438,7 +584,7 @@ class UserDao:
                 P1.order_detail_no,
                 P1.start_time,
                 P3.name AS orderer,
-                P14.name AS product_name,
+                P7.name AS product_name,
                 P7.price,
                 P7.discount_rate,
                 P9.image_small,
@@ -481,6 +627,8 @@ class UserDao:
 
             INNER JOIN images AS P9
             ON P9.image_no = P8.image_id
+            AND P1.start_time >= P9.start_time
+            AND P9.close_time >= P1.start_time
 
             INNER JOIN option_details AS P10
             ON P6.product_option_no = P10.product_option_id
@@ -495,11 +643,6 @@ class UserDao:
 
             INNER JOIN order_status AS P13
             ON P1.order_status_id = P13.order_status_no
-
-            INNER JOIN product_details AS P14
-            ON P6.product_id = P14.product_id
-            AND CURRENT_TIMESTAMP >= P14.start_time
-            AND P14.close_time >= CURRENT_TIMESTAMP
 
             WHERE
                 P1.order_detail_no = %(order_detail_no)s

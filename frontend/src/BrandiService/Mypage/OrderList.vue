@@ -1,5 +1,5 @@
 <template>
-  <div v-if="order.data.length">
+  <div v-if="order.length">
     <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
       <div class="orderTop">
         <div class="topLeft">
@@ -45,6 +45,8 @@
 
 <script>
 import axios from "axios";
+import { sip } from "../../../config";
+
 export default {
   created() {
     this.getOrderData();
@@ -52,16 +54,15 @@ export default {
   data() {
     return {
       order: [],
-      orderData: false,
-      accessToken: this.$store.state.serviceStore.accessToken
+      orderData: false
     };
   },
   methods: {
     getOrderData() {
       axios
-        .get("http://10.251.1.83:5000/user/mypage", {
+        .get(`${sip}/user/mypage/orderlist`, {
           headers: {
-            Authorization: this.accessToken
+            Authorization: localStorage.getItem("access_token")
             //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
@@ -176,6 +177,7 @@ export default {
       }
 
       .productDetail {
+        width: 750px;
         font-size: 17px;
         margin: 8px 0 8px 35px;
 
@@ -194,7 +196,6 @@ export default {
       .orderPrice {
         font-size: 20px;
         font-weight: bold;
-        margin-left: 165px;
       }
 
       .orderStatus {
