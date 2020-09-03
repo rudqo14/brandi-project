@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="Object.keys(option).length">
     <article class="optionInfo">
       <div class="title">
         <i class="fas fa-pencil-alt"></i>
@@ -36,47 +36,12 @@
                 <tr class="colorOpt bodyTable">
                   <td class="optionCate">색상</td>
                   <td class="colorSelectBox">
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
-                      <option
-                        v-for="list in option.data.color"
-                        :value="list.color_no"
-                        :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
-                    </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
-                      <option
-                        v-for="list in option.data.color"
-                        :value="list.color_no"
-                        :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
-                    </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
-                      <option
-                        v-for="list in option.data.color"
-                        :value="list.color_no"
-                        :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
-                    </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
+                    <select
+                      v-for="list in colorSelectList"
+                      :key="list"
+                      class="colorSelect"
+                    >
+                      <option value="">색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.color_no"
@@ -85,29 +50,28 @@
                       >
                     </select>
                   </td>
-                  <div class="buttonBox">
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
-                    </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
-                    </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
-                    </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
+                  <div class="colorButtonBox">
+                    <td
+                      v-for="list in colorSelectList"
+                      :key="list"
+                      :value="list"
+                      class="colorAddDeleteBtn"
+                    >
+                      <button @click="colorSelectAdd">+</button>
+                      <button
+                        v-if="colorSelectList.length > 1"
+                        :value="list"
+                        @click="colorSelectDelete"
+                      >
+                        -
+                      </button>
                     </td>
                   </div>
                 </tr>
                 <tr class="sizeOpt bodyTable">
                   <td class="optionCate">사이즈</td>
                   <td class="sizeSelectBOx">
-                    <select>
+                    <select v-for="list in sizeSelectList" :key="list">
                       <option value="">사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
@@ -117,10 +81,23 @@
                       >
                     </select>
                   </td>
-                  <td class="addDeleteBtn">
-                    <button>+</button>
-                    <button>-</button>
-                  </td>
+                  <div class="sizeButtonBox">
+                    <td
+                      v-for="list in sizeSelectList"
+                      :key="list"
+                      :value="list"
+                      class="sizeAddDeleteBtn"
+                    >
+                      <button @click="sizeSelectAdd">+</button>
+                      <button
+                        v-if="sizeSelectList.length > 1"
+                        :value="list"
+                        @click="sizeSelectDelete"
+                      >
+                        -
+                      </button>
+                    </td>
+                  </div>
                 </tr>
               </tbody>
               <tfoot>
@@ -137,7 +114,7 @@
                 </tr>
               </tfoot>
             </table>
-            <div class="applyBtn" @click="data">
+            <div class="applyBtn">
               <v-btn color="primary" large>적용</v-btn>
             </div>
             <table class="secondOption">
@@ -152,18 +129,22 @@
                   <td class="size" rowspan="1">사이즈</td>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="secondBody">
                 <tr>
                   <td colspan="4">
                     옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
                   </td>
                 </tr>
                 <tr>
-                  <td class="selectedColor">
-                    <v-select :items="option" label="" dense solo></v-select>
+                  <td class="applySelectedColor">
+                    <select name="" id=""
+                      ><option value="">select</option></select
+                    >
                   </td>
-                  <td class="selectedSize">
-                    <v-select :items="option" label="" dense solo></v-select>
+                  <td class="applySelectedSize">
+                    <select name="" id=""
+                      ><option value="">select</option></select
+                    >
                   </td>
                   <td>
                     <div class="radioContainer">
@@ -193,13 +174,21 @@ export default {
     this.getOptionData();
   },
 
-  mounted() {},
+  mounted() {
+    console.log("sizeSelectLsit: ", this.sizeSelectList);
+  },
 
   data() {
     return {
       optionDefaultValue: "기본옵션",
       stockDefaultValue: 1,
+      colorListSize: 1,
+      sizeListSize: 1,
+      // color: [],
+      // size: [],
       option: {},
+      colorSelectList: [1],
+      sizeSelectList: [1],
     };
   },
 
@@ -207,10 +196,33 @@ export default {
     getOptionData() {
       axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
         this.option = res.data;
+        // this.color = this.option.color;
+        // this.size = this.option.size;
       });
     },
-    data() {
-      console.log("option: ", this.option.data.color);
+
+    colorSelectAdd() {
+      this.colorListSize++;
+      this.colorSelectList.push(this.colorListSize);
+    },
+
+    colorSelectDelete(e) {
+      let colorSelectId = parseInt(e.target.value);
+      const idx = this.colorSelectList.indexOf(colorSelectId);
+      this.colorSelectList.splice(idx, 1);
+    },
+
+    sizeSelectAdd() {
+      this.sizeListSize++;
+      this.sizeSelectList.push(this.sizeListSize);
+    },
+
+    sizeSelectDelete(e) {
+      let sizeSelectId = parseInt(e.target.value);
+      console.log("e.target.value: ", e.target.value);
+      console.log("sizeSelectList: ", this.sizeSelectList);
+      const idx = this.sizeSelectList.indexOf(sizeSelectId);
+      this.sizeSelectList.splice(idx, 1);
     },
   },
 };
@@ -317,12 +329,15 @@ export default {
           .bodyTable {
             height: 60px;
 
-            .buttonBox {
+            .colorButtonBox,
+            .sizeButtonBox {
               display: flex;
               flex-direction: column;
+              justify-content: center;
               padding: 0 20px;
 
-              .colorAddDeleteBtn {
+              .colorAddDeleteBtn,
+              .sizeAddDeleteBtn {
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -333,15 +348,18 @@ export default {
               }
 
               button {
-                background-color: whitesmoke;
+                background-color: #eeeeee;
                 border: 1px solid lightgray;
+                border-radius: 3px;
                 width: 30px;
                 height: 30px;
+                margin: 0 5px;
                 text-align: center;
                 vertical-align: middle;
                 font-weight: bold;
                 font-size: 20px;
                 outline: none;
+                color: black;
                 &:hover {
                   background-color: lightgray;
                 }
@@ -419,6 +437,28 @@ export default {
       .color,
       .size {
         width: 25%;
+      }
+    }
+
+    .secondBody {
+      .applySelectedColor,
+      .applySelectedSize {
+        padding: 0 15px;
+
+        select {
+          outline: none;
+          appearance: menulist-button;
+          background-color: white;
+          border: 1px solid lightgray;
+          margin: 5px 0;
+          border-radius: 3px;
+          width: 100%;
+          height: 40px;
+        }
+      }
+
+      .radioContainer {
+        margin-left: 20px;
       }
     }
   }
