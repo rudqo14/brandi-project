@@ -1,7 +1,8 @@
-import json
+import json, datetime, time, io
 from PIL import Image
 
 from utils import ResizeImage
+from config import S3
 
 class ProductService:
 
@@ -412,3 +413,66 @@ class ProductService:
         product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
 
         return product_list
+
+    def upload_detail_image(self, image, s3_connection, db_connection):
+
+        """
+
+        상품 상세 이미지 등록 - Business Layer(service) function
+
+        Args:
+            image         : File Request
+                {'product_detail_image' : <FileStorage: {filename} ({content_type})>}
+            s3_connection : S3 Connection Instance
+            db_connection :
+
+        Returns:
+            image URL
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-03 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            # 사진 미등록 시 예외처리
+            if image.get('product_detail_image', None) == None :
+                raise Exception('IMAGE_IS_REQUIRED')
+
+            detail_image = image.get('product_detail_image')
+
+            # 파일이 Image가 아닌 경우 Exception 발생
+            opend_image   = Image.open(detail_image)
+            width, height = opend_image.size
+
+            # 사이즈가 너무 작은 경우 예외처리
+            if width < 1000:
+                raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
+
+            # buffer 초기화
+            buffer = io.BytesIO()
+            opend_image.save(buffer, "JPEG")
+            buffer.seek(0)
+
+            # image file name 설정: detail_yyyy_mm_dd_{unix_time_stamp}
+            time_now  = datetime.datetime.now()
+            file_name = f"detail_{time_now.year}_{time_now.month}_{time_now.day}_{int(time.time())}"
+
+            # S3 Push
+            s3_connection.put_object(
+                Body        = buffer,
+                Bucket      = 'brandi-project',
+                Key         = file_name,
+                ContentType = detail_image.content_type
+            )
+
+            # Return 할 URL
+            detail_image_url = f"{S3['aws_url']}{file_name}"
+
+            return detail_image_url
+
+        except Exception as e:
+            raise e
