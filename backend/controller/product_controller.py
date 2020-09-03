@@ -14,7 +14,12 @@ from flask_request_validator    import (
 )
 
 from connection import get_connection, get_s3_connection
-from utils      import DatetimeRule, catch_exception
+from utils      import (
+    DatetimeRule,
+    PageRule,
+    LimitRule,
+    catch_exception
+)
 
 def create_admin_product_endpoints(product_service):
 
@@ -272,7 +277,7 @@ def create_admin_product_endpoints(product_service):
                 db_connection.close()
 
     @admin_product_app.route('', methods=['GET'])
-    #@catch_exception
+    @catch_exception
     @validate_params(
         Param('sellYn', GET, bool, required=False),
         Param('discountYn', GET, bool, required=False),
@@ -282,8 +287,8 @@ def create_admin_product_endpoints(product_service):
         Param('productName', GET, str, required=False),
         Param('productNo', GET, int, required=False),
         Param('productCode', GET, str, required=False),
-        Param('page', GET, rules = [Pattern(r'^[1-9]\d*$')]),
-        Param('limit', GET, int)
+        Param('page', GET, int, rules=[PageRule()]),
+        Param('limit', GET, int, rules=[LimitRule()])
     )
     def registered_product_list(*args):
 
@@ -293,10 +298,10 @@ def create_admin_product_endpoints(product_service):
         [GET] http://ip:5000/admin/product
 
         Args:
-            Parameter:
-                sellYN       : 판매 여부
-                exhibitionYn : 진열 여부
-                discountYn   : 할인 여부
+            Parameter: 미적용시 filter에서 제외
+                sellYN       : 판매 여부(1|0)
+                exhibitionYn : 진열 여부(1|0)
+                discountYn   : 할인 여부(1|0)
                 registDate   : 등록 일자(기준 시작일, 기준 종료일)
                 {
                     startDate : "YYYYmmdd",
@@ -349,9 +354,6 @@ def create_admin_product_endpoints(product_service):
 
             if db_connection:
 
-                if args[9] > 100 or args[9] < 0:
-                    raise Exception('INVALID_PARAMETER_LIMIT')
-
                 filter_info = {
                     'sellYn'       : args[0],
                     'discountYn'   : args[1],
@@ -361,17 +363,17 @@ def create_admin_product_endpoints(product_service):
                     'productName'  : args[5],
                     'productNo'    : args[6],
                     'productCode'  : args[7],
-                    'page'         : int(args[8]),
+                    'page'         : args[8],
                     'limit'        : args[9]
                 }
 
-                # 
+                # 상품 List, Totacl Count 받는 service 함수 호출 
                 product_list = product_service.get_registered_product_list(filter_info, db_connection)
 
                 return jsonify({'data' : product_list}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : e}), 400
+        except Exception as e:
+            return jsonify({'message' : e}), 400
 
         finally:
             if db_connection:
