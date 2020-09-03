@@ -6,7 +6,21 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">조회 기간</div>
-        <a-range-picker @change="onChange" />
+        <a-date-picker
+          v-model="startValue"
+          :disabled-date="disabledStartDate"
+          format="YYYY-MM-DD"
+          placeholder="Start"
+          @openChange="handleStartOpenChange"
+        />
+        <a-date-picker
+          v-model="endValue"
+          :disabled-date="disabledEndDate"
+          format="YYYY-MM-DD"
+          placeholder="End"
+          :open="endOpen"
+          @openChange="handleEndOpenChange"
+        />
       </div>
       <div class="filterContainer">
         <div class="filterDate">판매여부 :</div>
@@ -15,22 +29,19 @@
           class="btnAll"
           name="전체"
           v-bind:color="sellData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="판매"
           v-bind:color="sellData === '판매' ? 'primary' : 'white'"
-          >판매</v-btn
-        >
+        >판매</v-btn>
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="미판매"
           v-bind:color="sellData === '미판매' ? 'primary' : 'white'"
-          >미판매</v-btn
-        >
+        >미판매</v-btn>
       </div>
       <div class="filterContainer">
         <div class="filterDate">할인여부 :</div>
@@ -39,22 +50,19 @@
           class="btnAll"
           name="전체"
           v-bind:color="saleData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="할인"
           v-bind:color="saleData === '할인' ? 'primary' : 'white'"
-          >할인</v-btn
-        >
+        >할인</v-btn>
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="미할인"
           v-bind:color="saleData === '미할인' ? 'primary' : 'white'"
-          >미할인</v-btn
-        >
+        >미할인</v-btn>
       </div>
       <div class="filterContainer">
         <div class="filterDate">진열여부 :</div>
@@ -63,32 +71,23 @@
           class="btnAll"
           name="전체"
           v-bind:color="displayData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="진열"
           v-bind:color="displayData === '진열' ? 'primary' : 'white'"
-          >진열</v-btn
-        >
+        >진열</v-btn>
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="미진열"
           v-bind:color="displayData === '미진열' ? 'primary' : 'white'"
-          >미진열</v-btn
-        >
+        >미진열</v-btn>
       </div>
       <div class="centerContainer">
-        <v-btn tile class="btnSearch" color="primary">검색</v-btn>
-        <v-btn
-          tile
-          v-on:click="filterResetHandler"
-          class="searchReset"
-          color="white"
-          >초기화</v-btn
-        >
+        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
+        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
       </div>
     </article>
     <div class="subTitle">
@@ -108,68 +107,66 @@
       </div>
     </div>
     <div class="excelContainer">
-      <v-btn class="excelBtn" color="success" small
-        >선택상품 엑셀다운로드</v-btn
-      >
-      <v-btn class="excelBtn" color="success" small
-        >전체상품 엑셀다운로드</v-btn
-      >
+      <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
+      <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
     </div>
     <article class="tableArticle">
       <div class="totalPageNumber">
         전체 조회건 수 :
-        <strong>{{ totalPageNum }} 건</strong>
+        <strong>{{ totalNumData }} 건</strong>
       </div>
-      <table class="dataTable">
-        <thead class="tableTitle">
-          <tr>
-            <th class="checkboxContainer">
-              <input
-                @click="totalCheckedHandler"
-                class="checkbox"
-                :checked="totalChecked"
-                type="checkbox"
-              />
-            </th>
-            <th>등록일</th>
-            <th class="imgBox">대표이미지</th>
-            <th>상품명</th>
-            <th>상품코드</th>
-            <th>상품번호</th>
-            <th>판매가</th>
-            <th>할인가</th>
-            <th>판매여부</th>
-            <th>진열여부</th>
-            <th>할인여부</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, i) in tableData.data" :key="i">
-            <td class="checkboxContainer">
-              <input
-                @click="checkedHandler"
-                class="checkbox"
-                :checked="isChecked"
-                type="checkbox"
-              />
-            </td>
-            <td>{{ item.productRegistDate }}</td>
-            <td class="imgTd">
-              <div class="imgContainer">
-                <img :src="item.productSmallImageUrl" />
-              </div>
-            </td>
-            <td>{{ item.productName }}</td>
-            <td>{{ item.productNo }}</td>
-            <td>{{ item.productNo }}</td>
-            <td>{{ item.sellPrice }}</td>
-            <td>{{ item.discountPrice }}</td>
-            <td>{{ item.productSellYn }}</td>
-            <td>{{ item.productExhibitYn }}</td>
-            <td>할인</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="scollcontainer">
+        <table class="dataTable">
+          <thead class="tableTitle">
+            <tr>
+              <th class="checkboxContainer">
+                <input
+                  @click="totalCheckedHandler"
+                  class="checkbox"
+                  :checked="totalChecked"
+                  type="checkbox"
+                />
+              </th>
+              <th>등록일</th>
+              <th class="imgBox">대표이미지</th>
+              <th>상품명</th>
+              <th>상품코드</th>
+              <th>상품번호</th>
+              <th>판매가</th>
+              <th>할인가</th>
+              <th>판매여부</th>
+              <th>진열여부</th>
+              <th>할인여부</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, i) in tableData" :key="i">
+              <td class="checkboxContainer">
+                <input
+                  @click="checkedHandler"
+                  class="checkbox"
+                  :checked="isChecked"
+                  type="checkbox"
+                />
+              </td>
+              <td>{{ item.productRegistDate }}</td>
+              <td class="imgTd">
+                <div class="imgContainer">
+                  <img :src="item.productSmallImageUrl" />
+                </div>
+              </td>
+              <td>{{ item.productName }}</td>
+              <td>{{ item.productCode }}</td>
+              <td>{{ item.productNo }}</td>
+              <td>{{Math.floor(item.sellPrice).toLocaleString(5) + "원"}}</td>
+              <td>{{Math.floor(item.discountPrice).toLocaleString(5) + "원"}}</td>
+              <td>{{ item.productSellYn }}</td>
+              <td>{{ item.productExhibitYn }}</td>
+              <td>{{item.discountYn}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <!-- 페이지네이션 UI라이브러리를 사용하지 않은 커스텀 페이지네이션 -->
       <!-- <div class="productPagination">
         <button class="prevBtn" name="minus">{{prev}}{{prev}}</button>
@@ -184,7 +181,7 @@
       <!-- 페이지 네이션 커스텀화 작업 -->
       <template>
         <div class="text-center">
-          <v-pagination v-model="page" :length="6"></v-pagination>
+          <v-pagination v-model="page" :length="Math.ceil(totalNumData / limit)" />
         </div>
       </template>
     </article>
@@ -192,19 +189,12 @@
 </template>
 
 <script>
-import HotelDatePicker from "vue-hotel-datepicker";
-import Datepicker from "vuejs-datepicker";
 import { gonhoIp } from "../../../config";
 import axios from "axios";
 
 export default {
   created() {
-    axios
-      .get(`${gonhoIp}/admin/product?limit=${this.limit}&offset=${this.offset}`)
-      .then((res) => {
-        this.tableData = res.data;
-        this.totalPageNum = res.data.total;
-      });
+    this.axiosConnect();
   },
 
   data() {
@@ -215,21 +205,121 @@ export default {
       saleData: "전체",
       displayData: "전체",
       disabledDates: {},
-      startDate: "",
-      endDate: "",
       totalChecked: false,
       isChecked: false,
       tableData: [],
       totalPageNum: 0,
       limit: 10,
-      offset: 1,
+      totalNumData: 0,
       page: 1,
-      prev: "<",
-      next: ">",
+      startValue: null,
+      endValue: null,
+      endOpen: false,
+      startDate: "",
+      endDate: "",
+      sellDataUrl: "전체",
+      saleDataUrl: "전체",
+      displayDataUrl: "전체",
     };
   },
 
+  watch: {
+    page: function () {
+      this.axiosConnect();
+    },
+
+    startValue(val) {
+      if (val !== null) {
+        const startDateYear = val._d.getFullYear();
+        const startDateMonth = ("0" + (val._d.getMonth() + 1)).slice(-2);
+        const startDateDay = ("0" + val._d.getDate()).slice(-2);
+
+        this.startDate =
+          "&startDate=" + startDateYear + startDateMonth + startDateDay;
+      }
+    },
+    endValue(val) {
+      if (val !== null) {
+        const endDateYear = val._d.getFullYear();
+        const endDateMonth = ("0" + (val._d.getMonth() + 1)).slice(-2);
+        const endDateDay = ("0" + val._d.getDate()).slice(-2);
+
+        this.endDate = "&endDate=" + endDateYear + endDateMonth + endDateDay;
+      }
+    },
+  },
+
   methods: {
+    axiosConnect() {
+      axios
+        .get(
+          `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}`
+        )
+        .then((res) => {
+          console.log(res.data);
+          this.tableData = res.data.data[0];
+          this.totalNumData = res.data.data[1].total;
+        });
+
+      console.log(
+        `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}`
+      );
+    },
+
+    searchFilterHandler() {
+      if (this.sellData === "판매") {
+        this.sellDataUrl = "&sellYn=1";
+      } else if (this.sellData === "미판매") {
+        this.sellDataUrl = "&sellYn=0";
+      } else {
+        this.sellDataUrl = "";
+      }
+
+      if (this.saleData === "할인") {
+        this.saleDataUrl = "&discountYn=1";
+      } else if (this.saleData === "미할인") {
+        this.saleDataUrl = "&discountYn=0";
+      } else {
+        this.saleDataUrl = "";
+      }
+
+      if (this.displayData === "진열") {
+        this.displayDataUrl = "&exhibitionYn=1";
+      } else if (this.displayData === "미진열") {
+        this.displayDataUrl = "&exhibitionYn=0";
+      } else {
+        this.displayDataUrl = "";
+      }
+
+      this.axiosConnect();
+    },
+
+    //DatePicker 적용
+    //startDate와 endDate 클릭할때 disabled 적용하여 클릭하지 못하게끔 함
+    disabledStartDate(startValue) {
+      const endValue = this.endValue;
+      if (!startValue || !endValue) {
+        return false;
+      }
+      return startValue.valueOf() > endValue.valueOf();
+    },
+    disabledEndDate(endValue) {
+      const startValue = this.startValue;
+      if (!endValue || !startValue) {
+        return false;
+      }
+      return startValue.valueOf() >= endValue.valueOf();
+    },
+    //start 토글이 종료되면 endDate토글이 열리게 적용
+    handleStartOpenChange(open) {
+      if (!open) {
+        this.endOpen = true;
+      }
+    },
+    handleEndOpenChange(open) {
+      this.endOpen = open;
+    },
+
     //페이지의 아이템을 몇개씩 보여줄껀지에 대한 토글 기능
     pageNumClick() {
       this.isTogglePageNum = !this.isTogglePageNum;
@@ -243,18 +333,16 @@ export default {
 
       if (this.toggleData === "10개씩보기") {
         this.limit = 10;
+        this.page = 1;
       } else if (this.toggleData === "20개씩보기") {
         this.limit = 20;
+        this.page = 1;
       } else if (this.toggleData === "50개씩보기") {
         this.limit = 50;
+        this.page = 1;
       }
 
-      axios
-        .get(`${gonhoIp}/admin/product?limit=${this.limit}&offset=0`)
-        .then((res) => {
-          this.tableData = res.data;
-          this.totalPageNum = res.data.total;
-        });
+      this.axiosConnect();
     },
 
     //판매여부 클릭 이벤트
@@ -287,6 +375,8 @@ export default {
       this.sellData = "전체";
       this.saleData = "전체";
       this.displayData = "전체";
+      this.startValue = null;
+      this.endValue = null;
       this.startDate = null;
       this.endDate = null;
     },
@@ -312,10 +402,7 @@ export default {
     },
   },
 
-  components: {
-    HotelDatePicker,
-    Datepicker,
-  },
+  components: {},
 };
 </script>
 
@@ -478,49 +565,54 @@ export default {
     }
   }
 
-  .dataTable {
-    display: table;
-    border: 1px solid black;
-    width: 100%;
-    height: 40px;
-    font-size: 14px;
-    text-align: center;
-    border-collapse: collapse;
+  .scollcontainer {
+    overflow-x: scroll;
 
-    th,
-    td {
-      padding: 8px 0;
-      vertical-align: top;
-      border: 0.5px solid rgb(221, 221, 211);
-    }
+    .dataTable {
+      display: table;
+      border: 1px solid black;
+      min-width: 1600px;
+      height: 40px;
+      font-size: 14px;
+      text-align: center;
+      border-collapse: collapse;
 
-    .checkboxContainer {
-      width: 50px;
-      height: 30px;
-
-      .checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
+      th,
+      td {
+        min-width: 30px;
+        padding: 8px 0;
+        vertical-align: top;
+        border: 0.5px solid rgb(221, 221, 211);
       }
-    }
 
-    .imgBox {
-      width: 87px;
-    }
+      .checkboxContainer {
+        width: 50px;
+        height: 30px;
 
-    .imgTd {
-      width: 87px;
-      height: 87px;
+        .checkbox {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+        }
+      }
 
-      .imgContainer {
-        width: 70px;
-        height: 70px;
-        margin: 0 8px;
+      .imgBox {
+        width: 87px;
+      }
 
-        img {
-          width: 100%;
-          height: 100%;
+      .imgTd {
+        width: 87px;
+        height: 87px;
+
+        .imgContainer {
+          width: 70px;
+          height: 70px;
+          margin: 0 8px;
+
+          img {
+            width: 100%;
+            height: 100%;
+          }
         }
       }
     }

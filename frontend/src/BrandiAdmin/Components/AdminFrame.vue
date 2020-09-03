@@ -65,7 +65,15 @@ export default {
   },
   methods: {
     detailPage(path) {
-      this.$router.push(`${path}`);
+      // this.$router.push(`${path}`);
+      console.log(path);
+      if (path === "admin/productRegistration") {
+        this.$router.push("productRegistration");
+      } else if (path === "admin/productManagement") {
+        this.$router.push("productManagement");
+      } else if (path === "admin/orderManagement") {
+        this.$router.push("orderManagement");
+      }
     },
   },
 };

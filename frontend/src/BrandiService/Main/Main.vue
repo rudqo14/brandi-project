@@ -12,7 +12,7 @@
           </div>
           <article class="productList">
             <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
-              <div class="productImage" @click="linkToDetail">
+              <div class="productImage" @click="linkToDetail(product)">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
@@ -50,29 +50,30 @@ import { sip } from "../../../config";
 
 export default {
   components: {
-    Banner
+    Banner,
   },
   created() {
     this.getProductData();
   },
   data() {
     return {
-      product: []
+      product: [],
     };
   },
   methods: {
     getProductData() {
-      axios.get(`${sip}/product`).then(res => {
+      axios.get(`${sip}/product`).then((res) => {
+        console.log(res);
         this.product = res.data;
       });
     },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
-    linkToDetail() {
-      this.$router.push("/detail");
-    }
-  }
+    linkToDetail(product) {
+      this.$router.push(`/detail/${product.product_no}`);
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

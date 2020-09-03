@@ -3,7 +3,7 @@
     <article class="ProductInfo">
       <agile class="agile" :dots="false">
         <div class="imgContainer" v-for="(item, index) in detailData.image_list" v-bind:key="index">
-          <img alt="product  image" :src="item.image_large" />
+          <img alt="product  image" :src="item" />
         </div>
         <div class="prevBtn" slot="prevButton"></div>
         <div class="nextBtn" slot="nextButton"></div>
@@ -11,7 +11,7 @@
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
-          <span class="percent">{{ detailData.discount_rate }}%</span>
+          <span v-if="detailData.discount_rate" class="percent">{{ detailData.discount_rate }}%</span>
           <span class="price">
             {{
             (
@@ -43,15 +43,15 @@
               v-for="(item, index) in detailData.colors"
               class="colorToggle"
               v-bind:key="index"
-              @click="colorToggleData = detailData.colors[index]"
-            >{{ item }}</div>
+              @click="colorClickHandler(item)"
+            >{{ item.color_name }}</div>
           </div>
         </div>
         <!-- 사이즈 옵션 -->
         <div v-on:click="onSizeClick" class="option">
           <div
             v-bind:class="{
-              title: disabledSizeToggle,
+              optionTitle: disabledSizeToggle,
               none: !disabledSizeToggle,
             }"
           >{{ sizeToggleData }}</div>
@@ -66,10 +66,10 @@
           >
             <div class="defaultToggle">[사이즈]를 선택하세요.</div>
             <div
-              v-for="(item, index) in detailData.options"
+              v-for="(item, index) in colorData"
               class="colorToggle"
               v-bind:key="index"
-              @click="optionSizeHandler(detailData, index)"
+              @click="optionSizeHandler(colorData, index)"
             >{{ item.size }}</div>
           </div>
         </div>
@@ -119,14 +119,14 @@
             </strong>
           </p>
         </div>
-        <button @click="buyNowHandler()" class="purchaseBtn">바로 구매하기</button>
+        <button @click="buyNowHandler" class="purchaseBtn">바로 구매하기</button>
       </div>
     </article>
     <article class="detailProduct">
       <div class="categoryContainer">
         <div class="productDetail">상품정보</div>
         <div>
-          <div class="detailHtml" v-html="detailHtml" />
+          <!-- <div class="detailHtml" v-html="detailHtml" /> -->
         </div>
       </div>
     </article>
@@ -137,16 +137,16 @@
 import { ip } from "../../../config.js";
 import { minhoIp } from "../../../config.js";
 import axios from "axios";
-import detailData from "../../../Data/Detail.json";
-import detailOption from "../../../Data/DetailOption.json";
+// import detailData from "../../../Data/Detail.json";
+// import detailOption from "../../../Data/DetailOption.json";
 import { VueAgile } from "vue-agile";
 
 export default {
   created() {
-    axios.get(`${minhoIp}/product/1`).then((res) => {
+    axios.get(`${minhoIp}/product/${this.$route.params.id}`).then((res) => {
+      // console.log(res);
       this.detailData = res.data.data;
-      console.log(this.detailData);
-      console.log(this.detailData.price);
+      this.purchaseId = this.detailData.product_id;
     });
   },
 
@@ -158,13 +158,15 @@ export default {
       sizeToggleData: "[사이즈]를 선택하세요.",
       isSizeToggle: false,
       disabledSizeToggle: false,
-      detailData: detailData.data,
       input: 0,
       isPurchaseBox: false,
       purchaseColor: "",
+      purchaseColorId: "",
       purchaseSize: "",
+      purchaseSizeId: "",
       purchaseId: "",
-      detailHtml: detailOption.data.html,
+      colorData: [],
+      // detailHtml: detailOption.data.html,
     };
   },
   components: {
@@ -172,6 +174,18 @@ export default {
     agile: VueAgile,
   },
   methods: {
+    colorClickHandler(item) {
+      this.colorToggleData = item.color_name;
+      this.purchaseColorId = item.color_id;
+
+      axios
+        .get(`${minhoIp}/product/1?color_id=${item.color_id}`)
+        .then((res) => {
+          console.log(res.data);
+          this.colorData = res.data.data;
+        });
+    },
+
     //컬러 인풋 클릭시 토글 박스 열리게하기
     onColorClick() {
       this.isColorToggle = !this.isColorToggle;
@@ -189,17 +203,17 @@ export default {
     },
 
     //옵션 사이즈 토글에서 원하는 사이즈 선택시 적용
-    optionSizeHandler(detailData, index) {
-      this.sizeToggleData = detailData.options.size;
+    optionSizeHandler(colorData, index) {
+      this.sizeToggleData = colorData[index].size;
       this.purchaseInputNumber = this.input;
       this.input = 1;
       this.purchaseColor = this.colorToggleData;
       this.purchaseSize = this.sizeToggleData;
+      this.purchaseSizeId = colorData[index].size_id;
       this.colorToggleData = "[색상]을 선택하세요.";
       this.sizeToggleData = "[사이즈]를 선택하세요.";
       this.isSizeToggle = false;
       this.isPurchaseBox = true;
-      this.purchaseId = detailData.product_id;
     },
 
     //상품 수량 조절하여 갯수 띄워주기
@@ -235,10 +249,12 @@ export default {
         return;
       }
 
-      localStorage.setItem("purchaseColor", this.purchaseColor);
-      localStorage.setItem("purchaseSize", this.purchaseSize);
+      localStorage.setItem("purchaseColor", this.purchaseColorId);
+      localStorage.setItem("purchaseSize", this.purchaseSizeId);
       localStorage.setItem("purchaseProductNumber", this.input);
       localStorage.setItem("purchaseId", this.purchaseId);
+
+      this.$router.push(`/order`);
     },
   },
 };
@@ -340,7 +356,7 @@ export default {
         cursor: default;
       }
 
-      .title {
+      .optionTitle {
         color: black;
         font-size: 13px;
       }

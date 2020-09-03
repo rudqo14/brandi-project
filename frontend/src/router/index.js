@@ -8,13 +8,14 @@ import AdminFrame from "../BrandiAdmin/Components/AdminFrame.vue";
 import ProductRegistration from "../BrandiAdmin/ProductRegistration/ProductRegistration.vue";
 import Order from "../BrandiService/Order/order.vue";
 import Footer from "../BrandiService/Components/Footer.vue";
-import ProductManagement from "../BrandiAdmin/ProductRegistration/ProductManagement.vue";
+import ProductManagement from "../BrandiAdmin/ProductManagemnet/ProductManagement.vue";
 import Mypage from "../BrandiService/Mypage/Mypage.vue";
 import OrderList from "../BrandiService/Mypage/OrderList.vue";
 import Coupon from "../BrandiService/Mypage/Coupon.vue";
 import Point from "../BrandiService/Mypage/Point.vue";
 import OrderManagement from "../BrandiAdmin/OrderManagement/OrderManagement.vue";
 import OrderDetail from "../BrandiService/OrderDetail/OrderDetail.vue";
+import ProductDetail from "../BrandiAdmin/ProductDetail/ProductDetail.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -27,7 +28,7 @@ export const router = new VueRouter({
       component: Main,
     },
     {
-      path: "/detail",
+      path: "/detail/:id",
       component: Detail,
     },
     {
@@ -105,6 +106,11 @@ export const router = new VueRouter({
           path: "orderManagement",
           component: OrderManagement,
           name: "orderManagement",
+        },
+        {
+          path: "productDetail",
+          component: ProductDetail,
+          name: "productDetail",
         },
       ],
     },
