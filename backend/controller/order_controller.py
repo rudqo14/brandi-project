@@ -137,7 +137,7 @@ def create_service_order_endpoints(order_service):
     @service_order_app.route('/checkout', methods=['GET'])
     # @login_required
     # 테스트를 하기위한 임의의 유저 id를 지정
-    def product_info_to_purchase(user_no):
+    def product_info_to_purchase(user_no=4):
 
         """
 
