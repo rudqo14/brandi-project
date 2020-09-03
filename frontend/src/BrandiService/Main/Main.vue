@@ -11,17 +11,12 @@
             </h1>
           </div>
           <article class="productList">
-<<<<<<< HEAD
-            <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
-              <div class="productImage" @click="linkToDetail(product)">
-=======
             <div
               class="product"
               v-for="product in product.data"
               v-bind:key="product.product_id"
             >
-              <div class="productImage" @click="linkToDetail">
->>>>>>> master
+              <div class="productImage" @click="linkToDetail(product)">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
@@ -75,25 +70,15 @@ export default {
   },
   methods: {
     getProductData() {
-<<<<<<< HEAD
-      axios.get(`${sip}/product`).then((res) => {
-        console.log(res);
-=======
       axios.get(`${SERVICE_API_URL}/product`).then((res) => {
->>>>>>> master
         this.product = res.data;
       });
     },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
-<<<<<<< HEAD
     linkToDetail(product) {
       this.$router.push(`/detail/${product.product_no}`);
-=======
-    linkToDetail() {
-      this.$router.push("/detail");
->>>>>>> master
     },
   },
 };
