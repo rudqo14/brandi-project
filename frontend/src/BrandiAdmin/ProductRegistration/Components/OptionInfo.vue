@@ -36,11 +36,8 @@
                 <tr class="colorOpt bodyTable">
                   <td class="optionCate">색상</td>
                   <td class="colorSelectBox">
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
+                    <select class="colorSelect">
+                      <option value="">색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.color_no"
@@ -48,33 +45,13 @@
                         >{{ list.name }}</option
                       >
                     </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
-                      <option
-                        v-for="list in option.data.color"
-                        :value="list.color_no"
-                        :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
-                    </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
-                      <option
-                        v-for="list in option.data.color"
-                        :value="list.color_no"
-                        :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
-                    </select>
-                    <select class="colorSelect"
-                      >색상 옵션을 선택해 주세요
-                      <option value="" selected
+                    <select
+                      v-for="list in colorSelectList"
+                      :key="list.id"
+                      :value="list.id"
+                      class="colorSelect"
+                    >
+                      <option value="0" selected
                         >색상 옵션을 선택해 주세요</option
                       >
                       <option
@@ -87,20 +64,27 @@
                   </td>
                   <div class="buttonBox">
                     <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
+                      <button
+                        class="button colorSelectAdd"
+                        @click="colorSelectAdd"
+                      >
+                        +
+                      </button>
+                      <button
+                        class="button SelectDelete"
+                        @click="colorSelectDelete"
+                      >
+                        -
+                      </button>
                     </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
-                    </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
-                    </td>
-                    <td class="colorAddDeleteBtn">
-                      <button>+</button>
-                      <button>-</button>
+                    <td
+                      v-for="list in colorSelectList"
+                      :key="list.id"
+                      :value="list.id"
+                      class="colorAddDeleteBtn"
+                    >
+                      <button @click="colorSelectAdd">+</button>
+                      <button @click="colorSelectDelete">-</button>
                     </td>
                   </div>
                 </tr>
@@ -152,18 +136,22 @@
                   <td class="size" rowspan="1">사이즈</td>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="secondBody">
                 <tr>
                   <td colspan="4">
                     옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
                   </td>
                 </tr>
                 <tr>
-                  <td class="selectedColor">
-                    <v-select :items="option" label="" dense solo></v-select>
+                  <td class="applySelectedColor">
+                    <select name="" id=""
+                      ><option value="">select</option></select
+                    >
                   </td>
-                  <td class="selectedSize">
-                    <v-select :items="option" label="" dense solo></v-select>
+                  <td class="applySelectedSize">
+                    <select name="" id=""
+                      ><option value="">select</option></select
+                    >
                   </td>
                   <td>
                     <div class="radioContainer">
@@ -200,6 +188,7 @@ export default {
       optionDefaultValue: "기본옵션",
       stockDefaultValue: 1,
       option: {},
+      colorSelectList: [],
     };
   },
 
@@ -209,8 +198,22 @@ export default {
         this.option = res.data;
       });
     },
+
     data() {
       console.log("option: ", this.option.data.color);
+    },
+
+    colorSelectAdd() {
+      this.colorSelectList.push({
+        id: Math.random(),
+      });
+      console.log("colorSelectList: ", this.colorSelectList);
+    },
+
+    colorSelectDelete(e) {
+      const idx = this.colorSelectList.indexOf(e.target.value);
+      this.colorSelectList.splice(idx, 1);
+      console.log("idx: ", idx);
     },
   },
 };
@@ -320,6 +323,7 @@ export default {
             .buttonBox {
               display: flex;
               flex-direction: column;
+              justify-content: center;
               padding: 0 20px;
 
               .colorAddDeleteBtn {
@@ -333,15 +337,18 @@ export default {
               }
 
               button {
-                background-color: whitesmoke;
+                background-color: #eeeeee;
                 border: 1px solid lightgray;
+                border-radius: 3px;
                 width: 30px;
                 height: 30px;
+                margin: 0 5px;
                 text-align: center;
                 vertical-align: middle;
                 font-weight: bold;
                 font-size: 20px;
                 outline: none;
+                color: black;
                 &:hover {
                   background-color: lightgray;
                 }
@@ -419,6 +426,28 @@ export default {
       .color,
       .size {
         width: 25%;
+      }
+    }
+
+    .secondBody {
+      .applySelectedColor,
+      .applySelectedSize {
+        padding: 0 15px;
+
+        select {
+          outline: none;
+          appearance: menulist-button;
+          background-color: white;
+          border: 1px solid lightgray;
+          margin: 5px 0;
+          border-radius: 3px;
+          width: 100%;
+          height: 40px;
+        }
+      }
+
+      .radioContainer {
+        margin-left: 20px;
       }
     }
   }
