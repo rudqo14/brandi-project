@@ -5,25 +5,27 @@
         <h1 class="orderTitle">주문하기</h1>
         <h2 class="orderSubTitle">브랜디 배송 상품</h2>
         <div class="category">
-          <div class="categoryTitle">더데이즈</div>
+          <div class="categoryTitle">브랜디</div>
           <div class="priceOrder">주문금액</div>
         </div>
         <div class="product">
           <div class="productInfoContainer">
             <div class="imgContainer">
-              <img src="/Images/18944946_1597391611_image1_S.jpg" />
+              <img :src="detailData.image_small" />
             </div>
             <div class="optionContainer">
-              <h3>상큼 단가라 박시티 4col_더데이즈</h3>
-              <p class="option">흰색</p>
-              <p class="option">1개</p>
+              <h3>{{detailData.name}}</h3>
+              <p class="option">{{detailData.color}}</p>
+              <p class="option">{{detailData.quantity}}개</p>
             </div>
           </div>
-          <div class="price">14,490원</div>
+          <div
+            class="price"
+          >{{Math.floor(detailData.price -(detailData.price * (detailData.discount_rate / 100))).toLocaleString(5)}}원</div>
         </div>
         <p class="totalPrice">
           총 주문금액
-          <strong>14,490원</strong>
+          <strong>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
         </p>
       </article>
       <article class="orderInfo">
@@ -54,54 +56,16 @@
           <div class="text-center">
             <v-dialog v-model="dialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on"
-                  >입력하기</v-btn
-                >
+                <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">입력하기</v-btn>
               </template>
-
-              <v-card max-height="600" v-if="isAddressAdd === false">
+              <v-card>
                 <v-card-title class="headline black lighten-2"></v-card-title>
-                <v-card-title class="headline white lighten-2"
-                  >배송지 변경</v-card-title
-                >
-                <div class="cardCustomContainer">
-                  <div class="orderImgContainer">
-                    <img src="/Images/ic-default-exclamation@3x.png" />
-                  </div>
-                  <v-card-text>저장된 배송지가 없습니다.</v-card-text>
-                </div>
-
-                <v-divider></v-divider>
-                <div class="AddContainer">
-                  <!-- <v-card-actions>
-                    <v-btn
-                      color="black lighten-2"
-                      dark
-                      v-bind="attrs"
-                      @click="dialog = false"
-                    >배송지 추가</v-btn>
-                  </v-card-actions>-->
-                  <button @click="addAddressHandler" class="addBtn">
-                    배송지 추가
-                  </button>
-                </div>
-              </v-card>
-              <v-card v-if="isAddressAdd === true">
-                <v-card-title class="headline black lighten-2"></v-card-title>
-                <v-card-title class="headline white lighten-2"
-                  >배송지 추가</v-card-title
-                >
+                <v-card-title class="headline white lighten-2">배송지 추가</v-card-title>
                 <v-divider />
                 <div class="addressContainer">
                   <div class="rowContainer">
                     <v-card-title>수령인</v-card-title>
-                    <v-text-field
-                      :counter="10"
-                      label="수령인"
-                      required
-                      v-model="name"
-                      maxlength="10"
-                    ></v-text-field>
+                    <v-text-field :counter="10" label="수령인" required v-model="name" maxlength="10" />
                   </div>
                   <div class="rowContainer">
                     <v-card-title>휴대폰</v-card-title>
@@ -135,19 +99,15 @@
                     <v-card-title>배송지</v-card-title>
                     <input
                       class="address"
+                      style="text-align: left; padding-left: 10px"
                       type="text"
                       readonly
                       :value="sigunguCode"
                     />
-                    <button @click="findAddressHandler" class="findAddress">
-                      우편번호 찾기
-                    </button>
+                    <button @click="findAddressHandler" class="findAddress">우편번호 찾기</button>
                   </div>
                   <div class="daumContainer">
-                    <vue-daum-postcode
-                      v-if="isDaumToggle"
-                      @complete="handleAddress"
-                    />
+                    <vue-daum-postcode v-if="isDaumToggle" @complete="handleAddress" />
                   </div>
                   <div class="rowContainer">
                     <div class="addressSecond">{{ daumAddress }}</div>
@@ -169,15 +129,13 @@
                       color="grey lighten-1"
                       dark
                       @click="(dialog = false), dialogCanceled()"
-                      >취소</v-btn
-                    >
+                    >취소</v-btn>
                     <v-btn
                       width="100"
                       color="black lighten-2"
                       dark
-                      @click="dialog = false"
-                      >확인</v-btn
-                    >
+                      @click="deliveredCheckHandler"
+                    >확인</v-btn>
                   </v-card-actions>
                 </div>
               </v-card>
@@ -225,24 +183,12 @@
                 noneToggle: !isToggleDelivered,
               }"
             >
-              <div class="orderChoice" @click="toggleDataHandler">
-                배송시 요청사항을 선택해주세요.
-              </div>
-              <div class="orderChoice" @click="toggleDataHandler">
-                문앞에 놓아주세요.
-              </div>
-              <div class="orderChoice" @click="toggleDataHandler">
-                경비(관리)실에 맡겨주세요.
-              </div>
-              <div class="orderChoice" @click="toggleDataHandler">
-                택배함에 넣어주세요.
-              </div>
-              <div class="orderChoice" @click="toggleDataHandler">
-                직접 받겠습니다.
-              </div>
-              <div class="orderChoice" @click="toggleDataHandler">
-                직접 입력
-              </div>
+              <div class="orderChoice" @click="toggleDataHandler">배송시 요청사항을 선택해주세요.</div>
+              <div class="orderChoice" @click="toggleDataHandler">문앞에 놓아주세요.</div>
+              <div class="orderChoice" @click="toggleDataHandler">경비(관리)실에 맡겨주세요.</div>
+              <div class="orderChoice" @click="toggleDataHandler">택배함에 넣어주세요.</div>
+              <div class="orderChoice" @click="toggleDataHandler">직접 받겠습니다.</div>
+              <div class="orderChoice" @click="toggleDataHandler">직접 입력</div>
             </div>
           </div>
         </div>
@@ -252,12 +198,12 @@
         <div class="priceContainer">
           <div class="detailPrice">
             <span>총 상품 금액</span>
-            <span>14,490원</span>
+            <span>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</span>
           </div>
           <div class="detailPrice">
             <span class="totalPrice">결제 예상 금액</span>
             <span class="totalPrice">
-              <strong>14,490원</strong>
+              <strong>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
             </span>
           </div>
         </div>
@@ -270,21 +216,38 @@
 </template>
 
 <script>
-import { ip } from "../../../config.js";
+// import { ip } from "../../../config.js";
 import axios from "axios";
 import { VueAgile } from "vue-agile";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { VueDaumPostcode } from "vue-daum-postcode";
+import { minhoIp } from "../../../config";
 
 export default {
+  created() {
+    this.purchaseColor = localStorage.getItem("purchaseColor");
+    this.purchaseSize = localStorage.getItem("purchaseSize");
+    this.purchaseProductNumber = localStorage.getItem("purchaseProductNumber");
+    this.purchaseId = localStorage.getItem("purchaseId");
+
+    axios
+      .get(
+        `${minhoIp}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
+      )
+      .then((res) => {
+        console.log(res.data.data);
+        this.detailData = res.data.data;
+      });
+  },
+
   data() {
     return {
       isToggleDelivered: false,
       toggleData: "배송시 요청사항을 선택해주세요.",
       directInput: false,
       dialog: false,
-      isAddressAdd: false,
+      // isAddressAdd: false,
       isDaumToggle: false,
       daumAddress: "",
       sigunguCode: "",
@@ -293,6 +256,11 @@ export default {
       phoneNumberFirst: "",
       phoneNumberSecond: "",
       phoneNumberThird: "",
+      purchaseColor: "",
+      purchaseSize: "",
+      purchaseProductNumber: "",
+      purchaseId: "",
+      detailData: [],
     };
   },
   components: { Header, Footer, VueDaumPostcode },
@@ -307,7 +275,7 @@ export default {
     dialogCanceled() {
       this.daumAddress = "";
       this.sigunguCode = "";
-      this.isAddressAdd = false;
+      // this.isAddressAdd = false;
       this.detailAddress = "";
       this.name = "";
       this.phoneNumberFirst = "";
@@ -336,9 +304,9 @@ export default {
     },
 
     //상세 주소 입력 활/비활성화
-    addAddressHandler() {
-      this.isAddressAdd = !this.isAddressAdd;
-    },
+    // addAddressHandler() {
+    //   this.isAddressAdd = !this.isAddressAdd;
+    // },
 
     //다음 우편 정보 상태값 토글
     findAddressHandler() {
@@ -360,6 +328,29 @@ export default {
       if (e.keyCode < 48 || e.keyCode > 57) {
         e.preventDefault();
       }
+    },
+
+    deliveredCheckHandler() {
+      if (this.name === "") {
+        alert("수령인을 입력해주세요.");
+        return;
+      } else if (
+        this.phoneNumberFirst === "" ||
+        this.phoneNumberSecond === "" ||
+        this.phoneNumberThird === ""
+      ) {
+        alert("휴대폰 번호를 입력해주세요.");
+        return;
+      } else if (
+        this.detailAddress === "" ||
+        this.sigunguCode === "" ||
+        this.daumAddress === ""
+      ) {
+        alert("배송지 정보를 입력해주세요.");
+        return;
+      }
+
+      this.dialog = false;
     },
   },
 };
@@ -608,6 +599,8 @@ export default {
     }
 
     .address {
+      text-align: left !important;
+      padding-left: 10px;
       width: 350px;
       height: 45px;
       margin-top: 10px;
@@ -729,9 +722,10 @@ export default {
       }
 
       .addressSecond {
-        text-align: center;
+        text-align: left;
         width: 100%;
         padding-top: 8px;
+        padding-left: 10px;
         margin: 0 10px 10px 100px;
         height: 40px;
         border: 0.5px solid #bdbdbd;

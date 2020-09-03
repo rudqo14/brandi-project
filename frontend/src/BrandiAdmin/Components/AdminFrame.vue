@@ -22,7 +22,10 @@
               <!-- More 버튼 생성 -->
               <template v-slot:activator>
                 <v-list-item-content>
-                  <v-list-item-title style=" font-size: 16px;font-weight: 400;">{{ item.text }}</v-list-item-title>
+                  <v-list-item-title
+                    style=" font-size: 16px;font-weight: 400;"
+                    >{{ item.text }}</v-list-item-title
+                  >
                 </v-list-item-content>
               </template>
 
@@ -35,7 +38,8 @@
               >
                 <v-list-item-title
                   style="padding-left : 14px;font-size: 15px;font-weight: 400;"
-                >{{ child.text }}</v-list-item-title>
+                  >{{ child.text }}</v-list-item-title
+                >
               </v-list-item>
             </v-list-group>
           </template>
@@ -56,18 +60,24 @@ import AdminHeader from "./AdminHeader";
 import { items } from "../../../itemConfig";
 export default {
   components: {
-    AdminHeader
+    AdminHeader,
   },
   data() {
     return {
-      items: items
+      items: items,
     };
   },
   methods: {
     detailPage(path) {
-      this.$router.push(`${path}`);
-    }
-  }
+      if (path === "admin/productRegistration") {
+        this.$router.push("productRegistration");
+      } else if (path === "admin/productManagement") {
+        this.$router.push("productManagement");
+      } else if (path === "admin/orderManagement") {
+        this.$router.push("orderManagement");
+      }
+    },
+  },
 };
 </script>
 

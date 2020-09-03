@@ -7,13 +7,8 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select
-            class="select"
-            :items="items"
-            label="Select.."
-            dense
-          ></v-select>
-          <input class="search" placeholder="검색어를 입력하세요." />
+          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense></v-select>
+          <input v-model="searchInputContents" class="search" placeholder="검색어를 입력하세요." />
         </div>
       </div>
       <div class="filterContainer">
@@ -24,55 +19,59 @@
             class="btnAll"
             name="전체"
             v-bind:color="sellData === '전체' ? 'primary' : 'white'"
-            >전체</v-btn
-          >
+          >전체</v-btn>
           <v-btn
             v-on:click="sellHandler"
             class="btnV"
             name="오늘"
             v-bind:color="sellData === '오늘' ? 'primary' : 'white'"
-            >오늘</v-btn
-          >
+          >오늘</v-btn>
           <v-btn
             v-on:click="sellHandler"
             class="btnV"
             name="3일"
             v-bind:color="sellData === '3일' ? 'primary' : 'white'"
-            >3일</v-btn
-          >
+          >3일</v-btn>
           <v-btn
             v-on:click="sellHandler"
             class="btnV"
             name="1주일"
             v-bind:color="sellData === '1주일' ? 'primary' : 'white'"
-            >1주일</v-btn
-          >
+          >1주일</v-btn>
           <v-btn
             v-on:click="sellHandler"
             class="btnV"
             name="1개월"
             v-bind:color="sellData === '1개월' ? 'primary' : 'white'"
-            >1개월</v-btn
-          >
+          >1개월</v-btn>
           <v-btn
             v-on:click="sellHandler"
             class="btnV"
             name="3개월"
             v-bind:color="sellData === '3개월' ? 'primary' : 'white'"
-            >3개월</v-btn
-          >
+          >3개월</v-btn>
         </div>
-        <a-range-picker :format="dateFormat" @change="onChange" />
+        <div>
+          <a-date-picker
+            v-model="startValue"
+            :disabled-date="disabledStartDate"
+            format="YYYY-MM-DD"
+            placeholder="Start"
+            @openChange="handleStartOpenChange"
+          />
+          <a-date-picker
+            v-model="endValue"
+            :disabled-date="disabledEndDate"
+            format="YYYY-MM-DD"
+            placeholder="End"
+            :open="endOpen"
+            @openChange="handleEndOpenChange"
+          />
+        </div>
       </div>
       <div class="centerContainer">
-        <v-btn tile class="btnSearch" color="primary">검색</v-btn>
-        <v-btn
-          tile
-          v-on:click="filterResetHandler"
-          class="searchReset"
-          color="white"
-          >초기화</v-btn
-        >
+        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
+        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
       </div>
     </article>
     <div class="subTitle">
@@ -86,12 +85,8 @@
             </div>
           </div>
           <div v-if="isToggleOrder === true" class="toggleDataContainer">
-            <div class="toggleList" v-on:click="orderToggleClick">
-              최신주문일순
-            </div>
-            <div class="toggleList" v-on:click="orderToggleClick">
-              주문일의 역순
-            </div>
+            <div class="toggleList" v-on:click="orderToggleClick">최신주문일순</div>
+            <div class="toggleList" v-on:click="orderToggleClick">주문일의 역순</div>
           </div>
         </div>
         <div class="toggleContainer">
@@ -117,80 +112,61 @@
         <v-btn color="primary" small>주문취소처리</v-btn>
       </div>
       <div class="excelContainer">
-        <v-btn class="excelBtn" color="success" small
-          >선택상품 엑셀다운로드</v-btn
-        >
-        <v-btn class="excelBtn" color="success" small
-          >전체상품 엑셀다운로드</v-btn
-        >
+        <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
+        <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
       </div>
     </div>
     <article class="tableArticle">
-      <table class="dataTable">
-        <thead class="tableTitle">
-          <tr>
-            <th class="checkboxContainer">
-              <input
-                @click="totalCheckedHandler"
-                class="checkbox"
-                :checked="totalChecked"
-                type="checkbox"
-              />
-            </th>
-            <th>결제일자</th>
-            <th>주문번호</th>
-            <th>주문상세번호</th>
-            <th>상품명</th>
-            <th>옵션정보</th>
-            <th>수량</th>
-            <th>주문자명</th>
-            <th>핸드폰번호</th>
-            <th>결제금액</th>
-            <th>주문상태</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, i) in orderData.data" :key="i">
-            <td class="checkboxContainer">
-              <input
-                @click="checkedHandler"
-                class="checkbox"
-                v-bind:checked="isChecked"
-                type="checkbox"
-              />
-            </td>
-            <td>{{ item.order_time }}</td>
-            <td>{{ item.order_no }}</td>
-            <td>{{ item.order_detail_no }}</td>
-            <td class="productName">{{ item.product_name }}</td>
-            <td>{{ item.color }} / {{ item.size }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.user_name }}</td>
-            <td>{{ item.phone_number }}</td>
-            <td>{{ Math.floor(item.price).toLocaleString(5) + "원" }}</td>
-            <td>{{ item.order_status }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="scrollcontainer">
+        <table class="dataTable">
+          <thead class="tableTitle">
+            <tr>
+              <th class="checkboxContainer">
+                <input v-model="checked" class="checkbox" type="checkbox" />
+              </th>
+              <th>결제일자</th>
+              <th>주문번호</th>
+              <th>주문상세번호</th>
+              <th>상품명</th>
+              <th>옵션정보</th>
+              <th>수량</th>
+              <th>주문자명</th>
+              <th>핸드폰번호</th>
+              <th>결제금액</th>
+              <th>주문상태</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, i) in orderData.data" :key="i">
+              <td class="checkboxContainer">
+                <input class="checkbox" type="checkbox" />
+              </td>
+              <td>{{ item.order_time }}</td>
+              <td>{{ item.order_no }}</td>
+              <td>{{ item.order_detail_no }}</td>
+              <td class="productName">{{ item.product_name }}</td>
+              <td>{{ item.color }} / {{ item.size }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ item.user_name }}</td>
+              <td>{{ item.phone_number }}</td>
+              <td>{{ Math.floor(item.price).toLocaleString(5) + "원" }}</td>
+              <td>{{ item.order_status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <div class="excelAndCancelContainer">
         <div class="cancelContainer">
           <v-btn color="primary" small>주문취소처리</v-btn>
         </div>
         <div class="excelContainer">
-          <v-btn class="excelBtn" color="success" small
-            >선택상품 엑셀다운로드</v-btn
-          >
-          <v-btn class="excelBtn" color="success" small
-            >전체상품 엑셀다운로드</v-btn
-          >
+          <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
+          <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
         </div>
       </div>
       <template>
         <div class="text-center">
-          <v-pagination
-            v-model="page"
-            :length="Math.ceil(totalNumData / toggleNumber)"
-          />
+          <v-pagination v-model="page" :length="Math.ceil(totalNumData / toggleNumber)" />
         </div>
       </template>
     </article>
@@ -198,22 +174,13 @@
 </template>
 
 <script>
-// import HotelDatePicker from "vue-hotel-datepicker";
-// import Datepicker from "vuejs-datepicker";
 import moment from "moment";
 import axios from "axios";
-import { sujungIp } from "../../../config";
+import { sip } from "../../../config";
 
 export default {
   created() {
-    axios
-      .get(
-        `${sujungIp}/admin/order/orderCompletedList?limit=10&page=1&fromDate=20200420`
-      )
-      .then((res) => {
-        this.orderData = res.data;
-        this.totalNumData = res.data.total_number;
-      });
+    this.axiosConnect();
   },
 
   data() {
@@ -225,7 +192,6 @@ export default {
         "주문상세번호",
         "주문자명",
         "핸드폰번호",
-        "셀러명",
         "상품명",
       ],
       isOrderFilter: false,
@@ -240,30 +206,77 @@ export default {
       saleData: "전체",
       displayData: "전체",
       disabledDates: {},
-      startDate: "",
-      endDate: "",
       totalChecked: false,
       isChecked: false,
       tableData: [],
       totalPageNum: 0,
       page: 1,
+      checked: [],
+      startValue: null,
+      endValue: null,
+      endOpen: false,
+      searchInputContents: "",
+      searchValue: "",
+      selectSearch: "",
+      searchFilter: "",
     };
   },
+
   watch: {
-    page: function() {
-      axios
-        .get(
-          `${sujungIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}&fromDate=20200420`
-        )
-        .then((res) => {
-          this.orderData = res.data;
-          this.totalNumData = res.data.total_number;
-        });
+    page: function () {
+      this.axiosConnect();
+    },
+    startValue(val) {},
+
+    endValue(val) {},
+
+    selectSearch(e) {
+      this.searchValue = "";
+      this.selectSearch = e;
     },
   },
 
   methods: {
     moment,
+
+    //DatePicker 적용
+    //startDate와 endDate 클릭할때 disabled 적용하여 클릭하지 못하게끔 함
+    disabledStartDate(startValue) {
+      const endValue = this.endValue;
+      if (!startValue || !endValue) {
+        return false;
+      }
+      return startValue.valueOf() > endValue.valueOf();
+    },
+    disabledEndDate(endValue) {
+      const startValue = this.startValue;
+      if (!endValue || !startValue) {
+        return false;
+      }
+      return startValue.valueOf() >= endValue.valueOf();
+    },
+    //start 토글이 종료되면 endDate토글이 열리게 적용
+    handleStartOpenChange(open) {
+      if (!open) {
+        this.endOpen = true;
+      }
+    },
+    handleEndOpenChange(open) {
+      this.endOpen = open;
+    },
+
+    axiosConnect() {
+      axios
+        .get(
+          `${sip}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}&fromDate=20200420${this.searchFilter}`
+        )
+        .then((res) => {
+          console.log(res);
+          this.orderData = res.data;
+          this.totalNumData = res.data.total_number;
+        });
+    },
+
     //페이지의 아이템을 몇개씩 보여줄껀지에 대한 토글 기능
     pageNumClick() {
       this.isTogglePageNum = !this.isTogglePageNum;
@@ -281,14 +294,7 @@ export default {
         ? (this.isOrderFilter = false)
         : (this.isOrderFilter = true);
 
-      axios
-        .get(
-          `${sujungIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=1&fromDate=20200420`
-        )
-        .then((res) => {
-          this.orderData = res.data;
-          this.totalNumData = res.data.total_number;
-        });
+      this.axiosConnect();
     },
 
     //토글 아이템 클릭시 10개인지 20개인지 필터링하여
@@ -299,24 +305,22 @@ export default {
 
       if (e.target.innerHTML === "10개씩보기") {
         this.toggleNumber = 10;
+        this.page = 1;
       } else if (e.target.innerHTML === "20개씩보기") {
         this.toggleNumber = 20;
+        this.page = 1;
       } else if (e.target.innerHTML === "50개씩보기") {
         this.toggleNumber = 50;
+        this.page = 1;
       } else if (e.target.innerHTML === "100개씩보기") {
         this.toggleNumber = 100;
+        this.page = 1;
       } else if (e.target.innerHTML === "150개씩보기") {
         this.toggleNumber = 150;
+        this.page = 1;
       }
 
-      axios
-        .get(
-          `${sujungIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=1&fromDate=20200420`
-        )
-        .then((res) => {
-          this.orderData = res.data;
-          this.totalNumData = res.data.total_number;
-        });
+      this.axiosConnect();
     },
 
     //판매여부 클릭 이벤트
@@ -326,6 +330,86 @@ export default {
         this.sellData = e.target.name;
       } else {
         this.sellData = e.target.innerText;
+      }
+      //현재에 해당하는 날짜 계산하여 년,월,일 추출
+      const nowYear = new Date().getFullYear();
+      const nowMonth = new Date().getMonth() + 1;
+      const nowDay = new Date().getDate();
+
+      const days = 1000 * 60 * 60 * 24;
+
+      if (this.sellData === "전체") {
+        this.startValue = null;
+        this.endValue = null;
+      } else if (this.sellData === "오늘") {
+        this.startValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
+        this.endValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
+      } else if (this.sellData === "3일") {
+        const beforeYear = new Date(new Date() - 3 * days).getFullYear();
+        const beforeMonth = new Date(new Date() - 3 * days).getMonth() + 1;
+        const beforeDays = new Date(new Date() - 3 * days).getDate();
+
+        this.startValue = moment(
+          `${beforeYear}/${beforeMonth}/${beforeDays}`,
+          this.dateFormat
+        );
+        this.endValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
+      } else if (this.sellData === "1주일") {
+        const beforeYear = new Date(new Date() - 7 * days).getFullYear();
+        const beforeMonth = new Date(new Date() - 7 * days).getMonth() + 1;
+        const beforeDays = new Date(new Date() - 7 * days).getDate();
+
+        this.startValue = moment(
+          `${beforeYear}/${beforeMonth}/${beforeDays}`,
+          this.dateFormat
+        );
+        this.endValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
+      } else if (this.sellData === "1개월") {
+        const prevDate = new Date(
+          new Date().setMonth(new Date().getMonth() - 1)
+        );
+
+        const beforeYear = prevDate.getFullYear();
+        const beforeMonth = prevDate.getMonth() + 1;
+        const beforeDays = prevDate.getDate();
+
+        this.startValue = moment(
+          `${beforeYear}/${beforeMonth}/${beforeDays}`,
+          this.dateFormat
+        );
+        this.endValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
+      } else if (this.sellData === "3개월") {
+        const prevDate = new Date(
+          new Date().setMonth(new Date().getMonth() - 3)
+        );
+
+        const beforeYear = prevDate.getFullYear();
+        const beforeMonth = prevDate.getMonth() + 1;
+        const beforeDays = prevDate.getDate();
+
+        this.startValue = moment(
+          `${beforeYear}/${beforeMonth}/${beforeDays}`,
+          this.dateFormat
+        );
+        this.endValue = moment(
+          `${nowYear}/${nowMonth}/${nowDay}`,
+          this.dateFormat
+        );
       }
     },
     saleHandler(e) {
@@ -349,25 +433,55 @@ export default {
       this.sellData = "전체";
       this.saleData = "전체";
       this.displayData = "전체";
-      this.startDate = null;
-      this.endDate = null;
+      this.startValue = null;
+      this.endValue = null;
+      // this.searchValue = null;
+      this.searchInputContents = "";
+    },
+
+    searchFilterHandler() {
+      // if (this.selectSearch !== "" && this.searchValue === "") {
+      //   alert("검색어를 입력해주세요.");
+      //   return;
+      // }
+      console.log("Test", this.searchInputContents);
+
+      if (this.selectSearch === "주문번호") {
+        this.searchFilter = `&orderId=${this.searchInputContents}`;
+      } else if (this.selectSearch === "주문상세번호") {
+        this.searchFilter = `&orderDetailId=${this.searchInputContents}`;
+      } else if (this.selectSearch === "주문자명") {
+        this.searchFilter = `&orderer=${this.searchInputContents}`;
+      } else if (this.selectSearch === "핸드폰번호") {
+        this.searchFilter = `&phoneNumber=${this.searchInputContents}`;
+      } else if (this.selectSearch === "상품명") {
+        this.searchFilter = `&productName=${this.searchInputContents}`;
+      } else {
+        this.searchFilter = "";
+      }
+
+      this.axiosConnect();
+
+      this.searchFilter = "";
+      this.searchInputContents = "";
+      // this.selectSearch = "";
     },
 
     //테이블에 있는 체크버튼중 최상단 체크박스 클릭시
     //모든 체크버튼 ON/OFF 시킴
-    totalCheckedHandler() {
-      this.totalChecked = !this.totalChecked;
+    // totalCheckedHandler() {
+    //   this.totalChecked = !this.totalChecked;
 
-      if (this.totalChecked) {
-        this.isChecked = true;
-      } else {
-        this.isChecked = false;
-      }
-    },
+    //   if (this.totalChecked) {
+    //     this.isChecked = true;
+    //   } else {
+    //     this.isChecked = false;
+    //   }
+    // },
 
-    checkedHandler() {
-      this.totalChecked = false;
-    },
+    // checkedHandler() {
+    //   this.totalChecked = false;
+    // },
 
     onChange(date, dateString) {
       console.log(date, dateString);
@@ -563,55 +677,40 @@ export default {
       font-weight: bold;
     }
   }
+  .scrollcontainer {
+    overflow-x: scroll;
 
-  .dataTable {
-    display: table;
-    border: 1px solid black;
-    width: 100%;
-    height: 40px;
-    font-size: 14px;
-    text-align: center;
-    border-collapse: collapse;
+    .dataTable {
+      display: table;
+      border: 1px solid black;
+      min-width: 1600px;
+      height: 40px;
+      font-size: 14px;
+      text-align: center;
+      border-collapse: collapse;
+      white-space: nowrap;
 
-    th,
-    td {
-      padding: 8px 0;
-      vertical-align: top;
-      border: 0.5px solid rgb(221, 221, 211);
-    }
-
-    .productName {
-      width: 400px;
-      padding: 5px 20px;
-    }
-
-    .checkboxContainer {
-      width: 50px;
-      height: 30px;
-
-      .checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
+      th,
+      td {
+        min-width: 100px;
+        padding: 8px 4px;
+        vertical-align: top;
+        border: 0.5px solid rgb(221, 221, 211);
       }
-    }
 
-    .imgBox {
-      width: 87px;
-    }
+      .productName {
+        /* width: 400px; */
+        padding: 5px 20px;
+      }
 
-    .imgTd {
-      width: 87px;
-      height: 87px;
+      .checkboxContainer {
+        width: 50px;
+        height: 30px;
 
-      .imgContainer {
-        width: 70px;
-        height: 70px;
-        margin: 0 8px;
-
-        img {
-          width: 100%;
-          height: 100%;
+        .checkbox {
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
         }
       }
     }

@@ -2,8 +2,8 @@
   <div>
     <section class="main">
       <main class="article">
-        <h1 class="title">오늘 사면 내일 도착!</h1>
-        <h2 class="subTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
+        <h1 class="loginTitle">오늘 사면 내일 도착!</h1>
+        <h2 class="subLoginTitle">무료배송으로 내일 받는 브랜디 LOGIN</h2>
         <div class="loginContainer">
           <input class="loginInput" placeholder="아이디 입력" />
           <input class="loginInput" placeholder="비밀번호 입력" />
@@ -38,39 +38,43 @@ import Footer from "../Components/Footer";
 export default {
   components: {
     GoogleLogin,
-    Footer
+    Footer,
   },
   data() {
     return {
       //구글 로그인 하기
       params: {
-        client_id: ClientId
+        client_id: ClientId,
       },
       renderParams: {
         width: 250,
         height: 50,
-        longtitle: true
-      }
+        longtitle: true,
+      },
     };
   },
   methods: {
     onSuccess(googleUser) {
+      localStorage.setItem("user_id", googleUser.tt.Ad);
+      localStorage.setItem("user_email", googleUser.tt.bu);
+
       //axios 사용함에 있어 body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
       const data = {};
       const headers = {
-        headers: { Authorization: googleUser.wc.id_token }
+        headers: { Authorization: googleUser.wc.id_token },
       };
-      axios.post(`${sip}/user/google-signin`, data, headers).then(res => {
+      axios.post(`${sip}/user/google-signin`, data, headers).then((res) => {
         if (res.data.access_token) {
           this.$store.state.serviceStore.accessToken = res.data.access_token;
+
           localStorage.setItem("access_token", res.data.access_token);
           this.$router.push("/main");
         } else {
           alert("로그인 정보가 맞지 않습니다. 다시 시도해주세요.");
         }
       });
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -83,14 +87,14 @@ export default {
     flex-direction: column;
     align-items: center;
 
-    .title {
+    .loginTitle {
       font-size: 34px;
       font-weight: bold;
       color: #ff204b;
       font-family: "Spoqa Han Sans", Sans-serif;
     }
 
-    .subTitle {
+    .subLoginTitle {
       margin-top: 20px;
       font-size: 32px;
       font-weight: 100;
