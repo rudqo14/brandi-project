@@ -29,7 +29,8 @@ def create_admin_order_endpoints(order_service):
         Param('orderDetailId', GET, int, required=False),
         Param('orderer', GET, str, required=False),
         Param('phoneNumber', GET, str, required=False),
-        Param('productName', GET, str, required=False)
+        Param('productName', GET, str, required=False),
+        Param('toDate', GET, int, required=False, rules=[DatetimeRule()])
     )
     def order_list(*args):
 
@@ -51,7 +52,8 @@ def create_admin_order_endpoints(order_service):
                 'order_detail_id'   : args[5],
                 'orderer'           : args[6],
                 'phone_number'      : args[7],
-                'product_name'      : args[8]
+                'product_name'      : args[8],
+                'to_date'           : args[9]
             }
 
             if db_connection:
@@ -90,8 +92,8 @@ def create_admin_order_endpoints(order_service):
             return jsonify({"message" : f"VALUE_ERROR_AS_{e}"}), 400
 
         #정의하지 않은 모든 error를 잡아줌
-        #except Exception as e:
-            #return jsonify({"message" : f'{e}'}), 400
+        except Exception as e:
+            return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
