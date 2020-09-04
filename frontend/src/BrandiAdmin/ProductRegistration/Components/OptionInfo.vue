@@ -37,14 +37,18 @@
                   <td class="optionCate">색상</td>
                   <td class="colorSelectBox">
                     <select
+                      @change="onchange"
+                      v-model="optionData[0].color[list]"
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
                     >
-                      <option value="">색상 옵션을 선택해 주세요</option>
+                      <option value="" selected
+                        >색상 옵션을 선택해 주세요</option
+                      >
                       <option
                         v-for="list in option.data.color"
-                        :value="list.color_no"
+                        :value="list.name"
                         :key="list.color_no"
                         >{{ list.name }}</option
                       >
@@ -184,9 +188,8 @@ export default {
       stockDefaultValue: 1,
       colorListSize: 1,
       sizeListSize: 1,
-      // color: [],
-      // size: [],
       option: {},
+      optionData: [{ color: [], size: [], Quantity: [] }],
       colorSelectList: [1],
       sizeSelectList: [1],
     };
@@ -196,8 +199,6 @@ export default {
     getOptionData() {
       axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
         this.option = res.data;
-        // this.color = this.option.color;
-        // this.size = this.option.size;
       });
     },
 
@@ -208,6 +209,7 @@ export default {
 
     colorSelectDelete(e) {
       let colorSelectId = parseInt(e.target.value);
+      console.log("colorSelectId: ", colorSelectId);
       const idx = this.colorSelectList.indexOf(colorSelectId);
       this.colorSelectList.splice(idx, 1);
     },
@@ -223,6 +225,18 @@ export default {
       console.log("sizeSelectList: ", this.sizeSelectList);
       const idx = this.sizeSelectList.indexOf(sizeSelectId);
       this.sizeSelectList.splice(idx, 1);
+    },
+
+    onchange(e) {
+      console.log("color: ", this.optionData[0].color);
+    },
+    optCheck(e) {
+      let colorName = e.target.value;
+      console.log(e.target.value);
+      this.optionData[0].color.splice(0, 1);
+      this.optionData[0].color.push(colorName);
+
+      console.log("optionData.color: ", this.optionData[0].color);
     },
   },
 };

@@ -67,7 +67,7 @@ export default {
         colorButton: "colors",
 
         extraPlugins: "font,colorbutton,justify",
-        filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product`,
+        filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product/detail-image`,
 
         // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
         filebrowserImageBrowseUrl:
