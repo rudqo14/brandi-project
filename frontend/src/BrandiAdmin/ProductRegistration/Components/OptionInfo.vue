@@ -37,8 +37,7 @@
                   <td class="optionCate">색상</td>
                   <td class="colorSelectBox">
                     <select
-                      @change="onchange"
-                      v-model="optionData[0].color[list]"
+                      @change="selectColors"
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
@@ -75,12 +74,16 @@
                 <tr class="sizeOpt bodyTable">
                   <td class="optionCate">사이즈</td>
                   <td class="sizeSelectBOx">
-                    <select v-for="list in sizeSelectList" :key="list">
+                    <select
+                      @change="selectSizes"
+                      v-for="list in sizeSelectList"
+                      :key="list"
+                    >
                       <option value="">사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
-                        :value="list.size_no"
+                        :value="list.name"
                         >{{ list.name }}</option
                       >
                     </select>
@@ -119,7 +122,7 @@
               </tfoot>
             </table>
             <div class="applyBtn">
-              <v-btn color="primary" large>적용</v-btn>
+              <v-btn @click="applyOptions" color="primary" large>적용</v-btn>
             </div>
             <table class="secondOption">
               <thead class="secondHeading">
@@ -171,7 +174,10 @@
 
 <script>
 import axios from "axios";
+import { mapMutations } from "vuex";
 import { ADMIN_API_URL } from "../../../../config";
+
+const AdminStore = "adminStore";
 
 export default {
   created() {
@@ -189,13 +195,15 @@ export default {
       colorListSize: 1,
       sizeListSize: 1,
       option: {},
-      optionData: [{ color: [], size: [], Quantity: [] }],
+      optionData: [{ color: [], size: [], quantity: [] }],
+      updateOptionData: [{ color: [], size: [], quantity: [] }],
       colorSelectList: [1],
       sizeSelectList: [1],
     };
   },
 
   methods: {
+    ...mapMutations(AdminStore, ["upDateOptionColor", "upDateOptionSize"]),
     getOptionData() {
       axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
         this.option = res.data;
@@ -227,16 +235,24 @@ export default {
       this.sizeSelectList.splice(idx, 1);
     },
 
-    onchange(e) {
-      console.log("color: ", this.optionData[0].color);
-    },
-    optCheck(e) {
+    selectColors(e) {
       let colorName = e.target.value;
       console.log(e.target.value);
       this.optionData[0].color.splice(0, 1);
       this.optionData[0].color.push(colorName);
-
+      this.updateOptionData[0].color.push(colorName);
+      this.upDateOptionColor(this.updateOptionData[0].color);
       console.log("optionData.color: ", this.optionData[0].color);
+    },
+
+    selectSizes(e) {
+      let sizeName = e.target.value;
+      console.log(e.target.value);
+      this.optionData[0].size.splice(0, 1);
+      this.optionData[0].size.push(sizeName);
+      this.updateOptionData[0].size.push(sizeName);
+      this.upDateOptionSize(this.updateOptionData[0].size);
+      console.log("optionData.size: ", this.optionData[0].size);
     },
   },
 };

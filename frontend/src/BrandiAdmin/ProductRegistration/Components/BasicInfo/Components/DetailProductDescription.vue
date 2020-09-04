@@ -70,13 +70,13 @@ export default {
         filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product/detail-image`,
 
         // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
-        filebrowserImageBrowseUrl:
-          "/apps/ckfinder/3.4.5/ckfinder.html?type=Images",
+        //filebrowserImageBrowseUrl:
+        //  "https://brandi-project.s3.ap-northeast-2.amazonaws.com/detail_2020_9_4_1599205694",
 
         //  filebrowserUploadUrl : String
         //  파일 업로드를 처리하는 스크립트의 위치 설정하면 업로드 탭이 링크 , 이미지 및 플래시 대화 상자 창에 나타남
-        // filebrowserUploadUrl:
-        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files",
+        //filebrowserUploadUrl:
+        //  "https://brandi-project.s3.ap-northeast-2.amazonaws.com/detail_2020_9_4_1599205694",
         // uploadUrl:
         //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files&responseType=json",
       },

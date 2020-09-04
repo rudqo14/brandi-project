@@ -12,6 +12,7 @@ const adminStore = {
     product_image_5: "",
     formDatas: null,
     detailInformation: null,
+    allOptions: [{ color: [], size: [], quantity: [] }],
     // price
     // discountRate
     // discountStartDate
@@ -80,6 +81,14 @@ const adminStore = {
       state.detailInformation = detailInformation;
     },
 
+    upDateOptionColor(state, color) {
+      state.allOptions[0].color = color;
+    },
+
+    upDateOptionSize(state, size) {
+      state.allOptions[0].size = size;
+    },
+
     // ProductRegistration.vue 에서 state 데이터 확인용
     registration(state) {
       console.log("state.sellYn: ", state.sellYn);
@@ -92,6 +101,7 @@ const adminStore = {
       console.log("state.product_image_4: ", state.product_image_5);
       console.log("state.product_image_5: ", state.product_image_1);
       console.log("state.detailInformation: ", state.detailInformation);
+      console.log("state.allOptions: ", state.allOptions);
     },
   },
 
