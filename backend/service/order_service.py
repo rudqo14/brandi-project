@@ -72,6 +72,12 @@ class OrderService:
                     or filter_info['product_name'] ):
                 return None
 
+        if filter_info['to_date']:
+            filter_info['to_date'] += 1
+
+        if filter_info['product_name']:
+            filter_info['product_name'] = f"%{filter_info['product_name']}%"
+
         return filter_info
 
     def get_total_number(self, filters, db_connection):

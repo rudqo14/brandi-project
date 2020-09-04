@@ -265,6 +265,8 @@ class ProductDao:
                 Image 테이블 필드명을 나누어 image > image_medium으로 바꿈
             2020-09-01 (minho.lee0716@gmail.com) : 수정
                 상품을 최신 등록순으로 보여주기 위해 내림차순(DESC)으로 정렬
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                현재 이력 조회 조건 변경
 
         """
 
@@ -282,8 +284,7 @@ class ProductDao:
 
             LEFT JOIN product_images as PI
             ON P.product_no = PI.product_id
-            AND CURRENT_TIMESTAMP >= PI.start_time
-            AND PI.close_time >= CURRENT_TIMESTAMP
+            AND PI.close_time = '9999-12-31 23:59:59'
             AND PI.is_main = 1
 
             LEFT JOIN images as I
@@ -294,8 +295,7 @@ class ProductDao:
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
-            AND CURRENT_TIMESTAMP >= PD.start_time
-            AND PD.close_time >= CURRENT_TIMESTAMP
+            AND PD.close_time = '9999-12-31 23:59:59'
 
             WHERE
                 P.is_deleted = False
@@ -333,6 +333,8 @@ class ProductDao:
             2020-08-31 (minho.lee0716@gmail.com) : 키값 수정
                 detail_information > html,
                 product_no > product_id
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                현재 이력 조회 조건 변경
 
         """
 
@@ -354,8 +356,7 @@ class ProductDao:
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
-            AND CURRENT_TIMESTAMP >= PD.start_time
-            AND PD.close_time >= CURRENT_TIMESTAMP
+            AND PD.close_time = '9999-12-31 23:59:59'
 
             WHERE
                 P.is_deleted = 0
@@ -701,10 +702,12 @@ class ProductDao:
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
             2020-08-31 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 현재 이력 조회하는 조건 수정
 
         """
 
@@ -718,8 +721,7 @@ class ProductDao:
 
             LEFT JOIN product_images AS PI
             ON P.product_no = PI.product_id
-            AND CURRENT_TIMESTAMP >= PI.start_time
-            AND CURRENT_TIMESTAMP <= PI.close_time
+            AND PI.close_time = '9999-12-31 23:59:59'
 
             LEFT JOIN images AS I
             ON PI.image_id = I.image_no
@@ -761,11 +763,13 @@ class ProductDao:
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-30 (minho.lee0716@gmail.com) : 초기 생성
             2020-08-31 (minho.lee0716@gmail.com) : 현재 이력만 조회하는 조건 추가
             2020-08-31 (minho.lee0716@gmail.com) : 옵션 전체가 아닌, 컬러만 조회하기
+            2020-09-04 (tnwjd060124@gmail.com)   : 현재 이력만 조회하는 조건 변경
 
         """
 
@@ -784,8 +788,7 @@ class ProductDao:
 
             LEFT JOIN option_details AS OD
             ON PO.product_option_no = OD.product_option_id
-            AND CURRENT_TIMESTAMP >= OD.start_time
-            AND CURRENT_TIMESTAMP <= OD.close_time
+            AND OD.close_time = '9999-12-31 23:59:59'
 
             LEFT JOIN colors AS C
             ON OD.color_id = C.color_no
@@ -824,12 +827,15 @@ class ProductDao:
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
             2020-09-01 (minho.lee0716@gmail.com) : 수정
                 DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                현재 이력만 조회하는 조건 수정
 
         """
 
@@ -849,8 +855,7 @@ class ProductDao:
 
             LEFT JOIN option_details AS OD
             ON PO.product_option_no = OD.product_option_id
-            AND CURRENT_TIMESTAMP >= OD.start_time
-            AND CURRENT_TIMESTAMP <= OD.close_time
+            AND OD.close_time = '9999-12-31 23:59:59'
 
             LEFT JOIN colors AS C
             ON OD.color_id = C.color_no
@@ -860,8 +865,7 @@ class ProductDao:
 
             LEFT JOIN quantities AS Q
             ON OD.option_detail_no = Q.option_detail_id
-            AND CURRENT_TIMESTAMP >= Q.start_time
-            AND CURRENT_TIMESTAMP <= Q.close_time
+            AND Q.close_time = '9999-12-31 23:59:59'
 
             WHERE
                 P.product_no = %(product_id)s

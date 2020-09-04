@@ -19,6 +19,8 @@ class OrderDao:
             2020-08-24 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문 시 유효한 데이터만 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
 
         """
 
@@ -55,6 +57,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                select_list += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -94,7 +102,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 select_list += """
@@ -186,6 +194,8 @@ class OrderDao:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문시 유효한 데이터 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
 
         """
 
@@ -212,6 +222,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                count_num += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -251,7 +267,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 count_num += """
@@ -298,6 +314,7 @@ class OrderDao:
                 count_num += """
                 WHERE order_no = %(order_id)s
                 """
+
             cursor.execute(count_num, filter_info)
 
             total_num = cursor.fetchone()
@@ -410,11 +427,13 @@ class OrderDao:
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-02 (minho.lee0716@gmail.com) : 상품의 모든 정보를 받는 객체가 아닌 상품 id만 받는걸로 수정했습니다.
             2020-09-03 (minho.lee0716@gmail.com) : 상품의 모든 정보를 담는 객체를 받아 색상과 사이즈 또한 리턴.
+            2020-09-04 (tnwjd060124@gmail.com) : 현재 유효한 데이터 리턴하는 조건 변경
 
         """
 
@@ -438,14 +457,12 @@ class OrderDao:
                 ON P.product_no = PD.product_id
                 AND PD.is_activated = True
                 AND PD.is_displayed = True
-                AND CURRENT_TIMESTAMP >= PD.start_time
-                AND CURRENT_TIMESTAMP <= PD.close_time
+                AND PD.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN product_images AS PI
                 ON P.product_no = PI.product_id
                 AND PI.is_main = True
-                AND CURRENT_TIMESTAMP >= PI.start_time
-                AND CURRENT_TIMESTAMP <= PI.close_time
+                AND PI.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN images AS I
                 ON PI.image_id = I.image_no
@@ -457,8 +474,7 @@ class OrderDao:
 
                 LEFT JOIN option_details AS OD
                 ON PO.product_option_no = OD.product_option_id
-                AND CURRENT_TIMESTAMP >= OD.start_time
-                AND CURRENT_TIMESTAMP <= OD.close_time
+                AND OD.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN colors AS C
                 ON OD.color_id = C.color_no
