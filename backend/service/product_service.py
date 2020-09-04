@@ -1,7 +1,8 @@
-import json
+import json, datetime, time, io
 from PIL import Image
 
 from utils import ResizeImage
+from config import S3
 
 class ProductService:
 
@@ -30,11 +31,11 @@ class ProductService:
                 minSalesQuantity  : 최소판매 수량
                 maxSalesQuantity  : 최대판매 수량
                 optionQuantity    : 옵션별 수량 List
-                    {
-                        colorId  : 상품 색상 id
-                        sizeId   : 상품 사이즈 id
-                        quantity : 상품 재고수량
-                    }
+                {
+                    colorId  : 상품 색상 id
+                    sizeId   : 상품 사이즈 id
+                    quantity : 상품 재고수량
+                }
 
             db_connection : DATABASE Connection Instance
 
@@ -117,6 +118,7 @@ class ProductService:
 
         History:
             2020-08-27 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : product_code 추가에 따른 구조 수정
 
         """
 
@@ -147,6 +149,7 @@ class ProductService:
                     if width < 640 or height < 720 :
                         raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
 
+            # image file name에 등록되는 product_code 조회
             product_code = self.product_dao.select_product_code(product_id, db_connection)
 
             # 상품 이미지 받아오기 및 유효성 검사 이후 S3 upload
@@ -353,30 +356,123 @@ class ProductService:
 
         """
 
-        Sub Category 목록을 Return 하는Business Layer(service) function
+        Filtering을 통한 상품 List와 Total Count를 Return 하는Business Layer(service) function
 
         Args:
-            main_cetegory_id : main_categories 테이블의 PK
+            product_info:
+                sellYN       : 판매 여부
+                exhibitionYn : 진열 여부
+                discountYn   : 할인 여부
+                registDate   : 등록 일자(기준 시작일, 기준 종료일)
+                {
+                    startDate : "YYYYmmdd",
+                    endDate   : "YYYYmmdd"
+                }
+                productName  : 상품 이름
+                productNo    : 상품 번호
+                productCode  : 상품 코드
+                limit        : 페이지 당 상품 수
+                page         : 페이지 리스트 시작 기준
+
             db_connection    : DATABASE Connection Instance
 
         Returns:
-            "data": [
-                {
-                  "name"            : "{sub_category_name}",
-                  "sub_category_no" : {sub_category_no}
-                }
+            data: [
+                [
+                    {
+                        discountPrice        : 할인가
+                        discountRate         : 할인율
+                        discountYn           : 할인 여부
+                        productCode          : 상품 코드
+                        productExhibitYn     : 진열 여부
+                        productName          : 상품 이름
+                        productNo            : 상품 번호
+                        productRegistDate    : 상품 등록 일시
+                        productSellYn        : 판매 여부
+                        productSmallImageUrl : SMALL SIZE IMAGE URL
+                        sellPrice            : 상품 가격
+                    }
+                ],
+                    {
+                        "total": 검색된 상품 개수
+                    }
             ]
 
         Author:
             sincerity410@gmail.com (이곤호)
 
         History:
-            2020-08-30 (sincerity410@gmail.com) : 초기생성
+            2020-09-02 (sincerity410@gmail.com) : 초기생성
 
         """
 
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+        # page 값으로 offset 정보 획득
+        filter_info['offset'] = filter_info['page'] * filter_info['limit'] - filter_info['limit']
+
+        # DB connection으로 (상품 List & Total Count) Return 하는 select_registered_product_list 함수 호출
         product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
 
-        # 모든 Main Category 정보 Return
         return product_list
+
+    def upload_detail_image(self, image, s3_connection, db_connection):
+
+        """
+
+        상품 상세 이미지 등록 - Business Layer(service) function
+
+        Args:
+            image         : File Request
+                {'product_detail_image' : <FileStorage: {filename} ({content_type})>}
+            s3_connection : S3 Connection Instance
+            db_connection :
+
+        Returns:
+            image URL
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-03 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            # 사진 미등록 시 예외처리
+            if image.get('product_detail_image', None) == None :
+                raise Exception('IMAGE_IS_REQUIRED')
+
+            detail_image = image.get('product_detail_image')
+
+            # 파일이 Image가 아닌 경우 Exception 발생
+            opend_image   = Image.open(detail_image)
+            width, height = opend_image.size
+
+            # 사이즈가 너무 작은 경우 예외처리
+            if width < 1000:
+                raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
+
+            # buffer 초기화
+            buffer = io.BytesIO()
+            opend_image.save(buffer, "JPEG")
+            buffer.seek(0)
+
+            # image file name 설정: detail_yyyy_mm_dd_{unix_time_stamp}
+            time_now  = datetime.datetime.now()
+            file_name = f"detail_{time_now.year}_{time_now.month}_{time_now.day}_{int(time.time())}"
+
+            # S3 Push
+            s3_connection.put_object(
+                Body        = buffer,
+                Bucket      = 'brandi-project',
+                Key         = file_name,
+                ContentType = detail_image.content_type
+            )
+
+            # Return 할 URL
+            detail_image_url = f"{S3['aws_url']}{file_name}"
+
+            return detail_image_url
+
+        except Exception as e:
+            raise e

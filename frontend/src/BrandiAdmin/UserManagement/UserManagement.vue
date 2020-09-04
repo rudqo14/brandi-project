@@ -49,7 +49,25 @@
               <td class="check">
                 <input type="checkbox" />
               </td>
-              <td class="userNo">회원 번호</td>
+              <td class="userNo">
+                <div class="idContainer">
+                  <span>회원 번호</span>
+                  <div class="sort">
+                    <i
+                      class="fas fa-sort-up"
+                      v-show="this.sort === false"
+                      id="sortUp"
+                      @click="changeSort"
+                    ></i>
+                    <i
+                      class="fas fa-sort-down"
+                      v-show="this.sort"
+                      id="sortDown"
+                      @click="changeSort"
+                    ></i>
+                  </div>
+                </div>
+              </td>
               <td class="userName">회원명</td>
               <td class="socialNetwork">가입계정</td>
               <td class="phoneNumber">휴대폰</td>
@@ -87,18 +105,38 @@
               <td class="accessOS"></td>
               <td class="lastAccess">
                 <div>
-                  <a-date-picker v-model="lastAccessFrom" :format="dateFormat" placeholder="From" />
+                  <a-date-picker
+                    v-model="lastAccessFrom"
+                    :format="dateFormat"
+                    placeholder="From"
+                    :disabled-date="disabledAccessFrom"
+                  />
                 </div>
                 <div>
-                  <a-date-picker v-model="lastAccessTo" :format="dateFormat" placeholder="To" />
+                  <a-date-picker
+                    v-model="lastAccessTo"
+                    :format="dateFormat"
+                    placeholder="To"
+                    :disabled-date="disabledAccessTo"
+                  />
                 </div>
               </td>
               <td class="createdAt">
                 <div>
-                  <a-date-picker v-model="createdAtFrom" placeholder="From" :format="dateFormat" />
+                  <a-date-picker
+                    v-model="createdAtFrom"
+                    placeholder="From"
+                    :format="dateFormat"
+                    :disabled-date="disabledCreatedFrom"
+                  />
                 </div>
                 <div>
-                  <a-date-picker v-model="createdAtTo" placeholder="To" :format="dateFormat" />
+                  <a-date-picker
+                    v-model="createdAtTo"
+                    placeholder="To"
+                    :format="dateFormat"
+                    :disabled-date="disabledCreatedTo"
+                  />
                 </div>
               </td>
               <td class="actions">
@@ -179,6 +217,7 @@ export default {
   },
   data() {
     return {
+      sort: true,
       dateFormat: "YYYY/MM/DD",
       users: [],
       userTotal: 0,
@@ -207,7 +246,7 @@ export default {
     getUserData() {
       axios
         .get(
-          `${sip}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}${this.query}`
+          `${sip}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
         )
         .then(res => {
           this.users = res.data;
@@ -275,14 +314,46 @@ export default {
       this.getUserData();
     },
     searchData() {
+      this.query = "";
       for (const key in this.filters) {
         if (this.filters[key]) {
           this.query += `&${key}=${this.filters[key]}`;
         }
       }
       this.page = 1;
-      this.selectedLimit = 1;
+      this.selectedLimit = 10;
       this.getUserData();
+    },
+    disabledAccessFrom(lastAccessFrom) {
+      const endValue = this.lastAccessTo;
+      if (!lastAccessFrom || !endValue) {
+        return false;
+      }
+      return lastAccessFrom.valueOf() > endValue.valueOf();
+    },
+    disabledAccessTo(lastAccessTo) {
+      const startValue = this.lastAccessFrom;
+      if (!lastAccessTo || !startValue) {
+        return false;
+      }
+      return startValue.valueOf() >= lastAccessTo.valueOf();
+    },
+    disabledCreatedFrom(createdAtFrom) {
+      const endValue = this.createdAtTo;
+      if (!createdAtFrom || !endValue) {
+        return false;
+      }
+      return createdAtFrom.valueOf() > endValue.valueOf();
+    },
+    disabledCreatedTo(createdAtTo) {
+      const startValue = this.createdAtFrom;
+      if (!createdAtTo || !startValue) {
+        return false;
+      }
+      return startValue.valueOf() >= createdAtTo.valueOf();
+    },
+    changeSort() {
+      this.sort = !this.sort;
     }
   },
   computed: {
@@ -307,67 +378,36 @@ export default {
       },
       deep: true
     },
+    sort: {
+      handler: function(val, oldvalue) {
+        this.getUserData();
+      },
+      deep: true
+    },
     lastAccessFrom(val) {
       if (val) {
-        if (this.lastAccessTo) {
-          if (this.lastAccessTo < val._d) {
-            alert("날짜를 확인해주세요");
-            this.lastAccessFrom = null;
-          } else {
-            this.filters.lastAccessFrom = this.getDateformat(val._d);
-          }
-        } else {
-          this.filters.lastAccessFrom = this.getDateformat(val._d);
-        }
+        this.filters.lastAccessFrom = this.getDateformat(val._d);
       } else {
         this.filters.lastAccessFrom = null;
       }
     },
     lastAccessTo(val) {
       if (val) {
-        if (this.lastAccessFrom) {
-          if (this.lastAccessFrom > val._d) {
-            alert("날짜를 확인해주세요");
-            this.lastAccessTo = null;
-          } else {
-            this.filters.lastAccessTo = this.getDateformat(val._d);
-          }
-        } else {
-          this.filters.lastAccessTo = this.getDateformat(val._d);
-        }
+        this.filters.lastAccessTo = this.getDateformat(val._d);
       } else {
         this.filters.lastAccessTo = null;
       }
     },
     createdAtFrom(val) {
       if (val) {
-        if (this.createdAtTo) {
-          if (this.createdAtTo < val._d) {
-            alert("날짜를 확인해주세요");
-            this.createdAtFrom = null;
-          } else {
-            this.filters.createdAtFrom = this.getDateformat(val._d);
-          }
-        } else {
-          this.filters.createdAtFrom = this.getDateformat(val._d);
-        }
+        this.filters.createdAtFrom = this.getDateformat(val._d);
       } else {
         this.filters.createdAtFrom = null;
       }
     },
     createdAtTo(val) {
-      console.log(val);
       if (val) {
-        if (this.createdAtFrom) {
-          if (this.createdAtFrom > val._d) {
-            alert("날짜를 확인해주세요");
-            this.createdAtTo = null;
-          } else {
-            this.filters.createdAtTo = this.getDateformat(val._d);
-          }
-        } else {
-          this.filters.createdAtTo = this.getDateformat(val._d);
-        }
+        this.filters.createdAtTo = this.getDateformat(val._d);
       } else {
         this.filters.createdAtTo = null;
       }
@@ -483,7 +523,30 @@ header {
         padding: 13px;
       }
       .userNo {
-        padding: 0 10px;
+        width: 80px;
+        padding: 0 5px 0 10px;
+
+        .idContainer {
+          display: flex;
+          width: 68px;
+
+          span {
+            margin-right: 3px;
+          }
+
+          div {
+            width: 10px;
+            margin-left: 3x;
+
+            i {
+              margin: 5px 0;
+              height: 5px;
+              color: rgb(90, 106, 245);
+              cursor: pointer;
+            }
+          }
+        }
+
         input {
           height: 30px;
           border: 1px solid lightgray;

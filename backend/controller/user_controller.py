@@ -292,7 +292,8 @@ def create_admin_user_endpoints(user_service):
         Param('userName', GET, str, required=False),
         Param('socialNetwork', GET, str, required=False),
         Param('phoneNumber', GET, int, required=False),
-        Param('email', GET, str, required=False)
+        Param('email', GET, str, required=False),
+        Param('sort', GET, bool)
     )
     def user_list(*args):
 
@@ -312,6 +313,7 @@ def create_admin_user_endpoints(user_service):
             socialNetwork : 계정 정보 filter
             phoneNumber : 핸드폰 번호 filter
             email : 이메일 filter
+            sort : 정렬 filter
 
         Returns:
             200, {
@@ -332,6 +334,7 @@ def create_admin_user_endpoints(user_service):
 
         History:
             2020-08-20 (tnwjd060124@gmail.com) : 초기 생성
+            2020-09-02 (tnwjd060124@gmail.com) : filter 기능 추가
 
         """
 
@@ -356,7 +359,8 @@ def create_admin_user_endpoints(user_service):
                     'user_name'       : args[7],
                     'social_network'  : args[8],
                     'phone_number'    : args[9],
-                    'email'           : args[10]
+                    'email'           : args[10],
+                    'sort'            : args[11]
                 }
 
                 # 총 유저의 수를 가져와서 total_user에 저장

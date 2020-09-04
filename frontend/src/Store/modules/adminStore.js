@@ -12,19 +12,24 @@ const adminStore = {
     product_image_5: "",
     formDatas: null,
     detailInformation: null,
-    allOptions: [{ color: [], size: [], quantity: [] }],
-    // price
-    // discountRate
-    // discountStartDate
-    // discountEndDate
-    // minSalesQuantity
-    // maxSalesQuantity
-    // optionQuantity
+    price: 0,
+    discountRate: null,
+    discountStartDate: null,
+    discountEndDate: null,
+    minSalesQuantity: 1,
+    maxSalesQuantity: 20,
+    optionQuantity: null,
   },
 
   getters: {
     getData(state) {
       return state;
+    },
+    getPrice(state) {
+      return state.price;
+    },
+    getDiscountRate(state) {
+      return state.discountRate;
     },
   },
 
@@ -80,6 +85,27 @@ const adminStore = {
     upDateDetailInformation(state, detailInformation) {
       state.detailInformation = detailInformation;
     },
+    insertSellingPrice(state, sellingPrice) {
+      state.price = sellingPrice;
+    },
+    insertDiscountRate(state, discountRate) {
+      state.discountRate = discountRate;
+    },
+    insertDiscountPeriod(state, date) {
+      if (date === null) {
+        state.discountStartDate = null;
+        state.discountEndDate = null;
+      } else {
+        state.discountStartDate = date[0];
+        state.discountEndDate = date[1];
+      }
+    },
+    insertMinQuantity(state, value) {
+      state.minSalesQuantity = value;
+    },
+    insertMaxQuantity(state, value) {
+      state.maxSalesQuantity = value;
+    },
 
     upDateOptionColor(state, color) {
       state.allOptions[0].color = color;
@@ -102,6 +128,12 @@ const adminStore = {
       console.log("state.product_image_5: ", state.product_image_1);
       console.log("state.detailInformation: ", state.detailInformation);
       console.log("state.allOptions: ", state.allOptions);
+      console.log("state.price: ", state.price);
+      console.log("state.discountRate: ", state.discountRate);
+      console.log("state.discountStartDate: ", state.discountStartDate);
+      console.log("state.discountEndDate: ", state.discountEndDate);
+      console.log("state.minSalesQuantity: ", state.minSalesQuantity);
+      console.log("state.maxSalesQuantity: ", state.maxSalesQuantity);
     },
   },
 

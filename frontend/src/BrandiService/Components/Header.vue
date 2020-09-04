@@ -67,6 +67,10 @@ export default {
     linkToLogin() {
       if (this.getToken) {
         this.$store.state.serviceStore.accessToken = "";
+        localStorage.removeItem("user_id");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("user_id");
         this.$router.push("/main");
       } else {
         this.$router.push("/login");
@@ -78,11 +82,11 @@ export default {
       } else {
         this.$router.push("/login");
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters(serviceStore, ["getToken"])
-  }
+    ...mapGetters(serviceStore, ["getToken"]),
+  },
 };
 </script>
 

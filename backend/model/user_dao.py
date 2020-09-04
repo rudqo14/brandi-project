@@ -260,20 +260,11 @@ class UserDao:
                 users
             """
 
-            # 핸드폰 번호 filter 기능
-            if filter_info['phone_number']:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                AND user_shipping_details.phone_number = %(phone_number)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                """
+            select_user_query += """
+            LEFT JOIN
+                user_shipping_details
+            ON users.user_no = user_shipping_details.user_id
+            """
 
             # 계정 정보 filter 기능
             if filter_info['social_network']:
@@ -336,9 +327,23 @@ class UserDao:
                 AND users.created_at <= %(created_to)s
                 """
 
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+            if filter_info['sort'] :
+                select_user_query += """
+                ORDER BY
+                    users.user_no DESC
+                """
+            else:
+                select_user_query += """
+                ORDER BY
+                    users.user_no ASC
+                """
+
             select_user_query += """
-            ORDER BY
-                users.user_no DESC
             LIMIT
                 %(limit)s
             OFFSET

@@ -19,6 +19,8 @@ class OrderDao:
             2020-08-24 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문 시 유효한 데이터만 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
 
         """
 
@@ -55,6 +57,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                select_list += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -94,7 +102,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 select_list += """
@@ -186,6 +194,8 @@ class OrderDao:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문시 유효한 데이터 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
 
         """
 
@@ -212,6 +222,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                count_num += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -251,7 +267,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 count_num += """
@@ -298,6 +314,7 @@ class OrderDao:
                 count_num += """
                 WHERE order_no = %(order_id)s
                 """
+
             cursor.execute(count_num, filter_info)
 
             total_num = cursor.fetchone()
@@ -397,36 +414,38 @@ class OrderDao:
 
         """
 
-        서비스 페이지의 상품 상세정보중 사이즈와 수량을 리턴합니다.
+        서비스 페이지에서 상품의 옵션과 수량을 선택 후, 구매하기를 누르면 나오는
+        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 정보입니다.
 
         Args:
+            product_info  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
             db_connection : 연결된 db 객체
 
         Returns:
-            해당 상품에 대한 상세정보의 옵션중 사이즈와 수량을 리턴
+            상품 id를 받아와 상품에 대한 이름, 이미지(S 사이즈)를 리턴해 줍니다.
+            색상과 사이즈의 id값을 받아 해당 색상과 사이즈를 리턴해줍니다.
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
-            2020-08-31 (minho.lee0716@gmail.com) : 초기 생성
-            2020-09-01 (minho.lee0716@gmail.com) : 상품의 id에서 이름을 받는걸로 변경
-            2020-09-01 (minho.lee0716@gmail.com) : 수정
-                DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
+            2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (minho.lee0716@gmail.com) : 상품의 모든 정보를 받는 객체가 아닌 상품 id만 받는걸로 수정했습니다.
+            2020-09-03 (minho.lee0716@gmail.com) : 상품의 모든 정보를 담는 객체를 받아 색상과 사이즈 또한 리턴.
+            2020-09-04 (tnwjd060124@gmail.com) : 현재 유효한 데이터 리턴하는 조건 변경
 
         """
 
         try:
-
-            # 전달받은 객체에 product_id라는 키가 없으면 KEY_ERROR 메세지를 보내줍니다.
-            if not product_info['product_id']:
-                raise Exception('KEY_ERROR')
 
             with db_connection.cursor() as cursor:
 
                 select_seller_product_info_query = """
                 SELECT
                     P.product_no AS product_id,
+                    C.name AS color_name,
+                    S.name AS size_name,
                     PD.name,
                     PD.discount_rate,
                     PD.price,
@@ -438,33 +457,112 @@ class OrderDao:
                 ON P.product_no = PD.product_id
                 AND PD.is_activated = True
                 AND PD.is_displayed = True
-                AND CURRENT_TIMESTAMP >= PD.start_time
-                AND CURRENT_TIMESTAMP <= PD.close_time
+                AND PD.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN product_images AS PI
                 ON P.product_no = PI.product_id
                 AND PI.is_main = True
-                AND CURRENT_TIMESTAMP >= PI.start_time
-                AND CURRENT_TIMESTAMP <= PI.close_time
+                AND PI.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN images AS I
                 ON PI.image_id = I.image_no
                 AND I.is_deleted = False
 
+                LEFT JOIN product_options AS PO
+                ON P.product_no = PO.product_id
+                AND PO.is_deleted = False
+
+                LEFT JOIN option_details AS OD
+                ON PO.product_option_no = OD.product_option_id
+                AND OD.close_time = '9999-12-31 23:59:59'
+
+                LEFT JOIN colors AS C
+                ON OD.color_id = C.color_no
+
+                LEFT JOIN sizes AS S
+                ON OD.size_id = S.size_no
+
                 WHERE
                     P.is_deleted = False
-                    AND P.product_no = %(product_id)s;
+                    AND P.product_no = %(product_id)s
+                    AND C.color_no = %(color_id)s
+                    AND S.size_no = %(size_id)s;
                 """
-                print(product_info['product_id'])
 
-                # cursor객체 실행 시, 인자로 객체를 넘겨주고 키 값을 사용하려고 하기 때문에
-                # 따로 product_id라는 인자를 주지 않고 객체를 넘겨주었습니다.
+                # 상품 번호만 받아와 해당 상품의 정보들을 seller_product에 담아줍니다.
                 cursor.execute(select_seller_product_info_query, product_info)
                 seller_product_info = cursor.fetchone()
 
+                # 셀러의 상품이(구매하려는 상품) 존재하지 않을 경우 예외처리
+                if not seller_product_info:
+                    raise Exception('THIS_PRODUCT_DOES_NOT_EXISTS')
+
                 return seller_product_info
 
-        except KeyError as e:
-            raise e
         except  Exception as e:
+            raise e
+
+    def get_orderer_info(self, user_no, db_connection):
+
+        """
+
+        해당 유저의 id 정보(user_no)를 받아와 유저의 이름와 이메일, 그리고 배송지 정보들을  리턴해 줍니다.
+        상품의 옵션을 선택 후, 구매하기를 눌렀을 때 나오는 '주문자 정보' + '배송지 정보'에 대한 정보입니다.
+
+        Args:
+            user_no       : 해당 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            해당 유저의 이름과 이메일, 그리고 배송지 정보들을  리턴해 줍니다.
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-02 (minho.lee0716@gmail.com) : 수정
+                get_shipping_address_info라는 함수를 없애고 한 번에 유저의 정보와 배송지 정보를 리턴하기로 했습니다.
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # USD라는 테이블은 '배송지 정보'에 관한 정보입니다.
+                select_orderer_info_query = """
+                SELECT
+                    U.name AS orderer_name,
+                    U.email AS orderer_email,
+                    USD.receiver,
+                    USD.phone_number,
+                    USD.address,
+                    USD.additional_address,
+                    USD.zip_code
+
+                FROM
+                users AS U
+
+                LEFT JOIN user_shipping_details AS USD
+                ON U.user_no = USD.user_id
+
+                WHERE
+                    U.is_deleted = False
+                    AND U.user_no = %s;
+                """
+
+                # 헤더의 토큰에서 유저의 id를 받아와 인자로 넣어주면,
+                # 해당 유저의 이름, 이메일, 그리고 배송지 정보들(존재하지 않으면 NULL)을 리턴해 줍니다.
+                cursor.execute(select_orderer_info_query, user_no)
+                orderer_info = cursor.fetchone()
+
+                # 유저의 정보가 존재하지 않는다면
+                if not orderer_info:
+                    raise Exception('UNAUTHORIZED')
+
+                return orderer_info
+
+        except Exception as e:
             raise e

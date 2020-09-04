@@ -16,7 +16,7 @@
               v-for="product in product.data"
               v-bind:key="product.product_id"
             >
-              <div class="productImage" @click="linkToDetail">
+              <div class="productImage" @click="linkToDetail(product)">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
@@ -77,8 +77,8 @@ export default {
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
-    linkToDetail() {
-      this.$router.push("/detail");
+    linkToDetail(product) {
+      this.$router.push(`/detail/${product.product_no}`);
     },
   },
 };
