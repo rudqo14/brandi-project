@@ -122,7 +122,7 @@
               </tfoot>
             </table>
             <div class="applyBtn">
-              <v-btn @click="applyOptions" color="primary" large>적용</v-btn>
+              <v-btn @click="clickApply" color="primary" large>적용</v-btn>
             </div>
             <table class="secondOption">
               <thead class="secondHeading">
@@ -142,26 +142,44 @@
                     옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
                   </td>
                 </tr>
-                <tr>
+                <tr
+                  v-if="applyOn"
+                  v-for="(option, index) in applyOptionData"
+                  :id="index"
+                  :key="index"
+                >
                   <td class="applySelectedColor">
-                    <select name="" id=""
-                      ><option value="">select</option></select
+                    <select name="" id="index"
+                      ><option value="">{{ option.color }}</option></select
                     >
                   </td>
                   <td class="applySelectedSize">
                     <select name="" id=""
-                      ><option value="">select</option></select
+                      ><option value="">{{ option.size }}</option></select
                     >
                   </td>
                   <td>
                     <div class="radioContainer">
                       <v-radio-group v-model="stockDefaultValue" row>
                         <v-radio label="재고수량관리안함" :value="1"></v-radio>
-                        <v-radio label="재고수량관리" :value="2"></v-radio>
+                        <v-radio label="재고수량관리" :value="2">{{
+                          option.quantity
+                        }}</v-radio>
                       </v-radio-group>
                     </div>
                   </td>
-                  <td>삭제</td>
+                  <td>
+                    <v-btn
+                      @click="applyOption(index)"
+                      class="mx-2"
+                      fab
+                      dark
+                      small
+                      color="error"
+                    >
+                      <v-icon dark>mdi-minus</v-icon>
+                    </v-btn>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -197,8 +215,10 @@ export default {
       option: {},
       optionData: [{ color: [], size: [], quantity: [] }],
       updateOptionData: [{ color: [], size: [], quantity: [] }],
+      applyOptionData: [],
       colorSelectList: [1],
       sizeSelectList: [1],
+      applyOn: false,
     };
   },
 
@@ -254,6 +274,30 @@ export default {
       this.upDateOptionSize(this.updateOptionData[0].size);
       console.log("optionData.size: ", this.optionData[0].size);
     },
+
+    clickApply() {
+      this.applyOptions();
+      this.applyOn = true;
+      console.log("updateOptionData: ", this.updateOptionData);
+      console.log("applyOptionData: ", this.applyOptionData);
+    },
+
+    applyOptions() {
+      for (let i = 0; i <= this.updateOptionData[0].color.length - 1; i++) {
+        for (let j = 0; j <= this.updateOptionData[0].size.length - 1; j++) {
+          this.applyOptionData.push({
+            color: this.updateOptionData[0].color[i],
+            size: this.updateOptionData[0].size[j],
+            quantity: 0,
+          });
+        }
+      }
+    },
+    applyOption(index) {
+      console.log("index: ", index);
+      console.log("applyOtionData: ", this.applyOptionData);
+      this.applyOptionData.splice(index, 1);
+    },
   },
 };
 </script>
@@ -282,7 +326,7 @@ export default {
       display: flex;
       align-items: center;
       width: 300px;
-      height: 100%;
+      height: inherit;
       padding-left: 15px;
       border-right: 1px solid lightgray;
       font-size: 15px;
@@ -321,14 +365,12 @@ export default {
 
   .optionInfoInput {
     display: flex;
-    height: 800px;
     border-bottom: 1px solid lightgray;
 
     .inputName {
       display: flex;
       align-items: center;
       width: 305px;
-      height: 100%;
       padding-left: 15px;
       border-right: 1px solid lightgray;
       font-size: 15px;
