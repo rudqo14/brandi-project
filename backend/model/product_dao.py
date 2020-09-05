@@ -556,7 +556,7 @@ class ProductDao:
 
                 affected_row = cursor.execute(
                     insert_option_details_query,
-                    (product_option_id, option['colorId'], option['sizeId'])
+                    (product_option_id, option['color_id'], option['size_id'])
                 )
 
                 if affected_row <= 0 :
@@ -966,21 +966,21 @@ class ProductDao:
                     ELSE "할인"
                 END AS discountYn,
                 IF(PD.is_displayed = 1, "진열", "미진열") as productExhibitYn,
-                IF(PD.is_activated = 1, "판매", "미판매") as productSellYn,
+                IF(PD.is_activated = 1, "판매", "미판매") as productSellYn
 
             FROM (
                 SELECT products.*,
                 CASE
                 	WHEN (product_details.discount_end_date IS NULL AND product_details.discount_start_date IS NULL) AND product_details.discount_rate IS NOT NULL
                 		THEN product_details.discount_rate
-                	WHEN (product_details.discount_end_date IS NOT NULL AND product_details.discount_start_date IS NOT NULL) AND (product_details.discount_start_date >= now() AND product_details.discount_end_date <= now())
+                	WHEN (product_details.discount_end_date IS NOT NULL AND product_details.discount_start_date IS NOT NULL) AND (product_details.discount_start_date <= now() AND product_details.discount_end_date >= now())
                 		THEN product_details.discount_rate
                 	ELSE 0
                 END AS discountRate
                 FROM products
 
             INNER JOIN product_details
-            ON PD.product_id = products.product_no
+            ON product_details.product_id = products.product_no
             ) AS P
 
             INNER JOIN product_images as PI
@@ -1002,13 +1002,13 @@ class ProductDao:
             # Filtering 시작
 
             # 판매 여부 필터링
-            if filter_info.get('sellYn') is not None :
+            if filter_info['sellYn'] is not None :
                 select_product_list_query += """
                 AND PD.is_activated = %(sellYn)s
                 """
 
             # 할인 여부 필터링
-            if filter_info.get('discountYn') is not None :
+            if filter_info['discountYn'] is not None :
                 select_product_list_query += """
                 AND (
                 CASE
@@ -1019,39 +1019,39 @@ class ProductDao:
                 """
 
             # 진열 여부 필터링
-            if 'exhibitionYn' in filter_info :
+            if filter_info['exhibitionYn'] is not None :
                 select_product_list_query += """
                 AND PD.is_displayed = %(exhibitionYn)s
                 """
 
             # 상품 등록 기간 시작일자 필터링
-            if 'startDate' in filter_info :
+            if filter_info['startDate'] is not None :
                 select_product_list_query += """
                 AND P.created_at >= %(startDate)s
                 """
 
             # 상품 등록 기간 종료일자 필터링
-            if 'endDate' in filter_info :
+            if filter_info['endDate'] is not None :
                 filter_info['endDate'] += 1
                 select_product_list_query += """
                 AND P.created_at < %(endDate)s
                 """
 
             # 상품명 일부 일치 조건 필터링
-            if 'productName' in filter_info :
+            if filter_info['productName'] is not None :
                 filter_info['productName'] = f"%{filter_info['productName']}%"
                 select_product_list_query += """
                 AND PD.name like %(productName)s
                 """
 
             # 상품 번호 일치 조건 필터링
-            if 'productNo' in filter_info :
+            if filter_info['productNo'] is not None :
                 select_product_list_query += """
                 AND P.product_no = %(productNo)s
                 """
 
             # 상품 코드 일치 조건 필터링
-            if 'productCode' in filter_info :
+            if filter_info['productCode'] is not None :
                 select_product_list_query += """
                 AND P.product_code = %(productCode)s
                 """
@@ -1116,4 +1116,80 @@ class ProductDao:
             product_code = cursor.fetchone()
 
             return product_code
+
+    def select_color_id(self, option, db_connection):
+
+        """
+
+        option Dictionary 객체의 colorName으로 부터 color id(PK)를 Return 합니다.
+
+        Args:
+            option        : product regist의 optionQuantity key의 value
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            color_no : colors table PK
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_color_id_query = """
+            SELECT
+                color_no
+
+            FROM colors
+
+            WHERE
+                name = %s
+            """
+
+            cursor.execute(select_color_id_query, option['colorName'])
+            color_id = cursor.fetchone()
+
+            return color_id['color_no']
+
+    def select_size_id(self, option, db_connection):
+
+        """
+
+        option Dictionary 객체의 sizeName으로 부터 size id(PK)를 Return 합니다.
+
+        Args:
+            option        : product regist의 optionQuantity key의 value
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            size_no : sizes table PK
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_size_id_query = """
+            SELECT
+                size_no
+
+            FROM sizes
+
+            WHERE
+                name = %s
+            """
+
+            cursor.execute(select_size_id_query, option['sizeName'])
+            size_id = cursor.fetchone()
+
+            return size_id['size_no']
 
