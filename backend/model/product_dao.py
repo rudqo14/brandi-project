@@ -267,6 +267,8 @@ class ProductDao:
                 상품을 최신 등록순으로 보여주기 위해 내림차순(DESC)으로 정렬
             2020-09-04 (tnwjd060124@gmail.com) : 수정
                 현재 이력 조회 조건 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 수정
+                할인 기간에 따른 할인률 조회 조건 추가
 
         """
 
@@ -278,7 +280,15 @@ class ProductDao:
                 I.image_medium AS thumbnail_image,
                 PD.name AS product_name,
                 PD.price,
-                PD.discount_rate
+                CASE
+                    WHEN PD.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                        WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM products as P
 
@@ -335,6 +345,8 @@ class ProductDao:
                 product_no > product_id
             2020-09-04 (tnwjd060124@gmail.com) : 수정
                 현재 이력 조회 조건 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 수정
+                할인 기간에 유효한 조건 조회 변경
 
         """
 
@@ -346,9 +358,17 @@ class ProductDao:
                 PD.name,
                 PD.detail_information AS html,
                 PD.price,
-                PD.discount_rate,
                 PD.min_sales_quantity,
-                PD.max_sales_quantity
+                PD.max_sales_quantity,
+                CASE
+                    WHEN PD.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                        WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM products AS P
 

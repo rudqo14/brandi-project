@@ -21,6 +21,8 @@ class OrderDao:
                 주문 시 유효한 데이터만 조회하도록 조건 추가
             2020-09-04 (tnwjd060124@gmail.com) : 수정
                 제품명 검색조건 LIKE로 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 수정
+                할인 기간에 따른 할인율 조건 추가
 
         """
 
@@ -38,7 +40,16 @@ class OrderDao:
                 P2.quantity,
                 P11.name AS user_name,
                 P7.phone_number,
-                P9.name AS order_status
+                P9.name AS order_status,
+                CASE
+                    WHEN P6.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P6.discount_start_date IS NULL THEN P6.discount_rate
+                        WHEN P3.start_time BETWEEN P6.discount_start_date AND P6.discount_end_date THEN P6.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM
                 orders AS P1
@@ -363,7 +374,16 @@ class OrderDao:
                 P10.user_no,
                 P4.receiver,
                 P4.address,
-                P4.delivery_request
+                P4.delivery_request,
+                CASE
+                    WHEN P7.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P7.discount_start_date IS NULL THEN P7.discount_rate
+                        WHEN P1.start_time BETWEEN P7.discount_start_date AND P7.discount_end_date THEN P7.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM
                 orders_details P1
@@ -434,6 +454,7 @@ class OrderDao:
             2020-09-02 (minho.lee0716@gmail.com) : 상품의 모든 정보를 받는 객체가 아닌 상품 id만 받는걸로 수정했습니다.
             2020-09-03 (minho.lee0716@gmail.com) : 상품의 모든 정보를 담는 객체를 받아 색상과 사이즈 또한 리턴.
             2020-09-04 (tnwjd060124@gmail.com) : 현재 유효한 데이터 리턴하는 조건 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 할인 기간에 따른 유효한 할인률 조건 변경
 
         """
 
@@ -447,9 +468,17 @@ class OrderDao:
                     C.name AS color_name,
                     S.name AS size_name,
                     PD.name,
-                    PD.discount_rate,
                     PD.price,
-                    I.image_small
+                    I.image_small,
+                    CASE
+                        WHEN PD.discount_rate IS NULL THEN 0
+                        ELSE CASE
+                            WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                            WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                            ELSE 0
+                            END
+                        END
+                    AS discount_rate
 
                 FROM products AS P
 

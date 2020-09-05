@@ -501,13 +501,22 @@ class UserDao:
                 P2.order_detail_no,
                 P2.start_time,
                 P7.image_small,
+                P12.product_no,
                 P8.name AS product_name,
                 P9.name AS color,
                 P10.name AS size,
                 P3.quantity,
                 P8.price,
-                P8.discount_rate,
-                P11.name AS order_status
+                P11.name AS order_status,
+                CASE
+                    WHEN P8.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P8.discount_start_date IS NULL THEN P8.discount_rate
+                        WHEN P2.start_time BETWEEN P8.discount_start_date AND P8.discount_end_date THEN P8.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM orders AS P1
 
@@ -547,6 +556,9 @@ class UserDao:
 
             INNER JOIN order_status AS P11
             ON P11.order_status_no = P2.order_status_id
+
+            INNER JOIN products AS P12
+            ON P12.product_no = P4.product_id
 
             WHERE P1.user_id = %(user_no)s
 
@@ -591,7 +603,6 @@ class UserDao:
                 P3.name AS orderer,
                 P7.name AS product_name,
                 P7.price,
-                P7.discount_rate,
                 P9.image_small,
                 P11.name AS color,
                 P12.name AS size,
@@ -601,7 +612,16 @@ class UserDao:
                 P4.phone_number,
                 P4.address,
                 P4.additional_address,
-                P4.delivery_request
+                P4.delivery_request,
+                CASE
+                    WHEN P7.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P7.discount_start_date IS NULL THEN P7.discount_rate
+                        WHEN P1.start_time BETWEEN P7.discount_start_date AND P7.discount_end_date THEN P7.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM
                 orders_details AS P1
@@ -658,3 +678,4 @@ class UserDao:
             order_detail = cursor.fetchone()
 
             return order_detail
+
