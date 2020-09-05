@@ -55,22 +55,23 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapMutations, mapGetters } from "vuex";
 
 const serviceStore = "serviceStore";
 
 export default {
   methods: {
+    ...mapMutations(serviceStore, ["getStorageToken"]),
+
     linkToMain() {
       this.$router.push("/main");
     },
     linkToLogin() {
       if (this.getToken) {
-        this.$store.state.serviceStore.accessToken = "";
         localStorage.removeItem("user_id");
         localStorage.removeItem("access_token");
         localStorage.removeItem("user_email");
-        localStorage.removeItem("user_id");
+        this.getStorageToken();
         this.$router.push("/main");
       } else {
         this.$router.push("/login");
@@ -82,11 +83,11 @@ export default {
       } else {
         this.$router.push("/login");
       }
-    },
+    }
   },
   computed: {
-    ...mapGetters(serviceStore, ["getToken"]),
-  },
+    ...mapGetters(serviceStore, ["getToken"])
+  }
 };
 </script>
 

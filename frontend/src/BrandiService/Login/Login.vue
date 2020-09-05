@@ -28,32 +28,37 @@
 </template>
 
 <script>
-import { ClientId } from "../../../config.js";
+import { ClientId, ADMIN_API_URL } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
 import { ip } from "../../../config.js";
 import { sip } from "../../../config";
 import axios from "axios";
 import Footer from "../Components/Footer";
+import { mapMutations } from "vuex";
+
+const serviceStore = "serviceStore";
 
 export default {
   components: {
     GoogleLogin,
-    Footer,
+    Footer
   },
   data() {
     return {
       //구글 로그인 하기
       params: {
-        client_id: ClientId,
+        client_id: ClientId
       },
       renderParams: {
         width: 250,
         height: 50,
-        longtitle: true,
-      },
+        longtitle: true
+      }
     };
   },
   methods: {
+    ...mapMutations(serviceStore, ["getStorageToken"]),
+
     onSuccess(googleUser) {
       localStorage.setItem("user_id", googleUser.tt.Ad);
       localStorage.setItem("user_email", googleUser.tt.bu);
@@ -61,20 +66,19 @@ export default {
       //axios 사용함에 있어 body에 빈 객체를 넣어야 post에서 headers의 정보를 보내기가 가능하다.
       const data = {};
       const headers = {
-        headers: { Authorization: googleUser.wc.id_token },
+        headers: { Authorization: googleUser.wc.id_token }
       };
-      axios.post(`${sip}/user/google-signin`, data, headers).then((res) => {
+      axios.post(`${sip}/user/google-signin`, data, headers).then(res => {
         if (res.data.access_token) {
-          this.$store.state.serviceStore.accessToken = res.data.access_token;
-
           localStorage.setItem("access_token", res.data.access_token);
+          this.getStorageToken();
           this.$router.push("/main");
         } else {
           alert("로그인 정보가 맞지 않습니다. 다시 시도해주세요.");
         }
       });
-    },
-  },
+    }
+  }
 };
 </script>
 
