@@ -165,7 +165,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : options}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -212,7 +212,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : main_category}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -269,7 +269,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : sub_category}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -372,7 +372,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : product_list}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -399,39 +399,26 @@ def create_admin_product_endpoints(product_service):
             sincerity410@gmail.com (이곤호)
 
         History:
-            2020-09-03 (sincerity410@gmail.com) : 초기생성
+            2020-09-03 (sincerity410@gmail.com) : 초기 생성
+            2020-09-04 (sincerity410@gmail.com) : CKEditor 양식에 맞춰 수정
 
         """
 
-        # finally error 발생 방지
-        db_connection = None
-
         try:
+            # 상품의 상세 설명 이미지의 저장을 위한 S3 Connection Instance 생성
+            s3_connection = get_s3_connection()
+            image         = request.files
 
-            db_connection = get_connection()
+            # 상품의 상세 설명 이미지의 S3 저장을 위한 Function 실행
+            image_url_info = product_service.upload_detail_image(
+                image,
+                s3_connection
+            )
 
-            if db_connection:
-
-                # 상품의 상세 설명 이미지의 저장을 위한 S3 Connection Instance 생성
-                s3_connection = get_s3_connection()
-                image         = request.files
-
-                # 상품의 상세 설명 이미지의 S3 저장을 위한 Function 실행
-                image_url = product_service.upload_detail_image(
-                    image,
-                    s3_connection,
-                    db_connection
-                )
-
-                return jsonify({'data' : image_url}), 200
+            return jsonify(image_url_info), 200
 
         except Exception as e:
-            db_connection.rollback()
-            return jsonify({"message" : f'{e}'}), 400
-
-        finally:
-            if db_connection:
-                db_connection.close()
+            return jsonify({'message' : f"{e}"}), 400
 
     return admin_product_app
 
