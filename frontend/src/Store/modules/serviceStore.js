@@ -1,14 +1,16 @@
 const serviceStore = {
   namespaced: true,
   state: {
-    accessToken: "",
+    accessToken: localStorage.getItem("access_token"),
   },
   getters: {
     getToken(state) {
-      if (state.accessToken) {
-        return true;
-      }
-      return false;
+      return state.accessToken;
+    },
+  },
+  mutations: {
+    getStorageToken(state) {
+      state.accessToken = localStorage.getItem("access_token");
     },
   },
 };

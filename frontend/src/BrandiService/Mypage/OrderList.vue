@@ -1,5 +1,5 @@
 <template>
-  <div v-if="order.length">
+  <div v-if="order.data.length">
     <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
       <div class="orderTop">
         <div class="topLeft">
@@ -23,10 +23,19 @@
         </div>
         <div class="detailBottom">
           <div class="imgContainer">
-            <img :src="order.image_small" alt="small_image" @click="linkToProductDetail" />
+            <img
+              :src="order.image_small"
+              alt="small_image"
+              @click="linkToProductDetail"
+              :value="order.product_no"
+            />
           </div>
           <div class="productDetail">
-            <div class="productName" @click="linkToProductDetail">{{ order.product_name}}</div>
+            <div
+              class="productName"
+              @click="linkToProductDetail"
+              :value="order.product_no"
+            >{{ order.product_name}}</div>
             <div class="productOption">{{ order.color }} / {{ order.size }}</div>
             <div class="orderQuantity">{{ order.quantity }} 개</div>
           </div>
@@ -46,6 +55,9 @@
 <script>
 import axios from "axios";
 import { sip } from "../../../config";
+import { mapGetters } from "vuex";
+
+const serviceStore = "serviceStore";
 
 export default {
   created() {
@@ -53,16 +65,17 @@ export default {
   },
   data() {
     return {
-      order: [],
+      order: { data: [] },
       orderData: false
     };
   },
   methods: {
     getOrderData() {
+      const token = this.getToken;
       axios
         .get(`${sip}/user/mypage/orderlist`, {
           headers: {
-            Authorization: localStorage.getItem("access_token")
+            Authorization: token
             //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
@@ -88,8 +101,8 @@ export default {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     // 상품 상세페이지로 이동
-    linkToProductDetail() {
-      this.$router.push("/detail");
+    linkToProductDetail(e) {
+      this.$router.push(`/detail/${e.target.value}`);
     },
     // 주문 상세페이지로 이동
     linkToOrderDetail(orderDetailId) {
@@ -99,6 +112,9 @@ export default {
     getDiscountPrice(price, discountRate) {
       return price * ((100 - discountRate) / 100);
     }
+  },
+  computed: {
+    ...mapGetters(serviceStore, ["getToken"])
   }
 };
 </script>
