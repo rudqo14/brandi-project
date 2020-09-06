@@ -1,7 +1,8 @@
-import json
+import json, datetime, time, io
 from PIL import Image
 
 from utils import ResizeImage
+from config import S3
 
 class ProductService:
 
@@ -63,8 +64,12 @@ class ProductService:
 
         # 상품 옵션 별 produc_options, option_details, quantities 테이블 insert 수행 
         for option in options :
-            product_option_id = self.product_dao.insert_product_option(product_info['product_id'], db_connection)
-            option_detail_id  = self.product_dao.insert_option_detail(product_option_id, option, db_connection)
+            product_option_id  = self.product_dao.insert_product_option(product_info['product_id'], db_connection)
+            color_id           = self.product_dao.select_color_id(option, db_connection)
+            size_id            = self.product_dao.select_size_id(option, db_connection)
+            option['color_id'] = color_id
+            option['size_id']  = size_id
+            option_detail_id   = self.product_dao.insert_option_detail(product_option_id, option, db_connection)
             self.product_dao.insert_quantity(option_detail_id, option, db_connection)
 
         # Image S3 Upload 및 RDB에 URL Link insert를 위해 product_id return
@@ -128,16 +133,16 @@ class ProductService:
             for idx in range(1,6):
 
                 # 대표사진 미등록 시 예외처리
-                if images.get(f'product_image_1', None) == None :
+                if 'product_image_1' not in images :
                     raise Exception('THUMBNAIL_IMAGE_IS_REQUIRED')
 
                 # 상품사진 미정렬 시 예외처리
-                if idx > 1  :
-                    if (images.get(f'product_image_{idx}', None) != None) and (images.get(f'product_image_{idx-1}', None) == None) :
+                if idx > 2  :
+                    if (f'product_image_{idx}' in images) and (f'product_image_{idx-1}' not in images) :
                         raise Exception('IMAGE_CAN_ONLY_REGISTER_IN_ORDER')
 
                 # 상품사진 있는 경우 product_images Dictionary에 저장
-                if images.get(f'product_image_{idx}', None) != None :
+                if f'product_image_{idx}' in images :
                     product_images[images[f'product_image_{idx}'].name] = images.get(f'product_image_{idx}', None)
 
                     # 파일이 Image가 아닌 경우 Exception 발생
@@ -412,3 +417,72 @@ class ProductService:
         product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
 
         return product_list
+
+    def upload_detail_image(self, image, s3_connection):
+
+        """
+
+        상품 상세 이미지 등록 - Business Layer(service) function
+
+        Args:
+            image         : File Request
+                {'product_detail_image' : <FileStorage: {filename} ({content_type})>}
+            s3_connection : S3 Connection Instance
+
+        Returns:
+            image URL
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-03 (sincerity410@gmail.com) : 초기생성
+            2020-09-04 (sincerity410@gmail.com) : 추가 수정(CKEditor 형식에 맞춰 Return)
+
+        """
+
+        try:
+            # 사진 미등록 시 예외처리
+            if 'upload' not in image :
+                raise Exception('IMAGE_IS_REQUIRED')
+
+            detail_image = image.get('upload')
+
+            # 파일이 Image가 아닌 경우 Exception 발생
+            opend_image   = Image.open(detail_image)
+            width, height = opend_image.size
+
+            # 사이즈가 너무 작은 경우 예외처리
+            if width < 1000:
+                raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
+
+            # buffer 초기화
+            buffer = io.BytesIO()
+            opend_image.save(buffer, "JPEG")
+            buffer.seek(0)
+
+            # image file name 설정: detail_yyyy_mm_dd_{unix_time_stamp}
+            time_now  = datetime.datetime.now()
+            file_name = f"detail/{time_now.year}/{time_now.month}/{time_now.day}/{int(time.time())}"
+
+            # S3 Push
+            s3_connection.put_object(
+                Body        = buffer,
+                Bucket      = 'brandi-project',
+                Key         = file_name,
+                ContentType = detail_image.content_type
+            )
+
+            # Return 할 URL
+            detail_image_url = f"{S3['aws_url']}{file_name}"
+
+            image_url_info = {}
+
+            image_url_info['uploaded'] = 1
+            image_url_info['fileName'] = file_name
+            image_url_info['url']      = detail_image_url
+
+            return image_url_info
+
+        except Exception as e:
+            raise e

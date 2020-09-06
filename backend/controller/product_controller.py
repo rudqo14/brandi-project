@@ -26,7 +26,6 @@ def create_admin_product_endpoints(product_service):
     # 'admin/product' end point prefix 설정
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
-    # 상품등록 Function
     @admin_product_app.route('', methods=['POST'])
     def product_register():
 
@@ -166,7 +165,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : options}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -213,7 +212,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : main_category}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -270,7 +269,7 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : sub_category}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -373,11 +372,53 @@ def create_admin_product_endpoints(product_service):
                 return jsonify({'data' : product_list}), 200
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
+
+    @admin_product_app.route('/detail-image', methods=['POST'])
+    def product_detail_image_upload():
+
+        """
+
+        [상품관리 > 상품등록] - 엔드포인트 Function
+        [POST] http://ip:5000/admin/product/detail-image
+
+        Args:
+            request.files
+                product_detail_image_url : 상품 상세 image URL
+
+        Returns:
+            200 : 상품 상세 image URL
+            400 : VALIDATION_ERROR, KEY_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-03 (sincerity410@gmail.com) : 초기 생성
+            2020-09-04 (sincerity410@gmail.com) : CKEditor 양식에 맞춰 수정
+
+        """
+
+        try:
+            # 상품의 상세 설명 이미지의 저장을 위한 S3 Connection Instance 생성
+            s3_connection = get_s3_connection()
+            image         = request.files
+
+            # 상품의 상세 설명 이미지의 S3 저장을 위한 Function 실행
+            image_url_info = product_service.upload_detail_image(
+                image,
+                s3_connection
+            )
+
+            return jsonify(image_url_info), 200
+
+        except Exception as e:
+            return jsonify({'message' : f"{e}"}), 400
 
     return admin_product_app
 

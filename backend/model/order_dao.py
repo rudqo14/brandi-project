@@ -19,6 +19,10 @@ class OrderDao:
             2020-08-24 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문 시 유효한 데이터만 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 수정
+                할인 기간에 따른 할인율 조건 추가
 
         """
 
@@ -36,7 +40,16 @@ class OrderDao:
                 P2.quantity,
                 P11.name AS user_name,
                 P7.phone_number,
-                P9.name AS order_status
+                P9.name AS order_status,
+                CASE
+                    WHEN P6.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P6.discount_start_date IS NULL THEN P6.discount_rate
+                        WHEN P3.start_time BETWEEN P6.discount_start_date AND P6.discount_end_date THEN P6.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM
                 orders AS P1
@@ -55,6 +68,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                select_list += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -94,7 +113,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 select_list += """
@@ -186,6 +205,8 @@ class OrderDao:
             2020-08-25 (tnwjd060124@gmail.com) : 초기 생성
             2020-09-01 (tnwjd060124@gmail.com) : 수정
                 주문시 유효한 데이터 조회하도록 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                제품명 검색조건 LIKE로 변경
 
         """
 
@@ -212,6 +233,12 @@ class OrderDao:
                 INNER JOIN orders_details AS P3
                 ON P1.order_no = P3.order_id
                 AND P3.order_status_id=1
+                """
+
+            # 조회 기간 endDate 필터 존재하는 경우 추가
+            if filter_info['to_date']:
+                count_num += """
+                AND P3.start_time < %(to_date)s
                 """
 
             # 주문 상세정보 필터 존재하는 경우 추가
@@ -251,7 +278,7 @@ class OrderDao:
                 ON P8.product_id = P6.product_id
                 AND P3.start_time >= P6.start_time
                 AND P6.close_time >= P3.start_time
-                AND P6.name = %(product_name)s
+                AND P6.name LIKE %(product_name)s
                 """
             else:
                 count_num += """
@@ -298,6 +325,7 @@ class OrderDao:
                 count_num += """
                 WHERE order_no = %(order_id)s
                 """
+
             cursor.execute(count_num, filter_info)
 
             total_num = cursor.fetchone()
@@ -346,7 +374,16 @@ class OrderDao:
                 P10.user_no,
                 P4.receiver,
                 P4.address,
-                P4.delivery_request
+                P4.delivery_request,
+                CASE
+                    WHEN P7.discount_rate IS NULL THEN 0
+                    ELSE CASE
+                        WHEN P7.discount_start_date IS NULL THEN P7.discount_rate
+                        WHEN P1.start_time BETWEEN P7.discount_start_date AND P7.discount_end_date THEN P7.discount_rate
+                        ELSE 0
+                        END
+                    END
+                AS discount_rate
 
             FROM
                 orders_details P1
@@ -398,46 +435,30 @@ class OrderDao:
         """
 
         서비스 페이지에서 상품의 옵션과 수량을 선택 후, 구매하기를 누르면 나오는
-        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 api입니다.
+        주문하기 페이지중 '브랜디 배송 상품(구매할 상품 정보)'에 대한 정보입니다.
 
         Args:
-            product_no  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
+            product_info  : 상품의 정보가 들어있는 객체입니다.(product_id, color_id, size_id)
             db_connection : 연결된 db 객체
 
         Returns:
             상품 id를 받아와 상품에 대한 이름, 이미지(S 사이즈)를 리턴해 줍니다.
-            상품에 대한 가격과 할인률도 리턴해줍니다. 추후에 가격 확인을 위해 쓰입니다.
             색상과 사이즈의 id값을 받아 해당 색상과 사이즈를 리턴해줍니다.
 
         Authors:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-02 (minho.lee0716@gmail.com) : 상품의 모든 정보를 받는 객체가 아닌 상품 id만 받는걸로 수정했습니다.
             2020-09-03 (minho.lee0716@gmail.com) : 상품의 모든 정보를 담는 객체를 받아 색상과 사이즈 또한 리턴.
+            2020-09-04 (tnwjd060124@gmail.com) : 현재 유효한 데이터 리턴하는 조건 변경
+            2020-09-05 (tnwjd060124@gmail.com) : 할인 기간에 따른 유효한 할인률 조건 변경
 
         """
 
         try:
-
-            # 구매할 상품정보에 필요한 각 키가 없으면 ERROR 메세지를 보내줍니다.
-            '''
-            if not product_info['product_id']:
-                raise Exception('선택하신 상품이 없습니다.')
-
-            if not product_info['color_id']:
-                raise Exception('색상을 선택해 주세요.')
-
-            if not product_info['size_id']:
-                raise Exception('사이즈를 선택해 주세요.')
-
-            if not product_info['quantity']:
-                raise Exception('수량을 확인해 주세요.')
-
-            if not product_info['total_price']:
-                raise Exception('총 주문금액을 확인해 주세요.')
-            '''
 
             with db_connection.cursor() as cursor:
 
@@ -447,9 +468,17 @@ class OrderDao:
                     C.name AS color_name,
                     S.name AS size_name,
                     PD.name,
-                    PD.discount_rate,
                     PD.price,
-                    I.image_small
+                    I.image_small,
+                    CASE
+                        WHEN PD.discount_rate IS NULL THEN 0
+                        ELSE CASE
+                            WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                            WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                            ELSE 0
+                            END
+                        END
+                    AS discount_rate
 
                 FROM products AS P
 
@@ -457,14 +486,12 @@ class OrderDao:
                 ON P.product_no = PD.product_id
                 AND PD.is_activated = True
                 AND PD.is_displayed = True
-                AND CURRENT_TIMESTAMP >= PD.start_time
-                AND CURRENT_TIMESTAMP <= PD.close_time
+                AND PD.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN product_images AS PI
                 ON P.product_no = PI.product_id
                 AND PI.is_main = True
-                AND CURRENT_TIMESTAMP >= PI.start_time
-                AND CURRENT_TIMESTAMP <= PI.close_time
+                AND PI.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN images AS I
                 ON PI.image_id = I.image_no
@@ -476,8 +503,7 @@ class OrderDao:
 
                 LEFT JOIN option_details AS OD
                 ON PO.product_option_no = OD.product_option_id
-                AND CURRENT_TIMESTAMP >= OD.start_time
-                AND CURRENT_TIMESTAMP <= OD.close_time
+                AND OD.close_time = '9999-12-31 23:59:59'
 
                 LEFT JOIN colors AS C
                 ON OD.color_id = C.color_no
@@ -496,10 +522,12 @@ class OrderDao:
                 cursor.execute(select_seller_product_info_query, product_info)
                 seller_product_info = cursor.fetchone()
 
+                # 셀러의 상품이(구매하려는 상품) 존재하지 않을 경우 예외처리
+                if not seller_product_info:
+                    raise Exception('THIS_PRODUCT_DOES_NOT_EXISTS')
+
                 return seller_product_info
 
-        except KeyError as e:
-            raise e
         except  Exception as e:
             raise e
 
@@ -531,6 +559,8 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
+                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # USD라는 테이블은 '배송지 정보'에 관한 정보입니다.
                 select_orderer_info_query = """
                 SELECT
                     U.name AS orderer_name,
@@ -557,9 +587,11 @@ class OrderDao:
                 cursor.execute(select_orderer_info_query, user_no)
                 orderer_info = cursor.fetchone()
 
+                # 유저의 정보가 존재하지 않는다면
+                if not orderer_info:
+                    raise Exception('UNAUTHORIZED')
+
                 return orderer_info
 
-        except KeyError as e:
-            raise e
-        except  Exception as e:
+        except Exception as e:
             raise e

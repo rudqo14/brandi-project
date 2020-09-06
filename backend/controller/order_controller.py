@@ -29,7 +29,8 @@ def create_admin_order_endpoints(order_service):
         Param('orderDetailId', GET, int, required=False),
         Param('orderer', GET, str, required=False),
         Param('phoneNumber', GET, str, required=False),
-        Param('productName', GET, str, required=False)
+        Param('productName', GET, str, required=False),
+        Param('toDate', GET, int, required=False, rules=[DatetimeRule()])
     )
     def order_list(*args):
 
@@ -51,7 +52,8 @@ def create_admin_order_endpoints(order_service):
                 'order_detail_id'   : args[5],
                 'orderer'           : args[6],
                 'phone_number'      : args[7],
-                'product_name'      : args[8]
+                'product_name'      : args[8],
+                'to_date'           : args[9]
             }
 
             if db_connection:
@@ -90,8 +92,8 @@ def create_admin_order_endpoints(order_service):
             return jsonify({"message" : f"VALUE_ERROR_AS_{e}"}), 400
 
         #정의하지 않은 모든 error를 잡아줌
-        #except Exception as e:
-            #return jsonify({"message" : f'{e}'}), 400
+        except Exception as e:
+            return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
@@ -135,7 +137,7 @@ def create_service_order_endpoints(order_service):
     service_order_app = Blueprint('service_order_app', __name__, url_prefix='/order')
 
     @service_order_app.route('/checkout', methods=['GET'])
-    #@login_required
+    # @login_required
     # 테스트를 하기위한 임의의 유저 id를 지정
     def product_info_to_purchase(user_no=4):
 
@@ -173,6 +175,11 @@ def create_service_order_endpoints(order_service):
                     "zip_code": "15279"
                   }
             400 : VALIDATION_ERROR
+            400 : QUERY_PARAMETER_DOES_NOT_EXISTS
+            400 : KEY_ERROR_PRODUCT_ID
+            400 : KEY_ERROR_COLOR_ID
+            400 : KEY_ERROR_SIZE_ID
+            400 : KEY_ERROR_QUANTITY
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -181,6 +188,8 @@ def create_service_order_endpoints(order_service):
         History:
             2020-08-31 (minho.lee0716@gmail.com) : 초기생성
             2020-09-02 (minho.lee0716@gmail.com) : 메소드 변경 POST > GET
+            2020-09-03 (minho.lee0716@gmail.com) : 예외 처리
+                Params가 들어오지 않았을 경우 + Params의 키 값이 잘못 들어왔을 경우
 
         """
 
@@ -193,21 +202,101 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 됐다면
             if db_connection:
 
-                # Query Parameter로 들어온 정보를 product_info에 담기.
+                # 먼저 Query Parameter가 들어오지 않았을 경우의 에러조건입니다.
+                if not request.args:
+                    raise Exception('QUERY_PARAMETER_DOES_NOT_EXISTS')
+
+                # Query Parameter로 들어온 정보를 product_info에 담습니다.
                 product_info = request.args
-                # 잘못 들어왔을 때 예외처리하기
-                #print(product_info)
+
+                # Query Parameter로 들어온 키 값이 잘못된 경우의 에러조건입니다.
+                if not 'product_id' in product_info.keys():
+                    raise Exception('KEY_ERROR_PRODUCT_ID')
+
+                if not 'color_id' in product_info.keys():
+                    raise Exception('KEY_ERROR_COLOR_ID')
+
+                if not 'size_id' in product_info.keys():
+                    raise Exception('KEY_ERROR_SIZE_ID')
+
+                if not 'quantity' in product_info.keys():
+                    raise Exception('KEY_ERROR_QUANTITY')
 
                 # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
+                # 로그인이 되어있는 사용자만이 구매를 할 수 있기 때문에 user_no도 넘겨줍니다.
                 purchase_info = order_service.get_product_info_to_purchase(product_info, user_no, db_connection)
 
-                # 필요없는 정보라 삭제했습니다.
-                #del purchase_info['discount_rate']
-                #del purchase_info['price']
-
+                # 구매 정보에 수량을 추가해 줍니다.
                 purchase_info['quantity'] = product_info['quantity']
 
                 return jsonify({'data' : purchase_info}), 200
+
+            # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
+            return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
+
+        except Exception as e:
+            return jsonify({'message' : f"{e}"}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @service_order_app.route('/completed', methods=['POST'])
+    #@login_required
+    # 테스트를 하기위한 임의의 유저 id를 지정
+    def order_completed(user_no=4):
+
+        """
+
+        [ 서비스 > 상품 주문 완료(결제하기) ] 엔드포인트
+        [POST] http://ip:5000/order/completed
+
+        Args:
+            header:
+                Authorization : access_token (여기서 user_no를 가져옴)
+
+            body:
+                product_id         : 상품의 id
+                color_id           : 색상의 id
+                size_id            : 사이즈의 id
+                quantity           : 수량
+                total_price        : 총가격
+                receiver           : 배송지 정보 - 수령인
+                phone_number       : 배송지 정보 - 휴대폰 번호
+                zip_code           : 배송지 정보 - 우편번호
+                address            : 배송지 정보 - 주소
+                additional_address : 배송지 정보 - 상세 주소
+                delivery_request   : 배송지 정보 - 배송 요청 사항
+
+        Returns:
+            200 : message, SUCCESS
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-03 (minho.lee0716@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            # DB에 연결이 됐다면
+            if db_connection:
+
+                # Body로 들어온 정보를 order_info에 담기.
+                order_info = request.json
+
+                # 받아온 정보들로 주문하기
+                order_service.FUNCTION_NAME(user_no, order_info, db_connection)
+
+                return jsonify({'message' : 'ORDER_COMPLETED!!!'}), 200
 
             # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
