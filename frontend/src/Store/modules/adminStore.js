@@ -1,17 +1,20 @@
 const adminStore = {
   namespaced: true,
   state: {
-    sellYn: null,
-    exhibitionYn: null,
-    productName: "",
-    simpleDescription: "",
-    product_image_1: "",
-    product_image_2: "",
-    product_image_3: "",
-    product_image_4: "",
-    product_image_5: "",
+    sellYn: true,
+    exhibitionYn: true,
+    mainCategoryId: null,
+    subCategoryId: null,
+    productName: null,
+    simpleDescription: null,
+    product_image_1: null,
+    product_image_2: null,
+    product_image_3: null,
+    product_image_4: null,
+    product_image_5: null,
     formDatas: null,
     detailInformation: null,
+    allOptions: null,
     price: 0,
     discountRate: null,
     discountStartDate: null,
@@ -46,6 +49,15 @@ const adminStore = {
     exhibitionNo(state) {
       state.exhibitionYn = false;
     },
+
+    getMainCategoryId(state, mainCategoryId) {
+      state.mainCategoryId = mainCategoryId;
+    },
+
+    getSubCategoryId(state, subCategoryId) {
+      state.subCategoryId = subCategoryId;
+    },
+
     updateProductName(state, productName) {
       state.productName = productName;
     },
@@ -107,18 +119,16 @@ const adminStore = {
       state.maxSalesQuantity = value;
     },
 
-    upDateOptionColor(state, color) {
-      state.allOptions[0].color = color;
-    },
-
-    upDateOptionSize(state, size) {
-      state.allOptions[0].size = size;
+    upDateAllOptions(state, allOptions) {
+      state.allOptions = allOptions;
     },
 
     // ProductRegistration.vue 에서 state 데이터 확인용
     registration(state) {
       console.log("state.sellYn: ", state.sellYn);
       console.log("state.exhibitionYn: ", state.exhibitionYn);
+      console.log("state.mainCategoryId: ", state.mainCategoryId);
+      console.log("state.subCategoryId: ", state.subCategoryId);
       console.log("state.productName: ", state.productName);
       console.log("state.simpleDescription: ", state.simpleDescription);
       console.log("state.product_image_1: ", state.product_image_2);

@@ -54,7 +54,10 @@
 
 <script>
 import axios from "axios";
+import { mapMutations } from "vuex";
 import { ADMIN_API_URL } from "../../../../../../config";
+
+const AdminStore = "adminStore";
 
 export default {
   created() {
@@ -66,12 +69,12 @@ export default {
       mainCategory: [],
       subCategory: [],
       key: "",
-      mainCategoryId: "",
-      subCategoryId: "",
     };
   },
 
   methods: {
+    ...mapMutations(AdminStore, ["getMainCategoryId", "getSubCategoryId"]),
+
     // 1차 카테고리를 가져오는 메소드 (첫 렌더링 때 사용)
     getMainCategoryData() {
       axios.get(`${ADMIN_API_URL}/admin/product/category`).then((res) => {
@@ -82,7 +85,7 @@ export default {
     // 1차 카테고리 ID 를 state 로 전달하고,
     // 2차 카테고리 데이터를 가져오는 메소드 (1차 카테고리가 바뀔 때 마다 2차 카테고리 변경)
     getSubCategory(event) {
-      this.mainCategoryId = event.target.value;
+      this.getMainCategoryId(event.target.value);
 
       axios
         .get(`${ADMIN_API_URL}/admin/product/category/${this.mainCategoryId}`)
@@ -96,9 +99,7 @@ export default {
 
     // 2차 카테고리 ID 를 state 로 전달해주는 메소드
     selectSubCategory(event) {
-      this.subCategoryId = event.target.value;
-      console.log("subCategoryId: ", this.subCategoryId);
-      console.log("mainCategoryId: ", this.mainCategoryId);
+      this.getSubCategoryId(event.target.value);
     },
   },
 };
