@@ -5,6 +5,17 @@
     </div>
     <article class="filterArticle">
       <div class="filterContainer">
+        <div class="filterDate">
+          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense></v-select>
+          <input
+            @keyup.enter="searchFilterHandler"
+            v-model="searchInputContents"
+            class="search"
+            placeholder="검색어를 입력하세요."
+          />
+        </div>
+      </div>
+      <div class="filterContainer">
         <div class="filterDate">조회 기간</div>
         <a-date-picker
           v-model="startValue"
@@ -26,7 +37,7 @@
         <div class="filterDate">판매여부 :</div>
         <v-btn
           v-on:click="sellHandler"
-          class="btnAll"
+          class="btnV"
           name="전체"
           v-bind:color="sellData === '전체' ? 'primary' : 'white'"
         >전체</v-btn>
@@ -47,7 +58,7 @@
         <div class="filterDate">할인여부 :</div>
         <v-btn
           v-on:click="saleHandler"
-          class="btnAll"
+          class="btnV"
           name="전체"
           v-bind:color="saleData === '전체' ? 'primary' : 'white'"
         >전체</v-btn>
@@ -68,7 +79,7 @@
         <div class="filterDate">진열여부 :</div>
         <v-btn
           v-on:click="displayHandler"
-          class="btnAll"
+          class="btnV"
           name="전체"
           v-bind:color="displayData === '전체' ? 'primary' : 'white'"
         >전체</v-btn>
@@ -120,12 +131,7 @@
           <thead class="tableTitle">
             <tr>
               <th class="checkboxContainer">
-                <input
-                  @click="totalCheckedHandler"
-                  class="checkbox"
-                  :checked="totalChecked"
-                  type="checkbox"
-                />
+                <input class="checkbox" v-model="selectAll" type="checkbox" />
               </th>
               <th>등록일</th>
               <th class="imgBox">대표이미지</th>
@@ -142,12 +148,7 @@
           <tbody>
             <tr v-for="(item, i) in tableData" :key="i">
               <td class="checkboxContainer">
-                <input
-                  @click="checkedHandler"
-                  class="checkbox"
-                  :checked="isChecked"
-                  type="checkbox"
-                />
+                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
               </td>
               <td>{{ item.productRegistDate }}</td>
               <td class="imgTd">
@@ -167,18 +168,6 @@
           </tbody>
         </table>
       </div>
-      <!-- 페이지네이션 UI라이브러리를 사용하지 않은 커스텀 페이지네이션 -->
-      <!-- <div class="productPagination">
-        <button class="prevBtn" name="minus">{{prev}}{{prev}}</button>
-        <button class="prevBtn" name="minus">{{prev}}</button>
-        <ul class="hotelPageList">
-          <li>1</li>
-        </ul>
-        <button class="nextBtn" name="plus">{{next}}</button>
-        <button class="nextBtn" name="plus">{{next}}{{next}}</button>
-      </div>-->
-
-      <!-- 페이지 네이션 커스텀화 작업 -->
       <template>
         <div class="text-center">
           <v-pagination v-model="page" :length="Math.ceil(totalNumData / limit)" />
@@ -206,7 +195,6 @@ export default {
       displayData: "전체",
       disabledDates: {},
       totalChecked: false,
-      isChecked: false,
       tableData: [],
       totalPageNum: 0,
       limit: 10,
@@ -217,15 +205,53 @@ export default {
       endOpen: false,
       startDate: "",
       endDate: "",
-      sellDataUrl: "전체",
-      saleDataUrl: "전체",
-      displayDataUrl: "전체",
+      sellDataUrl: "",
+      saleDataUrl: "",
+      displayDataUrl: "",
+      checked: [],
+      selected: [],
+      items: ["Select", "상품명", "상품번호", "상품코드"],
+      selectSearch: "",
+      searchInputContents: "",
+      searchFilter: "",
     };
+  },
+
+  computed: {
+    selectAll: {
+      //체크박스 전체선택/해제
+      //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
+      //전체해제
+      //getter를 통해 종속성을 추적
+      get: function () {
+        return !this.tableData.length && false;
+        return this.tableData
+          ? this.selected.length == this.tableData.length
+          : false;
+      },
+
+      //setter를 통해 변경을 알림
+      //select한 체크박스값을 배열안에 넣어 적용
+      set: function (value) {
+        const selected = [];
+
+        if (value) {
+          this.tableData.forEach(function (item, i) {
+            selected.push(i);
+          });
+        }
+        this.selected = selected;
+      },
+    },
   },
 
   watch: {
     page: function () {
       this.axiosConnect();
+    },
+
+    selectSearch(e) {
+      this.selectSearch = e;
     },
 
     startValue(val) {
@@ -251,19 +277,17 @@ export default {
 
   methods: {
     axiosConnect() {
+      console.log(
+        `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
+      );
       axios
         .get(
-          `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}`
+          `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
         )
         .then((res) => {
-          console.log(res.data);
           this.tableData = res.data.data[0];
           this.totalNumData = res.data.data[1].total;
         });
-
-      console.log(
-        `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}`
-      );
     },
 
     searchFilterHandler() {
@@ -289,6 +313,20 @@ export default {
         this.displayDataUrl = "&exhibitionYn=0";
       } else {
         this.displayDataUrl = "";
+      }
+
+      if (this.selectSearch === "상품명" && this.searchInputContents) {
+        this.searchFilter = `&productName=${this.searchInputContents}`;
+      } else if (this.selectSearch === "상품번호" && this.searchInputContents) {
+        this.searchFilter = `&productNo=${this.searchInputContents}`;
+      } else if (this.selectSearch === "상품코드" && this.searchInputContents) {
+        this.searchFilter = `&productCode=${this.searchInputContents}`;
+      } else {
+        this.searchFilter = "";
+      }
+
+      if (this.searchFilter && !this.searchInputContents) {
+        return alert("검색어를 입력해주세요.");
       }
 
       this.axiosConnect();
@@ -379,6 +417,8 @@ export default {
       this.endValue = null;
       this.startDate = null;
       this.endDate = null;
+      this.selectSearch = "";
+      this.searchInputContents = "";
     },
 
     //테이블에 있는 체크버튼중 최상단 체크박스 클릭시
@@ -387,18 +427,10 @@ export default {
       this.totalChecked = !this.totalChecked;
 
       if (this.totalChecked) {
-        this.isChecked = true;
-      } else {
-        this.isChecked = false;
+        for (let key in this.tableData) {
+          this.checked.push(this.tableData[key]);
+        }
       }
-    },
-
-    checkedHandler() {
-      this.totalChecked = false;
-    },
-
-    onChange(date, dateString) {
-      console.log(date, dateString);
     },
   },
 
@@ -445,11 +477,33 @@ export default {
       }
 
       .btnV {
-        margin-right: 5px;
+        margin-right: 4px;
       }
 
       .filterDate {
-        width: 130px;
+        display: flex;
+        margin-right: 40px;
+
+        .select {
+          width: 200px;
+          margin-right: 20px;
+        }
+
+        .search {
+          width: 400px;
+          height: 40px;
+          background: white;
+          border: 1px solid #e5e5e5;
+          border-radius: 5px;
+          padding: 2px 10px;
+
+          &:focus {
+            border: 0.5px solid #dbdbdb;
+            outline: none;
+            border-radius: 5px;
+          }
+        }
+        /* width: 130px; */
       }
 
       .startDate,

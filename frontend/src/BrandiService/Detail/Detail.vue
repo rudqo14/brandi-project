@@ -15,8 +15,8 @@
           <span class="price">
             {{
             (
-            detailData.price -
-            detailData.price * (detailData.discount_rate / 100)
+            Math.round((detailData.price -
+            detailData.price * (detailData.discount_rate / 100))/10)*10
             ).toLocaleString(5) + "원"
             }}
           </span>
@@ -134,17 +134,14 @@
 </template>
 
 <script>
-import { ip } from "../../../config.js";
-import { minhoIp } from "../../../config.js";
+import { gonhoIp } from "../../../config.js";
 import axios from "axios";
-// import detailData from "../../../Data/Detail.json";
-// import detailOption from "../../../Data/DetailOption.json";
 import { VueAgile } from "vue-agile";
 
 export default {
   created() {
-    axios.get(`${minhoIp}/product/${this.$route.params.id}`).then((res) => {
-      // console.log(res);
+    axios.get(`${gonhoIp}/product/${this.$route.params.id}`).then((res) => {
+      console.log(res);
       this.detailData = res.data.data;
       this.purchaseId = this.detailData.product_id;
     });
@@ -175,13 +172,19 @@ export default {
   },
   methods: {
     colorClickHandler(item) {
+      //중복된 통신은 한번만 처리하도록 함
+      if (this.colorToggleData === item.color_name) {
+        return;
+      }
+
       this.colorToggleData = item.color_name;
       this.purchaseColorId = item.color_id;
 
       axios
-        .get(`${minhoIp}/product/1?color_id=${item.color_id}`)
+        .get(
+          `${gonhoIp}/product/${this.$route.params.id}?color_id=${item.color_id}`
+        )
         .then((res) => {
-          console.log(res.data);
           this.colorData = res.data.data;
         });
     },
@@ -193,6 +196,8 @@ export default {
       if (this.colorToggleData !== "[색상]을 선택하세요.") {
         this.disabledSizeToggle = !this.disabledSizeToggle;
       }
+
+      this.isSizeToggle = false;
     },
 
     //사이즈 인풋클릭시 토글 박스 열리게하기

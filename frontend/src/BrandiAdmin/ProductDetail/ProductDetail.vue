@@ -84,7 +84,7 @@
             <div class="rowTitle">상품 판매가 :</div>
             <div class="rowTitle">
               28,000 원
-              <storng class="redColor">(할인가 22,120원)</storng>
+              <strong class="redColor">(할인가 22,120원)</strong>
             </div>
           </div>
           <div class="infoRow">
@@ -120,7 +120,44 @@
             <div class="rowTitle">연락처 :</div>
             <div class="rowTitle">
               01088884444
-              <v-btn class="redBtn" color="error" small>변경</v-btn>
+              <div>
+                <template>
+                  <div class="text-center">
+                    <v-dialog v-model="dialog" width="500">
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn small color="red lighten-2" dark v-bind="attrs" v-on="on">변경</v-btn>
+                      </template>
+
+                      <v-card>
+                        <v-card-title class="headline green lighten-2"></v-card-title>
+                        <v-card-title class="headline white lighten-2">수취자 연락처1 변경</v-card-title>
+                        <v-divider></v-divider>
+
+                        <div class="phoneNumContainer">
+                          <div>
+                            <span>수취자 연락처1:</span>
+                            <span>01088887777</span>
+                          </div>
+                          <div>
+                            <span>변경할 핸드폰 번호:</span>
+                            <span>
+                              <v-text-field width="40" placeholder="전화번호"></v-text-field>
+                            </span>
+                          </div>
+                        </div>
+
+                        <v-divider></v-divider>
+
+                        <v-card-actions>
+                          <v-spacer></v-spacer>
+                          <v-btn color="success" dark @click="dialog = false">변경요청</v-btn>
+                          <v-btn @click="dialog = false">취소</v-btn>
+                        </v-card-actions>
+                      </v-card>
+                    </v-dialog>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </div>
@@ -149,13 +186,18 @@
 import moment from "moment";
 import axios from "axios";
 import { gonhoIp } from "../../../config";
+import { VueDaumPostcode } from "vue-daum-postcode";
 
 export default {
   created() {},
-  data() {},
+  data() {
+    return {
+      dialog: false,
+    };
+  },
   watch: {},
   methods: {},
-  components: {},
+  components: { VueDaumPostcode },
 };
 </script>
 
@@ -233,6 +275,12 @@ export default {
 
           .rowTitle {
             min-width: 250px;
+            display: flex;
+            align-items: center;
+
+            .text-center {
+              margin-left: 20px;
+            }
 
             .redBtn {
               margin-left: 20px;

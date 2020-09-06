@@ -7,49 +7,26 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense></v-select>
-          <input v-model="searchInputContents" class="search" placeholder="검색어를 입력하세요." />
+          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense />
+          <input
+            @keyup.enter="searchFilterHandler"
+            v-model="searchInputContents"
+            class="search"
+            placeholder="검색어를 입력하세요."
+          />
         </div>
       </div>
       <div class="filterContainer">
         <div class="filterDate">주문완료일:</div>
         <div class="btnContainer">
           <v-btn
-            v-on:click="sellHandler"
-            class="btnAll"
+            v-for="(item, i) in dateData"
+            :key="i"
+            v-on:click="sellHandler(item)"
+            class="btnV"
             name="전체"
-            v-bind:color="sellData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn>
-          <v-btn
-            v-on:click="sellHandler"
-            class="btnV"
-            name="오늘"
-            v-bind:color="sellData === '오늘' ? 'primary' : 'white'"
-          >오늘</v-btn>
-          <v-btn
-            v-on:click="sellHandler"
-            class="btnV"
-            name="3일"
-            v-bind:color="sellData === '3일' ? 'primary' : 'white'"
-          >3일</v-btn>
-          <v-btn
-            v-on:click="sellHandler"
-            class="btnV"
-            name="1주일"
-            v-bind:color="sellData === '1주일' ? 'primary' : 'white'"
-          >1주일</v-btn>
-          <v-btn
-            v-on:click="sellHandler"
-            class="btnV"
-            name="1개월"
-            v-bind:color="sellData === '1개월' ? 'primary' : 'white'"
-          >1개월</v-btn>
-          <v-btn
-            v-on:click="sellHandler"
-            class="btnV"
-            name="3개월"
-            v-bind:color="sellData === '3개월' ? 'primary' : 'white'"
-          >3개월</v-btn>
+            v-bind:color="sellData === item ? 'primary' : 'white'"
+          >{{item}}</v-btn>
         </div>
         <div>
           <a-date-picker
@@ -122,7 +99,7 @@
           <thead class="tableTitle">
             <tr>
               <th class="checkboxContainer">
-                <input v-model="checked" class="checkbox" type="checkbox" />
+                <input v-model="selectAll" class="checkbox" type="checkbox" />
               </th>
               <th>결제일자</th>
               <th>주문번호</th>
@@ -137,13 +114,17 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, i) in orderData.data" :key="i">
+            <tr v-for="(item, i) in orderData" :key="i">
               <td class="checkboxContainer">
-                <input class="checkbox" type="checkbox" />
+                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
               </td>
               <td>{{ item.order_time }}</td>
               <td>{{ item.order_no }}</td>
-              <td>{{ item.order_detail_no }}</td>
+              <td class="linkDetail">
+                <router-link
+                  :to="`/admin/productDetail/${item.order_detail_no}`"
+                >{{ item.order_detail_no }}</router-link>
+              </td>
               <td class="productName">{{ item.product_name }}</td>
               <td>{{ item.color }} / {{ item.size }}</td>
               <td>{{ item.quantity }}</td>
@@ -176,15 +157,47 @@
 <script>
 import moment from "moment";
 import axios from "axios";
-import { sip } from "../../../config";
+import { gonhoIp } from "../../../config";
+import dateData from "../../../Data/orderDateBtn.json";
 
 export default {
   created() {
+    this.resetOrderDate();
+
     this.axiosConnect();
+  },
+
+  computed: {
+    selectAll: {
+      //체크박스 전체선택/해제
+      //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
+      //전체해제
+      //getter를 통해 종속성을 추적
+      get: function () {
+        return !this.orderData.length && false;
+        return this.orderData
+          ? this.selected.length == this.orderData.length
+          : false;
+      },
+
+      //setter를 통해 변경을 알림
+      //select한 체크박스값을 배열안에 넣어 적용
+      set: function (value) {
+        const selected = [];
+
+        if (value) {
+          this.orderData.forEach(function (item, i) {
+            selected.push(i);
+          });
+        }
+        this.selected = selected;
+      },
+    },
   },
 
   data() {
     return {
+      dateData: dateData.data,
       dateFormat: "YYYY/MM/DD",
       items: [
         "Select..",
@@ -202,13 +215,10 @@ export default {
       isTogglePageNum: false,
       toggleData: "10개씩보기",
       toggleNumber: 10,
-      sellData: "전체",
-      saleData: "전체",
-      displayData: "전체",
+      sellData: "3일",
       disabledDates: {},
       totalChecked: false,
       isChecked: false,
-      tableData: [],
       totalPageNum: 0,
       page: 1,
       checked: [],
@@ -216,9 +226,12 @@ export default {
       endValue: null,
       endOpen: false,
       searchInputContents: "",
-      searchValue: "",
       selectSearch: "",
       searchFilter: "",
+      startDate: "",
+      endDate: "",
+      checked: [],
+      selected: [],
     };
   },
 
@@ -226,18 +239,67 @@ export default {
     page: function () {
       this.axiosConnect();
     },
-    startValue(val) {},
+    startValue(val) {
+      if (val !== null) {
+        const startDateYear = val._d.getFullYear();
+        const startDateMonth = ("0" + (val._d.getMonth() + 1)).slice(-2);
+        const startDateDay = ("0" + val._d.getDate()).slice(-2);
 
-    endValue(val) {},
+        this.startDate =
+          "&fromDate=" + startDateYear + startDateMonth + startDateDay;
+      } else {
+        this.startDate = "";
+      }
+    },
+
+    endValue(val) {
+      if (val !== null) {
+        const endDateYear = val._d.getFullYear();
+        const endDateMonth = ("0" + (val._d.getMonth() + 1)).slice(-2);
+        const endDateDay = ("0" + val._d.getDate()).slice(-2);
+
+        this.endDate = "&toDate=" + endDateYear + endDateMonth + endDateDay;
+      } else {
+        this.endDate = "";
+      }
+    },
 
     selectSearch(e) {
-      this.searchValue = "";
       this.selectSearch = e;
     },
   },
 
   methods: {
     moment,
+
+    //created 될때 3일에 해당하는 date값을 통해 리스트영역 백엔드와 통신
+    //날짜를 보내줄때는 20200904와 같은 형식으로 보내야함
+    resetOrderDate() {
+      const nowYear = new Date().getFullYear();
+      const nowMonth = ("0" + (new Date().getMonth() + 1)).slice(-2);
+      const nowDay = ("0" + new Date().getDate()).slice(-2);
+      const days = 1000 * 60 * 60 * 24;
+      const beforeYear = new Date(new Date() - 3 * days).getFullYear();
+      const beforeMonth = (
+        "0" +
+        (new Date(new Date() - 3 * days).getMonth() + 1)
+      ).slice(-2);
+      const beforeDays = (
+        "0" + new Date(new Date() - 3 * days).getDate()
+      ).slice(-2);
+
+      this.startValue = moment(
+        `${beforeYear}/${beforeMonth}/${beforeDays}`,
+        this.dateFormat
+      );
+      this.endValue = moment(
+        `${nowYear}/${nowMonth}/${nowDay}`,
+        this.dateFormat
+      );
+
+      this.startDate = `&fromDate=${beforeYear}${beforeMonth}${beforeDays}`;
+      this.endDate = `&toDate=${nowYear}${nowMonth}${nowDay}`;
+    },
 
     //DatePicker 적용
     //startDate와 endDate 클릭할때 disabled 적용하여 클릭하지 못하게끔 함
@@ -268,11 +330,11 @@ export default {
     axiosConnect() {
       axios
         .get(
-          `${sip}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}&fromDate=20200420${this.searchFilter}`
+          `${gonhoIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
         )
         .then((res) => {
           console.log(res);
-          this.orderData = res.data;
+          this.orderData = res.data.data;
           this.totalNumData = res.data.total_number;
         });
     },
@@ -325,12 +387,8 @@ export default {
 
     //판매여부 클릭 이벤트
     //v-btn 클릭시 여백부분 클릭할때와 글씨부분 클릭할때가 다르다.
-    sellHandler(e) {
-      if (e.target.name) {
-        this.sellData = e.target.name;
-      } else {
-        this.sellData = e.target.innerText;
-      }
+    sellHandler(item) {
+      this.sellData = item;
       //현재에 해당하는 날짜 계산하여 년,월,일 추출
       const nowYear = new Date().getFullYear();
       const nowMonth = new Date().getMonth() + 1;
@@ -430,68 +488,52 @@ export default {
 
     //초기화 버튼 클릭시에 필터링에 해당하는 데이터들 모두 초기화시킨다.
     filterResetHandler() {
-      this.sellData = "전체";
+      this.selectSearch = "";
+      this.sellData = "3일";
       this.saleData = "전체";
       this.displayData = "전체";
-      this.startValue = null;
-      this.endValue = null;
-      // this.searchValue = null;
       this.searchInputContents = "";
+      this.resetOrderDate();
     },
 
     searchFilterHandler() {
-      // if (this.selectSearch !== "" && this.searchValue === "") {
-      //   alert("검색어를 입력해주세요.");
-      //   return;
-      // }
-      console.log("Test", this.searchInputContents);
-
-      if (this.selectSearch === "주문번호") {
+      if (this.selectSearch === "주문번호" && this.searchInputContents) {
         this.searchFilter = `&orderId=${this.searchInputContents}`;
-      } else if (this.selectSearch === "주문상세번호") {
+      } else if (
+        this.selectSearch === "주문상세번호" &&
+        this.searchInputContents
+      ) {
         this.searchFilter = `&orderDetailId=${this.searchInputContents}`;
-      } else if (this.selectSearch === "주문자명") {
+      } else if (this.selectSearch === "주문자명" && this.searchInputContents) {
         this.searchFilter = `&orderer=${this.searchInputContents}`;
-      } else if (this.selectSearch === "핸드폰번호") {
+      } else if (
+        this.selectSearch === "핸드폰번호" &&
+        this.searchInputContents
+      ) {
         this.searchFilter = `&phoneNumber=${this.searchInputContents}`;
-      } else if (this.selectSearch === "상품명") {
+      } else if (this.selectSearch === "상품명" && this.searchInputContents) {
         this.searchFilter = `&productName=${this.searchInputContents}`;
       } else {
         this.searchFilter = "";
       }
 
+      if (!this.searchFilter && !this.startDate && !this.endDate) {
+        return alert(
+          "날짜 조건이 없을 경우에는 필수 필터 조건 검색이 존재합니다.\n(주문번호 or 주문상세번호 or 주문자명 or 핸드폰번호"
+        );
+      }
+
+      if (this.searchFilter && !this.searchInputContents) {
+        return alert("검색어를 입력해주세요.");
+      }
+
       this.axiosConnect();
 
       this.searchFilter = "";
-      this.searchInputContents = "";
-      // this.selectSearch = "";
-    },
-
-    //테이블에 있는 체크버튼중 최상단 체크박스 클릭시
-    //모든 체크버튼 ON/OFF 시킴
-    // totalCheckedHandler() {
-    //   this.totalChecked = !this.totalChecked;
-
-    //   if (this.totalChecked) {
-    //     this.isChecked = true;
-    //   } else {
-    //     this.isChecked = false;
-    //   }
-    // },
-
-    // checkedHandler() {
-    //   this.totalChecked = false;
-    // },
-
-    onChange(date, dateString) {
-      console.log(date, dateString);
     },
   },
 
-  components: {
-    // HotelDatePicker,
-    // Datepicker,
-  },
+  components: {},
 };
 </script>
 
@@ -536,26 +578,36 @@ export default {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 30px;
+
+      .btnContainer {
+        margin-right: 40px;
+
+        .btnV {
+          margin-right: 4px;
+        }
+      }
 
       .filterDate {
         display: flex;
-        margin-bottom: 30px;
+        /* margin-bottom: 30px; */
 
         .select {
           width: 200px;
-          margin-right: 50px;
+          margin-right: 20px;
         }
 
         .search {
           width: 400px;
+          height: 40px;
           background: white;
           border: 1px solid #e5e5e5;
           border-radius: 5px;
-          padding: 2px 10px;
+          padding: 0 10px;
 
           &:focus {
-            border: 1px solid black;
+            border: 1px solid #dbdbdb;
+            outline: none;
             border-radius: 5px;
           }
         }
@@ -689,6 +741,10 @@ export default {
       text-align: center;
       border-collapse: collapse;
       white-space: nowrap;
+
+      .linkDetail {
+        text-decoration: underline;
+      }
 
       th,
       td {

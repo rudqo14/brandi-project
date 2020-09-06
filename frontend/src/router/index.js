@@ -89,6 +89,11 @@ export const router = new VueRouter({
       redirect: "/main",
     },
     {
+      //초기 url을 main으로 적용
+      path: "/admin",
+      redirect: "/admin/productManagement",
+    },
+    {
       path: "/admin",
       component: AdminFrame,
       name: AdminFrame,
@@ -109,7 +114,7 @@ export const router = new VueRouter({
           name: "orderManagement",
         },
         {
-          path: "productDetail",
+          path: "productDetail/:id",
           component: ProductDetail,
           name: "productDetail",
         },
@@ -125,4 +130,7 @@ export const router = new VueRouter({
       component: Footer,
     },
   ],
+  scrollBehavior() {
+    document.getElementById("app").scrollIntoView();
+  },
 });
