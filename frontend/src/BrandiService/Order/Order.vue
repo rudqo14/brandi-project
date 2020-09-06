@@ -222,7 +222,7 @@ import { VueAgile } from "vue-agile";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { VueDaumPostcode } from "vue-daum-postcode";
-import { minhoIp } from "../../../config";
+import { gonhoIp } from "../../../config";
 
 export default {
   created() {
@@ -233,7 +233,7 @@ export default {
 
     axios
       .get(
-        `${minhoIp}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
+        `${gonhoIp}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
       )
       .then((res) => {
         console.log(res.data.data);
