@@ -15,6 +15,14 @@
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
+<<<<<<< HEAD
+          <span v-if="detailData.discount_rate" class="percent">{{ detailData.discount_rate }}%</span>
+          <span class="price">{{parseInt(detailData.sales_price).toLocaleString()+"원"}}</span>
+          <span class="cost">
+            {{
+            Math.floor(detailData.original_price).toLocaleString(5) + "원"
+            }}
+=======
           <span v-if="detailData.discount_rate" class="percent"
             >{{ detailData.discount_rate }}%</span
           >
@@ -31,6 +39,7 @@
           </span>
           <span class="cost">
             {{ Math.floor(detailData.price).toLocaleString(5) + "원" }}
+>>>>>>> master
           </span>
         </div>
         <hr />
@@ -120,6 +129,9 @@
                 +
               </button>
             </div>
+<<<<<<< HEAD
+            <p>{{}}</p>
+=======
             <p>
               {{
                 (
@@ -129,12 +141,16 @@
                 ).toLocaleString(5) + "원"
               }}
             </p>
+>>>>>>> master
           </div>
         </div>
         <div class="detailpriceContainer">
           <p>총 {{ input }}개의 상품</p>
           <p class="totalPrice">
             총 금액
+<<<<<<< HEAD
+            <strong>{{parseInt(detailData.sales_price).toLocaleString()+"원"}}</strong>
+=======
             <strong>
               {{
                 (
@@ -144,6 +160,7 @@
                 ).toLocaleString(5) + "원"
               }}
             </strong>
+>>>>>>> master
           </p>
         </div>
         <button @click="buyNowHandler" class="purchaseBtn">
@@ -170,6 +187,10 @@ import { VueAgile } from "vue-agile";
 export default {
   created() {
     axios.get(`${SERVER_IP}/product/${this.$route.params.id}`).then((res) => {
+<<<<<<< HEAD
+      console.log(res);
+=======
+>>>>>>> master
       this.detailData = res.data.data;
       this.purchaseId = this.detailData.product_id;
     });

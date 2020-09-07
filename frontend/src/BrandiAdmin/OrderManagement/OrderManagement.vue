@@ -18,6 +18,7 @@
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
             class="search"
+            ref="search"
             placeholder="검색어를 입력하세요."
           />
         </div>
@@ -163,7 +164,7 @@
               <td>{{ item.quantity }}</td>
               <td>{{ item.user_name }}</td>
               <td>{{ item.phone_number }}</td>
-              <td>{{ Math.floor(item.price).toLocaleString(5) + "원" }}</td>
+              <td>{{ Math.floor(item.total_price).toLocaleString(5) + "원" }}</td>
               <td>{{ item.order_status }}</td>
             </tr>
           </tbody>
@@ -268,12 +269,13 @@ export default {
       endValue: null,
       endOpen: false,
       searchInputContents: "",
-      selectSearch: "",
+      selectSearch: "Select..",
       searchFilter: "",
       startDate: "",
       endDate: "",
       checked: [],
       selected: [],
+      isLoadingScreen: false,
     };
   },
 
@@ -529,7 +531,7 @@ export default {
 
     //초기화 버튼 클릭시에 필터링에 해당하는 데이터들 모두 초기화시킨다.
     filterResetHandler() {
-      this.selectSearch = "";
+      this.selectSearch = "Select..";
       this.sellData = "3일";
       this.saleData = "전체";
       this.displayData = "전체";
@@ -558,14 +560,29 @@ export default {
         this.searchFilter = "";
       }
 
-      if (!this.searchFilter && !this.startDate && !this.endDate) {
+      console.log("this.selectSearch: ", this.selectSearch);
+      console.log("this.searchFilter: ", this.searchFilter);
+      console.log("this.searchInputContents: ", this.searchInputContents);
+
+      if (
+        this.selectSearch === "Select.." &&
+        !this.searchFilter &&
+        !this.startDate &&
+        !this.endDate
+      ) {
         return alert(
           "날짜 조건이 없을 경우에는 필수 필터 조건 검색이 존재합니다.\n(주문번호 or 주문상세번호 or 주문자명 or 핸드폰번호"
         );
       }
 
-      if (this.searchFilter && !this.searchInputContents) {
-        return alert("검색어를 입력해주세요.");
+      if (
+        this.selectSearch !== "Select.." &&
+        !this.searchFilter &&
+        !this.searchInputContents
+      ) {
+        alert("검색어를 입력해주세요.");
+        this.$refs.search.focus();
+        return;
       }
 
       this.axiosConnect();
