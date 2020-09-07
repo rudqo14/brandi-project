@@ -1,4 +1,4 @@
-import math
+import math, datetime
 
 class OrderService:
 
@@ -157,6 +157,8 @@ class OrderService:
             2020-09-02 (minho.lee0716@gmail.com) : 초기 생성
             2020-09-03 (minho.lee0716@gmail.com) : 수정
                 (구매하려는 상품의 정보 + 주문자의 정보 + 주문자의 배송지 정보)를 합쳤습니다.
+            2020-09-03 (minho.lee0716@gmail.com) : 수정
+                상품을 주문할 수 있게 프론트에게 option_detail_id를 리턴해 줍니다.
 
         """
 
@@ -202,13 +204,29 @@ class OrderService:
 
         # orders_details에 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
         order_info['order_detail_no']  = self.order_dao.insert_orders_details(order_info, db_connection)
-        print('1')
-        order_info['order_product_no'] = self.order_dao.insert_order_product(order_info, db_connection)
-        print('2')
-        order_info['quantity_no']      = self.order_dao.insert_quantities(order_info, db_connection)
-        print('3')
-        print(order_info)
-        self.order_dao.update_quantities(order_info, db_connection)
-        print('4')
 
-        return None
+        # order_product 테이블 row 생성
+        order_info['order_product_no'] = self.order_dao.insert_order_product(order_info, db_connection)
+
+        # 서브 쿼리를 최소화 하기 위해 option_details 테이블의 pk를 넣어줍니다.
+        order_info = {**order_info, **self.order_dao.get_option_details(order_info, db_connection)}
+
+        # 현재 제품의 재고 pk 가져오는 메소드 실행
+        current_quantity_info = self.order_dao.get_current_quantity(order_info, db_connection)
+
+        # 새로운 재고 생성하는 메소드 실행
+        new_quantity = self.order_dao.insert_quantities(order_info, db_connection)
+
+        # 새로운 quantity의 start_time을 가져오기 위한 data
+        quantity_data = {
+            "table_name"    : "quantities",
+            "table_column"  : "quantity_no",
+            "info"          : new_quantity
+        }
+
+        # start_time 가져오는 메소드 실행
+        start_time = self.order_dao.get_start_time(quantity_data, db_connection)
+        current_quantity_info['close_time'] = start_time
+        updated_quantity = self.order_dao.update_quantities(current_quantity_info, db_connection)
+
+        return new_quantity
