@@ -41,16 +41,14 @@
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
+                      :ref="list"
                     >
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
+                      <option value selected>색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.name"
                         :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
+                      >{{ list.name }}</option>
                     </select>
                   </td>
                   <div class="colorButtonBox">
@@ -65,27 +63,20 @@
                         v-if="colorSelectList.length > 1"
                         :value="list"
                         @click="colorSelectDelete"
-                      >
-                        -
-                      </button>
+                      >-</button>
                     </td>
                   </div>
                 </tr>
                 <tr class="sizeOpt bodyTable">
                   <td class="optionCate">사이즈</td>
                   <td class="sizeSelectBOx">
-                    <select
-                      @change="selectSizes"
-                      v-for="list in sizeSelectList"
-                      :key="list"
-                    >
-                      <option value="">사이즈 옵션을 선택해 주세요</option>
+                    <select @change="selectSizes" v-for="list in sizeSelectList" :key="list">
+                      <option value>사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
                         :value="list.name"
-                        >{{ list.name }}</option
-                      >
+                      >{{ list.name }}</option>
                     </select>
                   </td>
                   <div class="sizeButtonBox">
@@ -100,9 +91,7 @@
                         v-if="sizeSelectList.length > 1"
                         :value="list"
                         @click="sizeSelectDelete"
-                      >
-                        -
-                      </button>
+                      >-</button>
                     </td>
                   </div>
                 </tr>
@@ -138,9 +127,7 @@
               </thead>
               <tbody class="secondBody">
                 <tr>
-                  <td colspan="4">
-                    옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
-                  </td>
+                  <td colspan="4">옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.</td>
                 </tr>
                 <tr
                   v-if="applyOn"
@@ -149,14 +136,14 @@
                   :key="index"
                 >
                   <td class="applySelectedColor">
-                    <select name="" id="index"
-                      ><option value="">{{ option.color }}</option></select
-                    >
+                    <select name id="index">
+                      <option value>{{ option.color }}</option>
+                    </select>
                   </td>
                   <td class="applySelectedSize">
-                    <select name="" id=""
-                      ><option value="">{{ option.size }}</option></select
-                    >
+                    <select name id>
+                      <option value>{{ option.size }}</option>
+                    </select>
                   </td>
                   <td>
                     <div class="radioContainer">
@@ -176,14 +163,7 @@
                     </div>
                   </td>
                   <td>
-                    <v-btn
-                      @click="applyOption(index)"
-                      class="mx-2"
-                      fab
-                      dark
-                      small
-                      color="error"
-                    >
+                    <v-btn @click="applyOption(index)" class="mx-2" fab dark small color="error">
                       <v-icon dark>mdi-minus</v-icon>
                     </v-btn>
                   </td>
@@ -225,6 +205,7 @@ export default {
       colorSelectList: [1],
       sizeSelectList: [1],
       applyOn: false,
+      hasFocus: false,
     };
   },
 
@@ -260,9 +241,20 @@ export default {
 
     selectColors(e) {
       let colorName = e.target.value;
-      this.optionData[0].color.splice(0, 1);
-      this.optionData[0].color.push(colorName);
-      this.updateOptionData[0].color.push(colorName);
+      console.log("colorName: ", colorName);
+      if (this.updateOptionData[0].color.includes(colorName)) {
+        alert("이미 선택된 옵션입니다.");
+        this.$refs.list[0].focus();
+      } else {
+        this.optionData[0].color.splice(0, 1);
+        this.optionData[0].color.push(colorName);
+        this.updateOptionData[0].color.push(colorName);
+      }
+    },
+
+    changeDefaultSelect() {
+      console.log(this.$refs);
+      this.$refs.backDefault.focus();
     },
 
     selectSizes(e) {
