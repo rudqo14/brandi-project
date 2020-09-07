@@ -1,6 +1,8 @@
 from flask import jsonify
 
-class UserDao:
+from .dao import Dao
+
+class UserDao(Dao):
 
     def signup_user(self, user_info, db_connection):
 
@@ -258,28 +260,15 @@ class UserDao:
                 social_networks.name AS social_name
             FROM
                 users
-            """
 
-            select_user_query += """
             LEFT JOIN
                 user_shipping_details
             ON users.user_no = user_shipping_details.user_id
-            """
 
-            # 계정 정보 filter 기능
-            if filter_info['social_network']:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                AND social_networks.name = %(social_network)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                """
+            LEFT JOIN
+                social_networks
+            ON users.social_id = social_networks.social_network_no
+            """
 
             # 삭제 되지 않은 데이터만 조회
             select_user_query += """
@@ -332,6 +321,18 @@ class UserDao:
                 select_user_query += """
                 AND user_shipping_details.phone_number = %(phone_number)s
                 """
+
+            # 소셜 계정 filter 기능
+            if filter_info['social_network']:
+                if filter_info['social_network'] == '브랜디':
+                    select_user_query += """
+                    AND users.social_id IS NULL
+                    """
+                else:
+                    select_user_query += """
+                    AND social_networks.name = %(social_network)s
+                    """
+
             if filter_info['sort'] :
                 select_user_query += """
                 ORDER BY
@@ -349,7 +350,7 @@ class UserDao:
             OFFSET
                 %(offset)s
             """
-
+            print(select_user_query)
             cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
@@ -385,37 +386,15 @@ class UserDao:
                 COUNT(*) AS total_number
             FROM
                 users
+
+            LEFT JOIN
+                user_shipping_details
+            ON users.user_no = user_shipping_details.user_id
+
+            LEFT JOIN
+                social_networks
+            ON users.social_id = social_networks.social_network_no
             """
-
-            # 핸드폰 번호 filter 기능
-            if filter_info['phone_number']:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                AND user_shipping_details.phone_number = %(phone_number)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                """
-
-            # 계정 정보 filter 기능
-            if filter_info['social_network']:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                AND social_networks.name = %(social_network)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                """
 
             # 삭제 되지 않은 데이터만 조회
             select_user_query += """
@@ -463,6 +442,23 @@ class UserDao:
                 AND users.created_at <= %(created_to)s
                 """
 
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+
+            # 소셜 계정 filter 기능
+            if filter_info['social_network']:
+                if filter_info['social_network'] == '브랜디':
+                    select_user_query += """
+                    AND users.social_id IS NULL
+                    """
+                else:
+                    select_user_query += """
+                    AND social_networks.name = %(social_network)s
+                    """
+
             cursor.execute(select_user_query, filter_info)
 
             total_number = cursor.fetchone()
@@ -489,8 +485,9 @@ class UserDao:
         History:
             2020-08-28 (tnwjd060124@gmail.com) : 초기 생성
             2020-08-30 (tnwjd060124@gmail.com) : 수정
-                제품 가격은 주문 생성시의 이력,
-                제품명은 현재 이력으로 조회하도록 변경
+                제품 정보 주문 생성시의 이력으로 조회하는 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                상품가격  대신 총 결제 금액 리턴하도록 변경
 
         """
 
@@ -506,17 +503,8 @@ class UserDao:
                 P9.name AS color,
                 P10.name AS size,
                 P3.quantity,
-                P8.price,
-                P11.name AS order_status,
-                CASE
-                    WHEN P8.discount_rate IS NULL THEN 0
-                    ELSE CASE
-                        WHEN P8.discount_start_date IS NULL THEN P8.discount_rate
-                        WHEN P2.start_time BETWEEN P8.discount_start_date AND P8.discount_end_date THEN P8.discount_rate
-                        ELSE 0
-                        END
-                    END
-                AS discount_rate
+                P2.total_price,
+                P11.name AS order_status
 
             FROM orders AS P1
 
@@ -679,3 +667,47 @@ class UserDao:
 
             return order_detail
 
+    def update_user_shipping_detail(self, user_info, db_connection):
+
+        """
+
+        유저의 배송지 정보를 변경합니다.
+
+        Args:
+            user_info:
+                user_no : 유저의 pk
+                phone_number : 변경할 유저의 핸드폰번호
+                address : 변경할 유저의 주소
+                additional_address : 변경할 유저의 상세주소
+                zip_code : 변경할 유저의 우편번호
+            db_connection : 연결된 db 객체
+
+        Returns : 정보가 변경된 유저의 pk
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-07 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+            update_shipping_detail = """
+            UPDATE
+                user_shipping_details
+            SET
+                phone_number = %(phone_number)s,
+                address = %(address)s,
+                additional_address = %(additional_address)s,
+                zip_code = %(zip_code)s
+            WHERE
+                user_id = %(user_no)s
+            """
+
+            affected_rows = cursor.execute(update_shipping_detail, user_info)
+
+            if affected_rows < 1:
+                return None
+
+            return affected_rows

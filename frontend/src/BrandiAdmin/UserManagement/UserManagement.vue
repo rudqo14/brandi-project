@@ -47,7 +47,7 @@
           <thead>
             <tr class="headTop">
               <td class="check">
-                <input type="checkbox" />
+                <input type="checkbox" v-model="selectAll" />
               </td>
               <td class="userNo">
                 <div class="idContainer">
@@ -150,9 +150,9 @@
             </tr>
           </thead>
           <tbody class="noData" v-if="this.userTotal">
-            <tr v-for="user in users.data">
+            <tr v-for="(user, i) in tableData.data" :key="i">
               <td class="check">
-                <input type="checkbox" />
+                <input type="checkbox" v-model="selected" :value="i" class="checkbox" />
               </td>
               <td class="userNo">{{ user.user_no }}</td>
               <td class="userName">{{ user.name }}</td>
@@ -209,7 +209,7 @@
 ​
 <script>
 import axios from "axios";
-import { sip } from "../../../config.js";
+import { SERVER_IP } from "../../../config.js";
 
 export default {
   created() {
@@ -217,9 +217,12 @@ export default {
   },
   data() {
     return {
+      checked: [],
+      selected: [],
+      totalChecked: false,
+      tableData: [],
       sort: true,
       dateFormat: "YYYY/MM/DD",
-      users: [],
       userTotal: 0,
       query: "",
       filters: {
@@ -246,10 +249,10 @@ export default {
     getUserData() {
       axios
         .get(
-          `${sip}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
+          `${SERVER_IP}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
         )
         .then(res => {
-          this.users = res.data;
+          this.tableData = res.data;
           this.userTotal = res.data.total_user_number;
           this.offset = this.getOffset();
         })
@@ -329,7 +332,7 @@ export default {
       if (!lastAccessFrom || !endValue) {
         return false;
       }
-      return lastAccessFrom.valueOf() > endValue.valueOf();
+      return lastAccessFrom.valueOf() >= endValue.valueOf();
     },
     disabledAccessTo(lastAccessTo) {
       const startValue = this.lastAccessFrom;
@@ -343,7 +346,7 @@ export default {
       if (!createdAtFrom || !endValue) {
         return false;
       }
-      return createdAtFrom.valueOf() > endValue.valueOf();
+      return createdAtFrom.valueOf() >= endValue.valueOf();
     },
     disabledCreatedTo(createdAtTo) {
       const startValue = this.createdAtFrom;
@@ -354,6 +357,15 @@ export default {
     },
     changeSort() {
       this.sort = !this.sort;
+    },
+    totalCheckedHandler() {
+      this.totalChecked = !this.totalChecked;
+
+      if (this.totalChecked) {
+        for (let key in this.tableData) {
+          this.checked.push(this.tableData[key]);
+        }
+      }
     }
   },
   computed: {
@@ -362,6 +374,35 @@ export default {
         return 1;
       }
       return Math.ceil(this.userTotal / this.selectedLimit);
+    },
+    selectAll: {
+      //체크박스 전체선택/해제
+      //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
+      //전체해제
+      //getter를 통해 종속성을 추적
+      get: function() {
+        if (this.tableData.data) {
+          if (this.tableData.data.length === 0) {
+            return false;
+          }
+        }
+        return this.tableData.data
+          ? this.selected.length == this.tableData.data.length
+          : false;
+      },
+
+      //setter를 통해 변경을 알림
+      //select한 체크박스값을 배열안에 넣어 적용
+      set: function(value) {
+        const selected = [];
+
+        if (value) {
+          this.tableData.data.forEach(function(item, i) {
+            selected.push(i);
+          });
+        }
+        this.selected = selected;
+      }
     }
   },
   watch: {

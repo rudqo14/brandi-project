@@ -41,10 +41,9 @@
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
+                      :ref="list"
                     >
-                      <option value="" selected
-                        >색상 옵션을 선택해 주세요</option
-                      >
+                      <option value selected>색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.name"
@@ -79,7 +78,7 @@
                       v-for="list in sizeSelectList"
                       :key="list"
                     >
-                      <option value="">사이즈 옵션을 선택해 주세요</option>
+                      <option value>사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
@@ -112,7 +111,7 @@
                   <td class="optionCate">재고관리여부</td>
                   <td colspan="2">
                     <div class="radioContainer">
-                      <v-radio-group v-model="stockDefaultValue" row>
+                      <v-radio-group v-model="stockQuantityDefaultValue" row>
                         <v-radio label="재고수량관리안함" :value="1"></v-radio>
                         <v-radio label="재고수량관리" :value="2"></v-radio>
                       </v-radio-group>
@@ -149,22 +148,29 @@
                   :key="index"
                 >
                   <td class="applySelectedColor">
-                    <select name="" id="index"
-                      ><option value="">{{ option.color }}</option></select
-                    >
+                    <select name id="index">
+                      <option value>{{ option.color }}</option>
+                    </select>
                   </td>
                   <td class="applySelectedSize">
-                    <select name="" id=""
-                      ><option value="">{{ option.size }}</option></select
-                    >
+                    <select name id>
+                      <option value>{{ option.size }}</option>
+                    </select>
                   </td>
                   <td>
                     <div class="radioContainer">
-                      <v-radio-group v-model="stockDefaultValue" row>
-                        <v-radio label="재고수량관리안함" :value="1"></v-radio>
-                        <v-radio label="재고수량관리" :value="2">{{
-                          option.quantity
-                        }}</v-radio>
+                      <v-radio-group v-model="defaultRadio" row>
+                        <v-radio label="재고관리안함"></v-radio>
+                        <v-radio value="1" label="재고관리"></v-radio>
+                        <div class="stockInputContainer">
+                          <input
+                            @input="updateQuantity"
+                            v-model="option.quantity"
+                            class="stockQuantity"
+                            type="text"
+                          />
+                          <span>개</span>
+                        </div>
                       </v-radio-group>
                     </div>
                   </td>
@@ -192,8 +198,8 @@
 
 <script>
 import axios from "axios";
-import { mapMutations } from "vuex";
-import { ADMIN_API_URL } from "../../../../config";
+import { mapState, mapMutations } from "vuex";
+import { SERVER_IP } from "../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -202,14 +208,13 @@ export default {
     this.getOptionData();
   },
 
-  mounted() {
-    console.log("sizeSelectLsit: ", this.sizeSelectList);
-  },
-
   data() {
     return {
       optionDefaultValue: "기본옵션",
-      stockDefaultValue: 1,
+      stockQuantityDefaultValue: 1,
+      defaultRadio: "1",
+      stockManageRadio: "0",
+      stockQuantity: "",
       colorListSize: 1,
       sizeListSize: 1,
       option: {},
@@ -219,13 +224,14 @@ export default {
       colorSelectList: [1],
       sizeSelectList: [1],
       applyOn: false,
+      hasFocus: false,
     };
   },
 
   methods: {
-    ...mapMutations(AdminStore, ["upDateOptionColor", "upDateOptionSize"]),
+    ...mapMutations(AdminStore, ["upDateAllOptions"]),
     getOptionData() {
-      axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
+      axios.get(`${SERVER_IP}/admin/product/option`).then((res) => {
         this.option = res.data;
       });
     },
@@ -237,7 +243,6 @@ export default {
 
     colorSelectDelete(e) {
       let colorSelectId = parseInt(e.target.value);
-      console.log("colorSelectId: ", colorSelectId);
       const idx = this.colorSelectList.indexOf(colorSelectId);
       this.colorSelectList.splice(idx, 1);
     },
@@ -249,37 +254,38 @@ export default {
 
     sizeSelectDelete(e) {
       let sizeSelectId = parseInt(e.target.value);
-      console.log("e.target.value: ", e.target.value);
-      console.log("sizeSelectList: ", this.sizeSelectList);
       const idx = this.sizeSelectList.indexOf(sizeSelectId);
       this.sizeSelectList.splice(idx, 1);
     },
 
     selectColors(e) {
       let colorName = e.target.value;
-      console.log(e.target.value);
-      this.optionData[0].color.splice(0, 1);
-      this.optionData[0].color.push(colorName);
-      this.updateOptionData[0].color.push(colorName);
-      this.upDateOptionColor(this.updateOptionData[0].color);
-      console.log("optionData.color: ", this.optionData[0].color);
+      console.log("colorName: ", colorName);
+      if (this.updateOptionData[0].color.includes(colorName)) {
+        alert("이미 선택된 옵션입니다.");
+        this.$refs.list[0].focus();
+      } else {
+        this.optionData[0].color.splice(0, 1);
+        this.optionData[0].color.push(colorName);
+        this.updateOptionData[0].color.push(colorName);
+      }
+    },
+
+    changeDefaultSelect() {
+      console.log(this.$refs);
+      this.$refs.backDefault.focus();
     },
 
     selectSizes(e) {
       let sizeName = e.target.value;
-      console.log(e.target.value);
       this.optionData[0].size.splice(0, 1);
       this.optionData[0].size.push(sizeName);
       this.updateOptionData[0].size.push(sizeName);
-      this.upDateOptionSize(this.updateOptionData[0].size);
-      console.log("optionData.size: ", this.optionData[0].size);
     },
 
     clickApply() {
       this.applyOptions();
       this.applyOn = true;
-      console.log("updateOptionData: ", this.updateOptionData);
-      console.log("applyOptionData: ", this.applyOptionData);
     },
 
     applyOptions() {
@@ -293,10 +299,13 @@ export default {
         }
       }
     },
+
     applyOption(index) {
-      console.log("index: ", index);
-      console.log("applyOtionData: ", this.applyOptionData);
       this.applyOptionData.splice(index, 1);
+    },
+
+    updateQuantity() {
+      this.upDateAllOptions(this.applyOptionData);
     },
   },
 };
@@ -531,6 +540,29 @@ export default {
 
       .radioContainer {
         margin-left: 20px;
+
+        .stockQuantity:disabled {
+          cursor: not-allowed;
+          background-color: lightgray;
+        }
+
+        .stockInputContainer {
+          margin-left: -10px;
+
+          .stockQuantity {
+            color: #333333;
+            border: 1px solid #e5e5e5;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 100px;
+
+            &:focus {
+              border-color: #999;
+            }
+          }
+        }
       }
     }
   }

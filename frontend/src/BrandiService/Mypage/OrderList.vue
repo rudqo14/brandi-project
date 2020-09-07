@@ -39,9 +39,7 @@
             <div class="productOption">{{ order.color }} / {{ order.size }}</div>
             <div class="orderQuantity">{{ order.quantity }} 개</div>
           </div>
-          <div
-            class="orderPrice"
-          >{{ numberWithCommas(getDiscountPrice(order.price, order.discount_rate) * order.quantity) }} 원</div>
+          <div class="orderPrice">{{ numberWithCommas(order.total_price) }} 원</div>
           <div class="orderStatus">{{ order.order_status }}</div>
         </div>
       </div>
@@ -54,7 +52,7 @@
 
 <script>
 import axios from "axios";
-import { sip } from "../../../config";
+import { SERVER_IP } from "../../../config";
 import { mapGetters } from "vuex";
 
 const serviceStore = "serviceStore";
@@ -73,10 +71,9 @@ export default {
     getOrderData() {
       const token = this.getToken;
       axios
-        .get(`${sip}/user/mypage/orderlist`, {
+        .get(`${SERVER_IP}/user/mypage/orderlist`, {
           headers: {
             Authorization: token
-            //"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX25vIjp7InVzZXJfbm8iOjF9fQ.uAYYPkfZVs1cyXezJ_MVCp4fzgYPjQGhRLn83bIxrH8"
           }
         })
         .then(res => {
@@ -210,6 +207,7 @@ export default {
       }
 
       .orderPrice {
+        margin-left: 15px;
         font-size: 20px;
         font-weight: bold;
       }
@@ -217,7 +215,7 @@ export default {
       .orderStatus {
         font-size: 18px;
         font-weight: bold;
-        margin-left: 153px;
+        margin-left: 145px;
       }
     }
   }

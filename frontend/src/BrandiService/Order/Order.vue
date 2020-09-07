@@ -14,9 +14,9 @@
               <img :src="detailData.image_small" />
             </div>
             <div class="optionContainer">
-              <h3>{{detailData.name}}</h3>
-              <p class="option">{{detailData.color}}</p>
-              <p class="option">{{detailData.quantity}}개</p>
+              <h3>{{ detailData.name }}</h3>
+              <p class="option">{{ detailData.color }}</p>
+              <p class="option">{{ detailData.quantity }}개</p>
             </div>
           </div>
           <div
@@ -225,7 +225,6 @@
 </template>
 
 <script>
-// import { ip } from "../../../config.js";
 import axios from "axios";
 import { VueAgile } from "vue-agile";
 import Header from "../Components/Header";

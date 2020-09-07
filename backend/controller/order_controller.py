@@ -180,6 +180,8 @@ def create_service_order_endpoints(order_service):
             400 : KEY_ERROR_COLOR_ID
             400 : KEY_ERROR_SIZE_ID
             400 : KEY_ERROR_QUANTITY
+            400 : THIS_PRODUCT_DOES_NOT_EXISTS
+            400 : UNAUTHORIZED
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -293,8 +295,14 @@ def create_service_order_endpoints(order_service):
                 # Body로 들어온 정보를 order_info에 담기.
                 order_info = request.json
 
+                #order_info['user_no']  = user_no
+
+                print(order_info)
+
                 # 받아온 정보들로 주문하기
-                order_service.FUNCTION_NAME(user_no, order_info, db_connection)
+                order_service.create_order_completed(order_info, user_no, db_connection)
+
+                db_connection.commit()
 
                 return jsonify({'message' : 'ORDER_COMPLETED!!!'}), 200
 
@@ -302,7 +310,8 @@ def create_service_order_endpoints(order_service):
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            db_connection.rollback()
+            return jsonify({"message" : f"{e}"}), 400
 
         finally:
             if db_connection:

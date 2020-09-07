@@ -1,6 +1,8 @@
 import uuid
 
-class ProductDao:
+from .dao import Dao
+
+class ProductDao(Dao):
 
     def insert_product(self, db_connection):
 
@@ -279,29 +281,29 @@ class ProductDao:
                 P.product_no,
                 I.image_medium AS thumbnail_image,
                 PD.name AS product_name,
-                PD.price,
+                PD.price AS original_price,
                 CASE
-                    WHEN PD.discount_rate IS NULL THEN 0
+                    WHEN PD.discount_rate IS NULL THEN 0 -- discount_rate이 NULL 인 경우 0
                     ELSE CASE
-                        WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
-                        WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
-                        ELSE 0
+                        WHEN PD.discount_start_date IS NULL THEN PD.discount_rate -- 할인 기간이 무기한인 경우
+                        WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate -- 할인기간이 유효한 경우
+                        ELSE 0 -- 할인 기간이 아닌 경우
                         END
                     END
                 AS discount_rate
 
-            FROM products as P
+            FROM products AS P
 
-            LEFT JOIN product_images as PI
+            INNER JOIN product_images as PI
             ON P.product_no = PI.product_id
             AND PI.close_time = '9999-12-31 23:59:59'
             AND PI.is_main = 1
 
-            LEFT JOIN images as I
+            INNER JOIN images as I
             ON PI.image_id = I.image_no
             AND I.is_deleted = 0
 
-            LEFT JOIN product_details as PD
+            INNER JOIN product_details as PD
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
@@ -357,7 +359,7 @@ class ProductDao:
                 P.product_no AS product_id,
                 PD.name,
                 PD.detail_information AS html,
-                PD.price,
+                PD.price AS original_price,
                 PD.min_sales_quantity,
                 PD.max_sales_quantity,
                 CASE
@@ -372,7 +374,7 @@ class ProductDao:
 
             FROM products AS P
 
-            LEFT JOIN product_details AS PD
+            INNER JOIN product_details AS PD
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
@@ -1150,7 +1152,7 @@ class ProductDao:
                 name = %s
             """
 
-            cursor.execute(select_color_id_query, option['colorName'])
+            cursor.execute(select_color_id_query, option['color'])
             color_id = cursor.fetchone()
 
             return color_id['color_no']
@@ -1188,7 +1190,7 @@ class ProductDao:
                 name = %s
             """
 
-            cursor.execute(select_size_id_query, option['sizeName'])
+            cursor.execute(select_size_id_query, option['size'])
             size_id = cursor.fetchone()
 
             return size_id['size_no']

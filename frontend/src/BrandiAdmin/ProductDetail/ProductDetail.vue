@@ -16,18 +16,24 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">주문 번호 :</div>
-            <div class="rowTitle">{{detailData.order_no}}</div>
+            <div class="rowTitle">{{ detailData.order_no }}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">주문 일시 :</div>
-            <div class="rowTitle">{{detailData.order_time}}</div>
+            <div class="rowTitle">{{ detailData.order_time }}</div>
           </div>
         </div>
         <div class="infoBorder" />
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">총 결제 금액 :</div>
+<<<<<<< HEAD
             <div class="rowTitle">{{Math.round(detailData.total_price).toLocaleString(5) + "원"}}</div>
+=======
+            <div class="rowTitle">
+              {{ detailData.total_price.toLocaleString(5) + "원" }}
+            </div>
+>>>>>>> master
           </div>
           <div class="infoRow">
             <div class="rowTitle">결제 정보 :</div>
@@ -42,18 +48,18 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">주문 상세 번호 :</div>
-            <div class="rowTitle">{{detailData.order_detail_no}}</div>
+            <div class="rowTitle">{{ detailData.order_detail_no }}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">주문 상태 :</div>
-            <div class="rowTitle">{{detailData.order_status}}</div>
+            <div class="rowTitle">{{ detailData.order_status }}</div>
           </div>
         </div>
         <div class="infoBorder" />
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">결제 일시 :</div>
-            <div class="rowTitle">{{detailData.paid_time}}</div>
+            <div class="rowTitle">{{ detailData.paid_time }}</div>
           </div>
         </div>
       </div>
@@ -64,11 +70,11 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">상품 번호:</div>
-            <div>{{detailData.product_no}}</div>
+            <div>{{ detailData.product_no }}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">상품명 :</div>
-            <div>{{detailData.product_name}}</div>
+            <div>{{ detailData.product_name }}</div>
           </div>
         </div>
         <div class="infoBorder" />
@@ -76,22 +82,40 @@
           <div class="infoRow">
             <div class="rowTitle">상품 판매가 :</div>
             <div class="rowTitle">
+<<<<<<< HEAD
               {{parseInt(detailData.original_price).toLocaleString(5) + "원"}}
               <strong
                 class="redColor"
               >(할인가 {{parseInt(detailData.sales_price).toLocaleString(5)}}원)</strong>
+=======
+              {{ detailData.price.toLocaleString(5) + "원" }}
+              <strong class="redColor"
+                >(할인가
+                {{
+                  (
+                    Math.round(
+                      (detailData.price -
+                        detailData.price * (detailData.discount_rate / 100)) /
+                        10
+                    ) * 10
+                  ).toLocaleString(5)
+                }}원)</strong
+              >
+>>>>>>> master
             </div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">옵션정보 :</div>
-            <div class="rowTitle">{{detailData.color}}/{{detailData.size}}</div>
+            <div class="rowTitle">
+              {{ detailData.color }}/{{ detailData.size }}
+            </div>
           </div>
         </div>
         <div class="infoBorder" />
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">구매수량 :</div>
-            <div class="rowTitle">{{detailData.quantity}} 개</div>
+            <div class="rowTitle">{{ detailData.quantity }} 개</div>
           </div>
         </div>
       </div>
@@ -102,11 +126,11 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">회원번호 :</div>
-            <div class="rowTitle">{{detailData.user_no}}</div>
+            <div class="rowTitle">{{ detailData.user_no }}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">수령자명:</div>
-            <div class="rowTitle">{{detailData.orderer}}</div>
+            <div class="rowTitle">{{ detailData.orderer }}</div>
           </div>
         </div>
         <div class="infoBorder" />
@@ -114,21 +138,32 @@
           <div class="infoRow">
             <div class="rowTitle">연락처 :</div>
             <div class="rowTitle">
-              {{recipientPhoneNum}}
+              {{ recipientPhoneNum }}
               <template>
                 <div class="text-center">
                   <v-dialog v-model="dialog" width="500">
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn small color="red lighten-2" dark v-bind="attrs" v-on="on">변경</v-btn>
+                      <v-btn
+                        small
+                        color="red lighten-2"
+                        dark
+                        v-bind="attrs"
+                        v-on="on"
+                        >변경</v-btn
+                      >
                     </template>
                     <v-card>
-                      <v-card-title class="headline green lighten-2"></v-card-title>
-                      <v-card-title class="headline white lighten-2">수취자 연락처1 변경</v-card-title>
+                      <v-card-title
+                        class="headline green lighten-2"
+                      ></v-card-title>
+                      <v-card-title class="headline white lighten-2"
+                        >수취자 연락처1 변경</v-card-title
+                      >
                       <v-divider />
                       <div class="phoneNumContainer">
                         <div class="rowContainer">
                           <div class="category">수취자 연락처1:</div>
-                          <div>{{recipientPhoneNum}}</div>
+                          <div>{{ recipientPhoneNum }}</div>
                         </div>
                         <div class="rowContainer">
                           <div class="category">변경할 핸드폰 번호:</div>
@@ -146,7 +181,13 @@
                       <v-divider />
                       <v-card-actions>
                         <v-spacer></v-spacer>
-                        <v-btn color="success" dark name="recipient" @click="phoneNumHandler">변경요청</v-btn>
+                        <v-btn
+                          color="success"
+                          dark
+                          name="recipient"
+                          @click="phoneNumHandler"
+                          >변경요청</v-btn
+                        >
                         <v-btn @click="cancelPhoneNumHandler">취소</v-btn>
                       </v-card-actions>
                     </v-card>
@@ -160,18 +201,24 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">배송지 :</div>
-            <div class="rowTitle">{{`${daumAddress} ${detailAddress} (${sigunguCode})`}}</div>
+            <div class="rowTitle">
+              {{ `${daumAddress} ${detailAddress} (${sigunguCode})` }}
+            </div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">배송시 요청사항 :</div>
-            <div class="rowTitle">{{detailData.delivery_request}}</div>
+            <div class="rowTitle">{{ detailData.delivery_request }}</div>
             <v-dialog v-model="shippingDialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="primary" small dark v-bind="attrs" v-on="on">배송지 변경</v-btn>
+                <v-btn color="primary" small dark v-bind="attrs" v-on="on"
+                  >배송지 변경</v-btn
+                >
               </template>
               <v-card>
                 <v-card-title class="headline black lighten-2"></v-card-title>
-                <v-card-title class="headline white lighten-2">배송지 변경</v-card-title>
+                <v-card-title class="headline white lighten-2"
+                  >배송지 변경</v-card-title
+                >
                 <v-divider />
                 <div class="addressContainer">
                   <div class="rowContainer">
@@ -183,10 +230,15 @@
                       readonly
                       :value="sigunguCode"
                     />
-                    <button @click="findAddressHandler" class="findAddress">우편번호 찾기</button>
+                    <button @click="findAddressHandler" class="findAddress">
+                      우편번호 찾기
+                    </button>
                   </div>
                   <div class="daumContainer">
-                    <vue-daum-postcode v-if="isDaumToggle" @complete="handleAddress" />
+                    <vue-daum-postcode
+                      v-if="isDaumToggle"
+                      @complete="handleAddress"
+                    />
                   </div>
                   <div class="rowContainer">
                     <div class="addressSecond">{{ daumAddress }}</div>
@@ -204,13 +256,20 @@
                 <v-divider />
                 <div class="addContainer">
                   <v-card-actions>
-                    <v-btn width="100" color="grey lighten-1" dark @click="dialogCanceled">취소</v-btn>
+                    <v-btn
+                      width="100"
+                      color="grey lighten-1"
+                      dark
+                      @click="dialogCanceled"
+                      >취소</v-btn
+                    >
                     <v-btn
                       width="100"
                       color="black lighten-2"
                       dark
                       @click="deliveredCheckHandler"
-                    >확인</v-btn>
+                      >확인</v-btn
+                    >
                   </v-card-actions>
                 </div>
               </v-card>
@@ -219,7 +278,9 @@
         </div>
       </div>
       <div class="saveContainer">
-        <v-btn @click="productDetailSaved" color="success" class="saveBtn">저장</v-btn>
+        <v-btn @click="productDetailSaved" color="success" class="saveBtn"
+          >저장</v-btn
+        >
         <v-btn class="saveBtn">
           <router-link :to="`/admin/orderManagement`">취소</router-link>
         </v-btn>
