@@ -164,3 +164,44 @@ class OrderService:
 
         # 셀러 상품의 정보와 주문자의 정보, 주문자의 배송지 정보까지 한번에 리턴해 줍니다.
         return {**seller_product_info, **orderer_info}
+
+    def create_order_completed(self, order_info, user_no, db_connection):
+
+        """
+
+        asdf
+
+        Args:
+            product_info  : 주문 관련에 관한 모든 정보입니다.
+            user_no       : 토큰에서 받은 유저 id입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+            구매할 상품의 정보, 주문하려는 유저의 정보, 주문하려는 유저의 배송지 정보.
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-06 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 유저의 id를 넘겨주고, orders 테이블에 insert후, 해당 order_no의 id(pk)를 가져옵니다.
+        order_info['order_no'] = self.order_dao.insert_orders(user_no, db_connection)
+
+        # orders_details테이블에 필요한 user_no의 정보를 order_info에 넣어줍니다.
+        order_info['user_no'] = user_no
+
+        # orders_details에 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
+        order_info['order_detail_no']  = self.order_dao.insert_orders_details(order_info, db_connection)
+        print('1')
+        order_info['order_product_no'] = self.order_dao.insert_order_product(order_info, db_connection)
+        print('2')
+        order_info['quantity_no']      = self.order_dao.insert_quantities(order_info, db_connection)
+        print('3')
+        print(order_info)
+        self.order_dao.update_quantities(order_info, db_connection)
+        print('4')
+
+        return None
