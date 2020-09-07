@@ -1,4 +1,6 @@
 from utils import ResizeImage, login_required
+from decimal import *
+from datetime import *
 
 from flask import (
     request,
@@ -8,6 +10,7 @@ from flask import (
 from flask_request_validator    import (
     GET,
     PATH,
+    FORM,
     Param,
     Pattern,
     validate_params
@@ -27,7 +30,24 @@ def create_admin_product_endpoints(product_service):
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
     @admin_product_app.route('', methods=['POST'])
-    def product_register():
+    @catch_exception
+    @validate_params(
+        Param('mainCategoryId', FORM, int),
+        Param('subCategoryId', FORM, int),
+        Param('sellYn', FORM, int, required=False),
+        Param('exhibitionYn', FORM, int, required=False),
+        Param('productName', FORM, str, required=False),
+        Param('simpleDescription', FORM, str, required=False),
+        Param('detailInformation', FORM, str, required=False),
+        Param('price', FORM, float),
+        Param('discountRate', FORM, int),
+        Param('discountStartDate', FORM, str, required=False),
+        Param('discountEndDate', FORM, str, required=False),
+        Param('minSalesQuantity', FORM, int),
+        Param('maxSalesQuantity', FORM, int),
+        Param('optionQuantity', FORM, str, required=False)
+    )
+    def product_register(*args):
 
         """
 
@@ -73,6 +93,7 @@ def create_admin_product_endpoints(product_service):
             2020-08-28 (sincerity410@gmail.com) : product_images, images 저장 기능추가
             2020-08-30 (sincerity410@gmail.com) : product option 별 재고수량 저장 기능추가
             2020-09-02 (sincerity410@gmail.com) : product_code column 추가에 따른 구조 수정
+            2020-09-08 (sincerity410@gmail.com) : request Validation Check 추가
 
         """
 
@@ -85,8 +106,22 @@ def create_admin_product_endpoints(product_service):
 
             if db_connection:
 
-                # form-data request를 product_info라는 Dictionary 변수에 담기
-                product_info = request.form.to_dict(flat=False)
+                product_info = {
+                    'mainCategoryId'    : args[0],
+                    'subCategoryId'     : args[1],
+                    'sellYn'            : args[2],
+                    'exhibitionYn'      : args[3],
+                    'productName'       : args[4],
+                    'simpleDescription' : args[5],
+                    'detailInformation' : args[6],
+                    'price'             : args[7],
+                    'discountRate'      : args[8],
+                    'discountStartDate' : args[9],
+                    'discountEndDate'   : args[10],
+                    'minSalesQuantity'  : args[11],
+                    'maxSalesQuantity'  : args[12],
+                    'optionQuantity'    : args[13]
+                }
 
                 # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
                 s3_connection = get_s3_connection()
@@ -289,6 +324,7 @@ def create_admin_product_endpoints(product_service):
         Param('page', GET, int, rules=[PageRule()]),
         Param('limit', GET, int, rules=[LimitRule()])
     )
+
     def registered_product_list(*args):
 
         """
@@ -419,6 +455,191 @@ def create_admin_product_endpoints(product_service):
 
         except Exception as e:
             return jsonify({'message' : f"{e}"}), 400
+
+    @admin_product_app.route('/<product_id>', methods=['GET'])
+    @catch_exception
+    @validate_params(
+        Param('product_id', PATH, int)
+    )
+    def product_detail(*args):
+
+        """
+
+        [ 상품관리 > 상품등록] 상품 수정을 위한 Detail 내역 Return 엔드포인트
+        [GET] http://ip:5000/admin/product/<product_id>
+
+        Args:
+            Parameter:
+                productId : (int) Product Id(상품 테이블 PK)
+
+        Returns:
+            200 :
+                "data": [
+                    {
+                      "name"            : "{sub_category_name}",
+                      "sub_category_no" : {sub_category_no}
+                    }
+                ]
+            400 : VALIDATION_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+            db_connection = get_connection()
+
+            if db_connection:
+
+                product_id = args[0]
+
+                # sub_category_list 함수 호출해 Sub Category List 받아오기
+                product_info = product_service.get_product_detail(product_id, db_connection)
+
+                return jsonify({'data' : product_info}), 200
+
+        except Exception as e:
+            return jsonify({'message' : f"{e}"}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_product_app.route('/<product_id>', methods=['PUT'])
+    @catch_exception
+    @validate_params(
+        Param('product_id', PATH, int),
+        Param('mainCategoryId', FORM, int),
+        Param('subCategoryId', FORM, int),
+        Param('sellYn', FORM, int, required=False),
+        Param('exhibitionYn', FORM, int, required=False),
+        Param('productName', FORM, str, required=False),
+        Param('simpleDescription', FORM, str, required=False),
+        Param('detailInformation', FORM, str, required=False),
+        Param('price', FORM, float),
+        Param('discountRate', FORM, int),
+        Param('discountStartDate', FORM, str, required=False),
+        Param('discountEndDate', FORM, str, required=False),
+        Param('minSalesQuantity', FORM, int),
+        Param('maxSalesQuantity', FORM, int),
+        Param('optionQuantity', FORM, str, required=False)
+    )
+    def product_modify(*args):
+
+        """
+
+        [상품관리 > 상품등록] - 엔드포인트 Function
+        [PUT] http://ip:5000/admin/product
+
+        Args:
+            request.form:
+                mainCategoryId      : Main Category ID
+                subCategoryId       : Sub Category ID
+                sellYn              : 상품 판매여부 (Boolean)
+                exhibitionYn        : 상품 진열여부 (Boolean)
+                productName         : 상품이름
+                simpleDescription   : 상품 한 줄 설명
+                detailInformation   : 상품 상세 설명
+                price               : 상품가격
+                discountRate        : 상품 할인율
+                discountStartDate   : 할인 시작일
+                discountEndDate     : 할인 종료일
+                minSalesQuantity    : 최소판매 수량
+                maxSalesQuantity    : 최대판매 수량
+                optionQuantity      : 옵션별 수량 List
+                    {
+                        colorId  : 상품 색상 id
+                        sizeId   : 상품 사이즈 id
+                        quantity : 상품 재고수량
+                    }
+
+            request.files
+                product_image_(No.) : 상품이미지 파일(Number: 1-5)
+
+        Returns:
+            200 : SUCCESS, 상품등록 완료 message
+            400 : VALIDATION_ERROR, KEY_ERROR
+            500 : NO_DATABASE_CONNECTION_ERROR
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-06 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # finally error 발생 방지
+        db_connection = None
+
+        try:
+
+            db_connection = get_connection()
+
+            if db_connection:
+
+                product_id   = args[0]
+                product_info = {
+                    'mainCategoryId'    : args[1],
+                    'subCategoryId'     : args[2],
+                    'sellYn'            : args[3],
+                    'exhibitionYn'      : args[4],
+                    'productName'       : args[5],
+                    'simpleDescription' : args[6],
+                    'detailInformation' : args[7],
+                    'price'             : args[8],
+                    'discountRate'      : args[9],
+                    'discountStartDate' : args[10],
+                    'discountEndDate'   : args[11],
+                    'minSalesQuantity'  : args[12],
+                    'maxSalesQuantity'  : args[13],
+                    'optionQuantity'    : args[14]
+                }
+
+                # DB 저장 내역과 비교를 위한 price value Decimal 변경
+                product_info['price'] = round(Decimal(product_info['price']),2)
+
+                # DB 저장 내역과 비교를 위한 discountStartDate, discountEndDate datetime 형태로 변경
+                if product_info['discountStartDate'] is not None:
+                    product_info['discountStartDate'] = datetime.strptime(product_info['discountStartDate'], '%Y-%m-%d')
+                if product_info['discountEndDate'] is not None:
+                    product_info['discountEndDate'] = datetime.strptime(product_info['discountEndDate'], '%Y-%m-%d')
+
+                # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
+                s3_connection = get_s3_connection()
+                images        = request.files
+
+                # 상품정보를 DB에 저장하는 Function 실행
+                product_service.update_product(product_id, product_info, db_connection)
+
+                # 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
+                #product_service.upload_product_image(
+                #    images,
+                #    product_id,
+                #    s3_connection,
+                #    db_connection
+                #)
+
+                # Exception이 발생하지 않았다면, commit 처리
+                db_connection.commit()
+
+                return jsonify({'message' : 'SUCCESS'}), 200
+
+        except Exception as e:
+            db_connection.rollback()
+            return jsonify({"message" : f'{e}'}), 400
+
+        finally:
+            if db_connection:
+                db_connection.close()
 
     return admin_product_app
 
@@ -588,6 +809,7 @@ def service_product_endpoint(product_service):
         # 요청은 들어오지만, Query Parameter의 키 값이 잘못 요청된 경우
         except KeyError:
             return jsonify({'message' : 'KEY_ERROR'}), 400
+
         except Exception as e:
             return jsonify({'message' : f"{e}"}), 400
 
