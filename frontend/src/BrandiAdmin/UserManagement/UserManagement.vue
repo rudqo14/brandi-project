@@ -209,7 +209,7 @@
 ​
 <script>
 import axios from "axios";
-import { sip } from "../../../config.js";
+import { SERVER_IP } from "../../../config.js";
 
 export default {
   created() {
@@ -249,7 +249,7 @@ export default {
     getUserData() {
       axios
         .get(
-          `${sip}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
+          `${SERVER_IP}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
         )
         .then(res => {
           this.tableData = res.data;

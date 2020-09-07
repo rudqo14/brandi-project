@@ -55,11 +55,11 @@
         </div>
       </div>
       <div class="snsLink">
-        <div class="snsContainer" id="linkToAdmin">
+        <div class="snsContainer" id="linkToAdmin" @click="linkToAdmin">
           <div class="imgContainer">
             <img src="/Images/icon_footer_05.png" alt="sellerAdmin" />
           </div>
-          <div @click="linkToAdmin">셀러어드민</div>
+          <div>셀러어드민</div>
         </div>
         <div class="snsContainer">
           <div class="imgContainer">

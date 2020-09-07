@@ -7,7 +7,13 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense />
+          <v-select
+            v-model="selectSearch"
+            class="select"
+            :items="items"
+            label="Select.."
+            dense
+          />
           <input
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
@@ -26,7 +32,8 @@
             class="btnV"
             name="전체"
             v-bind:color="sellData === item ? 'primary' : 'white'"
-          >{{item}}</v-btn>
+            >{{ item }}</v-btn
+          >
         </div>
         <div>
           <a-date-picker
@@ -47,8 +54,20 @@
         </div>
       </div>
       <div class="centerContainer">
-        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
-        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
+        <v-btn
+          tile
+          @click="searchFilterHandler"
+          class="btnSearch"
+          color="primary"
+          >검색</v-btn
+        >
+        <v-btn
+          tile
+          v-on:click="filterResetHandler"
+          class="searchReset"
+          color="white"
+          >초기화</v-btn
+        >
       </div>
     </article>
     <div class="subTitle">
@@ -62,8 +81,12 @@
             </div>
           </div>
           <div v-if="isToggleOrder === true" class="toggleDataContainer">
-            <div class="toggleList" v-on:click="orderToggleClick">최신주문일순</div>
-            <div class="toggleList" v-on:click="orderToggleClick">주문일의 역순</div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              최신주문일순
+            </div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              주문일의 역순
+            </div>
           </div>
         </div>
         <div class="toggleContainer">
@@ -89,8 +112,12 @@
         <v-btn color="primary" small>주문취소처리</v-btn>
       </div>
       <div class="excelContainer">
-        <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-        <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+        <v-btn class="excelBtn" color="success" small
+          >선택상품 엑셀다운로드</v-btn
+        >
+        <v-btn class="excelBtn" color="success" small
+          >전체상품 엑셀다운로드</v-btn
+        >
       </div>
     </div>
     <article class="tableArticle">
@@ -116,14 +143,20 @@
           <tbody>
             <tr v-for="(item, i) in orderData" :key="i">
               <td class="checkboxContainer">
-                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
+                <input
+                  v-model="selected"
+                  :value="i"
+                  class="checkbox"
+                  type="checkbox"
+                />
               </td>
               <td>{{ item.order_time }}</td>
               <td>{{ item.order_no }}</td>
               <td class="linkDetail">
                 <router-link
                   :to="`/admin/productDetail/${item.order_detail_no}`"
-                >{{ item.order_detail_no }}</router-link>
+                  >{{ item.order_detail_no }}</router-link
+                >
               </td>
               <td class="productName">{{ item.product_name }}</td>
               <td>{{ item.color }} / {{ item.size }}</td>
@@ -141,13 +174,20 @@
           <v-btn color="primary" small>주문취소처리</v-btn>
         </div>
         <div class="excelContainer">
-          <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-          <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+          <v-btn class="excelBtn" color="success" small
+            >선택상품 엑셀다운로드</v-btn
+          >
+          <v-btn class="excelBtn" color="success" small
+            >전체상품 엑셀다운로드</v-btn
+          >
         </div>
       </div>
       <template>
         <div class="text-center">
-          <v-pagination v-model="page" :length="Math.ceil(totalNumData / toggleNumber)" />
+          <v-pagination
+            v-model="page"
+            :length="Math.ceil(totalNumData / toggleNumber)"
+          />
         </div>
       </template>
     </article>
@@ -157,7 +197,7 @@
 <script>
 import moment from "moment";
 import axios from "axios";
-import { gonhoIp } from "../../../config";
+import { SERVER_IP } from "../../../config";
 import dateData from "../../../Data/orderDateBtn.json";
 
 export default {
@@ -188,7 +228,7 @@ export default {
         const selected = [];
 
         if (value) {
-          this.orderData.forEach(function (item, i) {
+          this.orderData.forEach(function(item, i) {
             selected.push(i);
           });
         }
@@ -238,7 +278,7 @@ export default {
   },
 
   watch: {
-    page: function () {
+    page: function() {
       this.axiosConnect();
     },
     startValue(val) {
@@ -332,7 +372,7 @@ export default {
     axiosConnect() {
       axios
         .get(
-          `${gonhoIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
+          `${SERVER_IP}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
         )
         .then((res) => {
           this.orderData = res.data.data;
