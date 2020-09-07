@@ -1,3 +1,5 @@
+import datetime
+
 class Dao:
 
     def get_start_time(self, data, db_connection):
@@ -27,15 +29,18 @@ class Dao:
             get_start_time = """
             SELECT
                 start_time
-            FROM
-                %(table_name)s
-            WHERE
-                %(table_column)s = %(info)s
             """
+
+            if data['table_name'] == 'quantities':
+                get_start_time += """
+                FROM quantities
+                WHERE quantity_no = %(info)s"""
 
             cursor.execute(get_start_time, data)
 
-            return cursor.fetchone()
+            start_time = cursor.fetchone()
+
+            return start_time['start_time'].strftime("%Y-%m-%d %H:%M:%S")
 
     def get_original_info(self, data, db_connection):
 

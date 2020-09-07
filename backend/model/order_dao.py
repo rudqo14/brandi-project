@@ -468,6 +468,7 @@ class OrderDao(Dao):
                     PD.name,
                     PD.price AS original_price,
                     I.image_small,
+                    OD.product_option_id,
                     CASE
                         WHEN PD.discount_rate IS NULL THEN 0
                         ELSE CASE
@@ -684,7 +685,6 @@ class OrderDao(Dao):
                 """
 
                 # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-
                 new_orders_details_row = cursor.execute(insert_orders_details_query, order_info)
 
                 if new_orders_details_row <= 0:
@@ -768,18 +768,19 @@ class OrderDao(Dao):
         except Exception as e:
             raise e
 
-    def update_quantities(self, order_info, db_connection):
+    def update_quantities(self, data, db_connection):
 
         """
 
-        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+        원래 quantity row의 close_time을 업데이트 합니다..
 
         Args:
-            user_no       : 토큰에서 부터 받아온 해당 유저의 id
+            data:
+                quantity_no : 변경하려는 quantity_pk
+                start_time : 새로운 이력의 start_time
             db_connection : 연결된 db 객체
 
         Returns:
-            order_no : insert한 해당 orders라는 테이블의 id(pk)
 
         Authors:
             minho.lee0716@gmail.com (이민호)
@@ -797,59 +798,20 @@ class OrderDao(Dao):
                 update_quantities_query = """
                 UPDATE
                     quantities
-
                 SET
-                close_time = (
-                    SELECT
-                        start_time
-
-                    FROM
-                    quantities
-
-                    WHERE
-                    quantity_no = %(quantity_no)s
-                )
-
+                    close_time = %(close_time)s
                 WHERE
-                close_time = '9999-12-31 23:59:59'
-                AND option_detail_id = (
-                    SELECT
-                        OD.option_detail_no
-
-                    FROM
-                    option_details AS OD
-
-                    WHERE
-                    OD.close_time = '9999-12-31 23:59:59'
-                    AND OD.product_option_id = (
-                        SELECT
-                            PO.product_option_no
-
-                        FROM
-                        product_options AS PO
-
-                        WHERE
-                        PO.is_deleted = False
-                        AND PO.product_option_no = (
-                            SELECT
-                                OP.product_option_id
-
-                            FROM
-                            order_product AS OP
-
-                            WHERE
-                            OP.order_product_no = %(order_product_no)s
-                        )
-                    )
-                )
+                    quantity_no = %(quantity_no)s
                 """
 
                 # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
+                affected_row = cursor.execute(update_quantities_query, data)
 
-                cursor.execute(update_quantities_query, order_info)
+                if affected_row < 0:
+                    raise Exception("Query Failed")
 
                 # orders_details의 생성된 테이블의 pk를 반환해줍니다.
-                return None
+                return cursor.lastrowid
 
         except KeyError as e:
             raise e
@@ -888,44 +850,21 @@ class OrderDao(Dao):
                     option_detail_id,
                     quantity
                 ) VALUES (
-                    (
-                        SELECT
-                            OD.option_detail_no
+                %(option_detail_no)s,
+                (
+                    SELECT
+                        Q.quantity
 
-                        FROM
-                        option_details AS OD
+                    FROM quantities AS Q
 
-                        WHERE
-                            OD.close_time = '9999-12-31 23:59:59'
-                            AND OD.color_id = %(color_id)s
-                            AND OD.size_id = %(size_id)s
-                    ),
-                    (
-                        SELECT
-                            Q.quantity
-
-                        FROM quantities AS Q
-
-                        WHERE
-                            Q.close_time = '9999-12-31 23:59:59'
-                            AND Q.option_detail_id = (
-                                SELECT
-                                    OD.option_detail_no
-
-                                FROM
-                                option_details AS OD
-
-                                WHERE
-                                    OD.close_time = '9999-12-31 23:59:59'
-                                    AND OD.color_id = %(color_id)s
-                                    AND OD.size_id = %(size_id)s
-                            )
-                    ) - %(quantity)s
+                    WHERE
+                        Q.close_time = '9999-12-31 23:59:59'
+                        AND Q.option_detail_id =  %(option_detail_no)s
+                ) - %(quantity)s
                 )
                 """
 
                 # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-
                 new_quantities_row = cursor.execute(insert_quantities_query, order_info)
 
                 if new_quantities_row <= 0:
@@ -933,6 +872,108 @@ class OrderDao(Dao):
 
                 # orders_details의 생성된 테이블의 pk를 반환해줍니다.
                 return cursor.lastrowid
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def get_current_quantity(self, order_info, db_connection):
+
+        """
+
+        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+
+        Args:
+            user_no       : 토큰에서 부터 받아온 해당 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            order_no : insert한 해당 orders라는 테이블의 id(pk)
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-07 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                select_quantities_query = """
+                SELECT
+                    Q.quantity_no
+
+                FROM
+                quantities AS Q
+
+                WHERE
+                Q.option_detail_id = %(option_detail_no)s
+                AND Q.close_time = '9999-12-31 23:59:59'
+                """
+
+                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
+                cursor.execute(select_quantities_query, order_info)
+
+                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                return cursor.fetchone()
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def get_option_details(self, order_info, db_connection):
+
+        """
+
+        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+
+        Args:
+            user_no       : 토큰에서 부터 받아온 해당 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            order_no : insert한 해당 orders라는 테이블의 id(pk)
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-07 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                select_quantities_query = """
+                SELECT
+                    option_detail_no
+
+                FROM
+                option_details
+
+                WHERE
+                color_id = %(color_id)s
+                AND size_id = %(size_id)s
+                AND close_time = '9999-12-31 23:59:59'
+                AND product_option_id = %(product_option_id)s
+                """
+
+                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
+                cursor.execute(select_quantities_query, order_info)
+
+                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                return cursor.fetchone()
 
         except KeyError as e:
             raise e
