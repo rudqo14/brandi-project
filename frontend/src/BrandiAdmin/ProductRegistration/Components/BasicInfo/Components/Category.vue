@@ -12,38 +12,24 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <select
-              class="mainCategoryBox"
-              @change="getSubCategory($event)"
-              v-model="mainCategoryId"
-            >
-              <option value="" selected>1차 카테고리를 선택해주세요</option>
+            <select class="mainCategoryBox" @change="getSubCategory" v-model="mainCategoryId">
+              <option value selected>1차 카테고리를 선택해주세요</option>
               <option
                 v-for="list in mainCategory"
                 :key="list.main_category_no"
                 :value="list.main_category_no"
-                >{{ list.name }}</option
-              >
+              >{{ list.name }}</option>
             </select>
           </div>
           <div class="secondaryCategory">
-            <select
-              class="subCategoryBox"
-              @change="selectSubCategory($event)"
-              v-model="subCategoryId"
-            >
-              <option value="" v-if="!mainCategoryId"
-                >1차 카테고리를 먼저 선택해주세요</option
-              >
-              <option value="" selected v-if="mainCategoryId"
-                >2차 카테고리를 선택해주세요</option
-              >
+            <select class="subCategoryBox" @change="selectSubCategory" v-model="subCategoryId">
+              <option value v-if="!mainCategoryId">1차 카테고리를 먼저 선택해주세요</option>
+              <option value selected v-if="mainCategoryId">2차 카테고리를 선택해주세요</option>
               <option
                 v-for="list in subCategory"
                 :key="list.sub_category_no"
                 :value="list.sub_category_no"
-                >{{ list.name }}</option
-              >
+              >{{ list.name }}</option>
             </select>
           </div>
         </div>

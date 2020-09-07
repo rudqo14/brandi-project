@@ -14,7 +14,7 @@ const adminStore = {
     product_image_5: null,
     formDatas: null,
     detailInformation: null,
-    allOptions: null,
+    optionQuantity: null,
     price: 0,
     discountRate: null,
     discountStartDate: null,
@@ -119,8 +119,8 @@ const adminStore = {
       state.maxSalesQuantity = value;
     },
 
-    upDateAllOptions(state, allOptions) {
-      state.allOptions = allOptions;
+    upDateAllOptions(state, optionQuantity) {
+      state.optionQuantity = optionQuantity;
     },
 
     // ProductRegistration.vue 에서 state 데이터 확인용
@@ -137,7 +137,7 @@ const adminStore = {
       console.log("state.product_image_4: ", state.product_image_5);
       console.log("state.product_image_5: ", state.product_image_1);
       console.log("state.detailInformation: ", state.detailInformation);
-      console.log("state.allOptions: ", state.allOptions);
+      console.log("state.allOptions: ", state.optionQuantity);
       console.log("state.price: ", state.price);
       console.log("state.discountRate: ", state.discountRate);
       console.log("state.discountStartDate: ", state.discountStartDate);

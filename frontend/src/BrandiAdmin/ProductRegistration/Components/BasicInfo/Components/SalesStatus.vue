@@ -37,11 +37,13 @@ export default {
   },
 
   computed: {
+    // store 의 state 를 사용하는 코드, 단일 컴포넌트의 data 를 사용하는 것처럼 사용하면 된다.
     ...mapState(AdminStore, {
       sellYn: (state) => state.sellYn,
     }),
   },
 
+  // store 의 mutations 를 사용하는 코드 , 사용할 때는 this.함수명()
   methods: {
     ...mapMutations(AdminStore, ["sellYesHandler", "sellNoHandler"]),
 

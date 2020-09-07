@@ -82,7 +82,10 @@ export default {
       form.append("product_image_4", productDatas.product_image_4);
       form.append("product_image_5", productDatas.product_image_5);
       form.append("detailInformation", productDatas.detailInformation);
-      form.append("allOptions", productDatas.allOptions);
+      form.append(
+        "optionQuantity",
+        JSON.stringify(productDatas.optionQuantity)
+      );
       form.append("price", productDatas.price);
       form.append("discountRate", productDatas.discountRate);
       form.append("discountStartDate", productDatas.discountStartDate);
@@ -132,7 +135,7 @@ export default {
               console.log("res: ", res);
               if (res) {
                 alert("등록이 완료 되었습니다.");
-                this.$router.push("admin/productManagement");
+                this.$router.push("/admin/productManagement");
               }
             })
 
