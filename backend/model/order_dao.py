@@ -368,13 +368,16 @@ class OrderDao:
                 P6.product_no,
                 P7.name AS product_name,
                 P7.price,
+                P1.total_price,
                 P8.name AS color,
                 P9.name AS size,
                 P11.quantity,
                 P10.user_no,
                 P4.receiver,
                 P4.address,
-                P4.delivery_request,
+                P4.additional_address,
+                P4.zip_code,
+                P1.delivery_request,
                 CASE
                     WHEN P7.discount_rate IS NULL THEN 0
                     ELSE CASE

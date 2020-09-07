@@ -258,28 +258,15 @@ class UserDao:
                 social_networks.name AS social_name
             FROM
                 users
-            """
 
-            select_user_query += """
             LEFT JOIN
                 user_shipping_details
             ON users.user_no = user_shipping_details.user_id
-            """
 
-            # 계정 정보 filter 기능
-            if filter_info['social_network']:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                AND social_networks.name = %(social_network)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                """
+            LEFT JOIN
+                social_networks
+            ON users.social_id = social_networks.social_network_no
+            """
 
             # 삭제 되지 않은 데이터만 조회
             select_user_query += """
@@ -332,6 +319,18 @@ class UserDao:
                 select_user_query += """
                 AND user_shipping_details.phone_number = %(phone_number)s
                 """
+
+            # 소셜 계정 filter 기능
+            if filter_info['social_network']:
+                if filter_info['social_network'] == '브랜디':
+                    select_user_query += """
+                    AND users.social_id IS NULL
+                    """
+                else:
+                    select_user_query += """
+                    AND social_networks.name = %(social_network)s
+                    """
+
             if filter_info['sort'] :
                 select_user_query += """
                 ORDER BY
@@ -349,7 +348,7 @@ class UserDao:
             OFFSET
                 %(offset)s
             """
-
+            print(select_user_query)
             cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
@@ -385,37 +384,15 @@ class UserDao:
                 COUNT(*) AS total_number
             FROM
                 users
+
+            LEFT JOIN
+                user_shipping_details
+            ON users.user_no = user_shipping_details.user_id
+
+            LEFT JOIN
+                social_networks
+            ON users.social_id = social_networks.social_network_no
             """
-
-            # 핸드폰 번호 filter 기능
-            if filter_info['phone_number']:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                AND user_shipping_details.phone_number = %(phone_number)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    user_shipping_details
-                ON users.user_no = user_shipping_details.user_id
-                """
-
-            # 계정 정보 filter 기능
-            if filter_info['social_network']:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                AND social_networks.name = %(social_network)s
-                """
-            else:
-                select_user_query += """
-                LEFT JOIN
-                    social_networks
-                ON users.social_id = social_networks.social_network_no
-                """
 
             # 삭제 되지 않은 데이터만 조회
             select_user_query += """
@@ -462,6 +439,23 @@ class UserDao:
                 select_user_query += """
                 AND users.created_at <= %(created_to)s
                 """
+
+            # 핸드폰 번호 filter 기능
+            if filter_info['phone_number']:
+                select_user_query += """
+                AND user_shipping_details.phone_number = %(phone_number)s
+                """
+
+            # 소셜 계정 filter 기능
+            if filter_info['social_network']:
+                if filter_info['social_network'] == '브랜디':
+                    select_user_query += """
+                    AND users.social_id IS NULL
+                    """
+                else:
+                    select_user_query += """
+                    AND social_networks.name = %(social_network)s
+                    """
 
             cursor.execute(select_user_query, filter_info)
 
@@ -506,17 +500,8 @@ class UserDao:
                 P9.name AS color,
                 P10.name AS size,
                 P3.quantity,
-                P8.price,
+                P2.total_price,
                 P11.name AS order_status,
-                CASE
-                    WHEN P8.discount_rate IS NULL THEN 0
-                    ELSE CASE
-                        WHEN P8.discount_start_date IS NULL THEN P8.discount_rate
-                        WHEN P2.start_time BETWEEN P8.discount_start_date AND P8.discount_end_date THEN P8.discount_rate
-                        ELSE 0
-                        END
-                    END
-                AS discount_rate
 
             FROM orders AS P1
 
