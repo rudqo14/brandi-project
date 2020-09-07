@@ -65,14 +65,8 @@ export default {
   },
   methods: {
     detailPage(path) {
-      if ("/" + path !== this.$router.history.current.path) {
-        if (path === "admin/productRegistration") {
-          this.$router.push("productRegistration");
-        } else if (path === "admin/productManagement") {
-          this.$router.push("productManagement");
-        } else if (path === "admin/orderManagement") {
-          this.$router.push("orderManagement");
-        }
+      if (this.$route.path !== `/${path}`) {
+        this.$router.push(`/${path}`);
       }
     },
   },

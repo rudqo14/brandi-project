@@ -21,26 +21,26 @@
           </div>
           <div
             class="price"
-          >{{Math.floor(detailData.price -(detailData.price * (detailData.discount_rate / 100))).toLocaleString(5)}}원</div>
+          >{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))* detailData.quantity).toLocaleString(5)}}원</div>
         </div>
         <p class="totalPrice">
           총 주문금액
-          <strong>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
+          <strong>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
         </p>
       </article>
       <article class="orderInfo">
         <h1>주문자 정보</h1>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" />
+          <input class="nameInput" v-model="nameInput" ref="nameInput" placeholder="이름" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
-          <input class="phoneNumber" />
+          <input class="phoneNumber" v-model="orderPhoneFirst" ref="orderPhoneFirst" />
           <p>-</p>
-          <input class="phoneNumber" />
+          <input class="phoneNumber" v-model="orderPhoneSecond" ref="orderPhoneSecond" />
           <p>-</p>
-          <input class="phoneNumber" />
+          <input class="phoneNumber" v-model="orderPhoneThird" ref="orderPhoneThird" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">이메일</span>
@@ -52,11 +52,10 @@
       <article class="orderInfo">
         <div class="deliveredContainer">
           <span>배송지 정보</span>
-          <!-- <span @click="modalHandler" class="deliveredBtn">입력하기</span> -->
           <div class="text-center">
             <v-dialog v-model="dialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red lighten-2" dark v-bind="attrs" v-on="on">입력하기</v-btn>
+                <v-btn color="red lighten-2" ref="delivered" dark v-bind="attrs" v-on="on">입력하기</v-btn>
               </template>
               <v-card>
                 <v-card-title class="headline black lighten-2"></v-card-title>
@@ -65,33 +64,42 @@
                 <div class="addressContainer">
                   <div class="rowContainer">
                     <v-card-title>수령인</v-card-title>
-                    <v-text-field :counter="10" label="수령인" required v-model="name" maxlength="10" />
+                    <v-text-field
+                      :counter="10"
+                      ref="recipient"
+                      label="수령인"
+                      required
+                      v-model="name"
+                      maxlength="10"
+                    />
                   </div>
                   <div class="rowContainer">
                     <v-card-title>휴대폰</v-card-title>
                     <input
                       class="phoneNumber"
                       type="tel"
-                      max="999"
                       maxlength="3"
                       placeholder="010"
+                      ref="phoneNumFirst"
+                      @keyup="onlyNumber"
                       v-model="phoneNumberFirst"
                     />
                     <input
                       class="phoneNumber"
-                      @keyup="numberHandler"
                       type="tel"
-                      max="9999"
                       maxlength="4"
+                      @keyup="onlyNumber"
                       placeholder="0000"
+                      ref="phoneNumSecond"
                       v-model="phoneNumberSecond"
                     />
                     <input
                       class="phoneNumber"
                       type="tel"
-                      max="9999"
                       maxlength="4"
+                      @keyup="onlyNumber"
                       placeholder="0000"
+                      ref="phoneNumThird"
                       v-model="phoneNumberThird"
                     />
                   </div>
@@ -117,6 +125,7 @@
                       class="addressThird"
                       type="text"
                       placeholder="상세 주소 입력를 입력하세요."
+                      maxlength="20"
                       v-model="detailAddress"
                     />
                   </div>
@@ -144,7 +153,7 @@
         </div>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" disabled :value="name" />
+          <input class="nameInput" placeholder="이름" disabled v-model="name" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
@@ -198,18 +207,18 @@
         <div class="priceContainer">
           <div class="detailPrice">
             <span>총 상품 금액</span>
-            <span>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</span>
+            <span>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</span>
           </div>
           <div class="detailPrice">
             <span class="totalPrice">결제 예상 금액</span>
             <span class="totalPrice">
-              <strong>{{Math.floor((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
+              <strong>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
             </span>
           </div>
         </div>
       </article>
       <div class="paymentContainer">
-        <button class="paymentBtn">결제하기</button>
+        <button @click="paymentHandler" class="paymentBtn">결제하기</button>
       </div>
     </main>
   </div>
@@ -236,8 +245,14 @@ export default {
         `${gonhoIp}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
       )
       .then((res) => {
-        console.log(res.data.data);
         this.detailData = res.data.data;
+        this.daumAddress = this.detailData.address;
+        this.detailAddress = this.detailData.additional_address;
+        this.sigunguCode = this.detailData.zip_code;
+        this.name = this.detailData.orderer_name;
+        this.phoneNumberFirst = this.detailData.phone_number.substring(0, 3);
+        this.phoneNumberSecond = this.detailData.phone_number.substring(3, 7);
+        this.phoneNumberThird = this.detailData.phone_number.substring(7, 11);
       });
   },
 
@@ -261,6 +276,10 @@ export default {
       purchaseProductNumber: "",
       purchaseId: "",
       detailData: [],
+      orderPhoneFirst: "",
+      orderPhoneSecond: "",
+      orderPhoneThird: "",
+      nameInput: "",
     };
   },
   components: { Header, Footer, VueDaumPostcode },
@@ -273,14 +292,14 @@ export default {
     //배송지 입력 모달창에서 취소버튼 클릭시
     //모든 배송입력에 해당하는 State값 초기화하여 취소 적용
     dialogCanceled() {
-      this.daumAddress = "";
-      this.sigunguCode = "";
-      // this.isAddressAdd = false;
-      this.detailAddress = "";
-      this.name = "";
-      this.phoneNumberFirst = "";
-      this.phoneNumberSecond = "";
-      this.phoneNumberThird = "";
+      this.daumAddress = this.detailData.address;
+      this.detailAddress = this.detailData.additional_address;
+      this.sigunguCode = this.detailData.zip_code;
+      this.name = this.detailData.orderer_name;
+      this.phoneNumberFirst = this.detailData.phone_number.substring(0, 3);
+      this.phoneNumberSecond = this.detailData.phone_number.substring(3, 7);
+      this.phoneNumberThird = this.detailData.phone_number.substring(7, 11);
+      this.isDaumToggle = false;
     },
 
     //클릭한 토글 데이터 보여주기
@@ -324,33 +343,61 @@ export default {
 
     //number의 값이 아닌 텍스트가 들어가면
     //Input에 값이 들어가지 않게끔 구현
-    numberHandler(e) {
-      if (e.keyCode < 48 || e.keyCode > 57) {
-        e.preventDefault();
-      }
+    onlyNumber() {
+      this.phoneNumberFirst = this.phoneNumberFirst.replace(/[^0-9]/g, "");
+      this.phoneNumberSecond = this.phoneNumberSecond.replace(/[^0-9]/g, "");
+      this.phoneNumberThird = this.phoneNumberThird.replace(/[^0-9]/g, "");
     },
 
     deliveredCheckHandler() {
-      if (this.name === "") {
+      if (!this.name) {
         alert("수령인을 입력해주세요.");
+        this.$refs.recipient.focus();
         return;
       } else if (
-        this.phoneNumberFirst === "" ||
-        this.phoneNumberSecond === "" ||
-        this.phoneNumberThird === ""
+        !this.phoneNumberFirst ||
+        !this.phoneNumberSecond ||
+        !this.phoneNumberThird
       ) {
         alert("휴대폰 번호를 입력해주세요.");
+        !this.phoneNumberThird && this.$refs.phoneNumThird.focus();
+        !this.phoneNumberSecond && this.$refs.phoneNumSecond.focus();
+        !this.phoneNumberFirst && this.$refs.phoneNumFirst.focus();
+
         return;
       } else if (
-        this.detailAddress === "" ||
-        this.sigunguCode === "" ||
-        this.daumAddress === ""
+        !this.detailAddress ||
+        !this.sigunguCode ||
+        !this.daumAddress
       ) {
         alert("배송지 정보를 입력해주세요.");
         return;
       }
 
       this.dialog = false;
+    },
+    paymentHandler() {
+      if (!this.nameInput) {
+        alert("이름을 입력해주세요.");
+        this.$refs.nameInput.focus();
+        return;
+      }
+
+      if (
+        !this.orderPhoneFirst ||
+        !this.orderPhoneSecond ||
+        !this.orderPhoneThird
+      ) {
+        alert("핸드폰 번호를 입력해주세요.");
+        this.$refs.orderPhoneThird.focus();
+        this.$refs.orderPhoneSecond.focus();
+        this.$refs.orderPhoneFirst.focus();
+        return;
+      }
+
+      if (!this.name) {
+        this.$refs.delivered.focus();
+      }
     },
   },
 };
@@ -707,7 +754,7 @@ export default {
         width: 100px;
         height: 40px;
         margin-right: 5px;
-        border: 0.5px solid #bdbdbd;
+        border: 1px solid #bdbdbd;
         border-radius: 5px;
       }
 
@@ -716,7 +763,7 @@ export default {
         width: 250px;
         margin-right: 10px;
         height: 40px;
-        border: 0.5px solid #bdbdbd;
+        border: 1px solid #bdbdbd;
         border-radius: 5px;
         outline: none;
       }
@@ -728,7 +775,7 @@ export default {
         padding-left: 10px;
         margin: 0 10px 10px 100px;
         height: 40px;
-        border: 0.5px solid #bdbdbd;
+        border: 1px solid #bdbdbd;
         border-radius: 5px;
         outline: none;
       }
@@ -738,7 +785,7 @@ export default {
         margin: 0 10px 20px 100px;
         padding-left: 5px;
         height: 40px;
-        border: 0.5px solid #bdbdbd;
+        border: 1px solid #bdbdbd;
         border-radius: 5px;
       }
 

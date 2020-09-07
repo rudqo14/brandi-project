@@ -7,32 +7,26 @@
           <div class="productTitle">
             <h1>
               <span class="mainTitle">브랜디는 하루배송</span>
-              <span class="subTitle">오늘 사고 내일 바로 입자!</span>
+              <span class="subTitleText">오늘 사고 내일 바로 입자!</span>
             </h1>
           </div>
           <article class="productList">
-            <div
-              class="product"
-              v-for="product in product.data"
-              v-bind:key="product.product_id"
-            >
+            <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
               <div class="productImage" @click="linkToDetail(product)">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
-                <span class="discountRate" v-if="product.discount_rate"
-                  >{{ product.discount_rate }}%</span
-                >
+                <span class="discountRate" v-if="product.discount_rate">{{ product.discount_rate }}%</span>
                 <span class="discountPrice" v-if="product.discount_rate">
                   {{
-                    numberWithCommas(
-                      Math.round(
-                        (parseInt(product.price) *
-                          ((100 - product.discount_rate) / 100)) /
-                          10
-                      ) * 10
-                    )
+                  numberWithCommas(
+                  Math.round(
+                  (parseInt(product.price) *
+                  ((100 - product.discount_rate) / 100)) /
+                  10
+                  ) * 10
+                  )
                   }}
                 </span>
                 <span
@@ -40,8 +34,7 @@
                     noneDisCountPrice: !product.discount_rate,
                     price: product.discount_rate,
                   }"
-                  >{{ numberWithCommas(Math.floor(product.price)) }}</span
-                >
+                >{{ numberWithCommas(Math.floor(product.price)) }}</span>
               </div>
             </div>
           </article>
@@ -61,6 +54,7 @@ export default {
     Banner,
   },
   created() {
+    console.log(this.product.product_name);
     this.getProductData();
   },
   data() {
@@ -99,7 +93,7 @@ main {
           font-size: 26px;
           font-weight: bold;
         }
-        .subTitle {
+        .subTitleText {
           font-size: 20px;
           margin-left: 5px;
           color: #4a4a4a;
@@ -119,6 +113,7 @@ main {
             }
           }
           .productName {
+            height: 20px;
             margin-top: 15px;
             font-size: 16px;
             font-weight: 500;
