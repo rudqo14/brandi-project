@@ -103,7 +103,7 @@
       <div class="categoryContainer">
         <div class="productDetail">상품정보</div>
         <div>
-          <!-- <div class="detailHtml" v-html="detailHtml" /> -->
+          <div class="detailHtml" v-html="detailData.html" />
         </div>
       </div>
     </article>
