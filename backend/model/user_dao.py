@@ -483,8 +483,9 @@ class UserDao:
         History:
             2020-08-28 (tnwjd060124@gmail.com) : 초기 생성
             2020-08-30 (tnwjd060124@gmail.com) : 수정
-                제품 가격은 주문 생성시의 이력,
-                제품명은 현재 이력으로 조회하도록 변경
+                제품 정보 주문 생성시의 이력으로 조회하는 조건 추가
+            2020-09-04 (tnwjd060124@gmail.com) : 수정
+                상품가격  대신 총 결제 금액 리턴하도록 변경
 
         """
 
@@ -501,7 +502,7 @@ class UserDao:
                 P10.name AS size,
                 P3.quantity,
                 P2.total_price,
-                P11.name AS order_status,
+                P11.name AS order_status
 
             FROM orders AS P1
 
