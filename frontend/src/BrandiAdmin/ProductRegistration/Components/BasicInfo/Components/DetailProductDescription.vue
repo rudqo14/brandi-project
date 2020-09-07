@@ -41,7 +41,7 @@ import axios from "axios";
 import { mapMutations, mapState } from "vuex";
 import "codemirror/lib/codemirror.css";
 import CKEditor from "ckeditor4-vue";
-import { ADMIN_API_URL } from "../../../../../../config";
+import { SERVER_IP } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -67,7 +67,7 @@ export default {
         colorButton: "colors",
 
         extraPlugins: "font,colorbutton,justify",
-        filebrowserImageUploadUrl: `${ADMIN_API_URL}/admin/product/detail-image`,
+        filebrowserImageUploadUrl: `${SERVER_IP}/admin/product/detail-image`,
 
         // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
         //filebrowserImageBrowseUrl:

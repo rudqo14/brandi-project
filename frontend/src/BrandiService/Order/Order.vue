@@ -14,33 +14,64 @@
               <img :src="detailData.image_small" />
             </div>
             <div class="optionContainer">
-              <h3>{{detailData.name}}</h3>
-              <p class="option">{{detailData.color}}</p>
-              <p class="option">{{detailData.quantity}}개</p>
+              <h3>{{ detailData.name }}</h3>
+              <p class="option">{{ detailData.color }}</p>
+              <p class="option">{{ detailData.quantity }}개</p>
             </div>
           </div>
-          <div
-            class="price"
-          >{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))* detailData.quantity).toLocaleString(5)}}원</div>
+          <div class="price">
+            {{
+              Math.round(
+                (detailData.price -
+                  detailData.price * (detailData.discount_rate / 100)) *
+                  detailData.quantity
+              ).toLocaleString(5)
+            }}원
+          </div>
         </div>
         <p class="totalPrice">
           총 주문금액
-          <strong>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
+          <strong
+            >{{
+              Math.round(
+                (detailData.price -
+                  detailData.price * (detailData.discount_rate / 100)) *
+                  detailData.quantity
+              ).toLocaleString(5)
+            }}원</strong
+          >
         </p>
       </article>
       <article class="orderInfo">
         <h1>주문자 정보</h1>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" v-model="nameInput" ref="nameInput" placeholder="이름" />
+          <input
+            class="nameInput"
+            v-model="nameInput"
+            ref="nameInput"
+            placeholder="이름"
+          />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
-          <input class="phoneNumber" v-model="orderPhoneFirst" ref="orderPhoneFirst" />
+          <input
+            class="phoneNumber"
+            v-model="orderPhoneFirst"
+            ref="orderPhoneFirst"
+          />
           <p>-</p>
-          <input class="phoneNumber" v-model="orderPhoneSecond" ref="orderPhoneSecond" />
+          <input
+            class="phoneNumber"
+            v-model="orderPhoneSecond"
+            ref="orderPhoneSecond"
+          />
           <p>-</p>
-          <input class="phoneNumber" v-model="orderPhoneThird" ref="orderPhoneThird" />
+          <input
+            class="phoneNumber"
+            v-model="orderPhoneThird"
+            ref="orderPhoneThird"
+          />
         </div>
         <div class="orderInfoContainer">
           <span class="name">이메일</span>
@@ -55,11 +86,20 @@
           <div class="text-center">
             <v-dialog v-model="dialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red lighten-2" ref="delivered" dark v-bind="attrs" v-on="on">입력하기</v-btn>
+                <v-btn
+                  color="red lighten-2"
+                  ref="delivered"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  >입력하기</v-btn
+                >
               </template>
               <v-card>
                 <v-card-title class="headline black lighten-2"></v-card-title>
-                <v-card-title class="headline white lighten-2">배송지 추가</v-card-title>
+                <v-card-title class="headline white lighten-2"
+                  >배송지 추가</v-card-title
+                >
                 <v-divider />
                 <div class="addressContainer">
                   <div class="rowContainer">
@@ -112,10 +152,15 @@
                       readonly
                       :value="sigunguCode"
                     />
-                    <button @click="findAddressHandler" class="findAddress">우편번호 찾기</button>
+                    <button @click="findAddressHandler" class="findAddress">
+                      우편번호 찾기
+                    </button>
                   </div>
                   <div class="daumContainer">
-                    <vue-daum-postcode v-if="isDaumToggle" @complete="handleAddress" />
+                    <vue-daum-postcode
+                      v-if="isDaumToggle"
+                      @complete="handleAddress"
+                    />
                   </div>
                   <div class="rowContainer">
                     <div class="addressSecond">{{ daumAddress }}</div>
@@ -138,13 +183,15 @@
                       color="grey lighten-1"
                       dark
                       @click="(dialog = false), dialogCanceled()"
-                    >취소</v-btn>
+                      >취소</v-btn
+                    >
                     <v-btn
                       width="100"
                       color="black lighten-2"
                       dark
                       @click="deliveredCheckHandler"
-                    >확인</v-btn>
+                      >확인</v-btn
+                    >
                   </v-card-actions>
                 </div>
               </v-card>
@@ -192,12 +239,24 @@
                 noneToggle: !isToggleDelivered,
               }"
             >
-              <div class="orderChoice" @click="toggleDataHandler">배송시 요청사항을 선택해주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">문앞에 놓아주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">경비(관리)실에 맡겨주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">택배함에 넣어주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">직접 받겠습니다.</div>
-              <div class="orderChoice" @click="toggleDataHandler">직접 입력</div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                배송시 요청사항을 선택해주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                문앞에 놓아주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                경비(관리)실에 맡겨주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                택배함에 넣어주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 받겠습니다.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 입력
+              </div>
             </div>
           </div>
         </div>
@@ -207,12 +266,28 @@
         <div class="priceContainer">
           <div class="detailPrice">
             <span>총 상품 금액</span>
-            <span>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</span>
+            <span
+              >{{
+                Math.round(
+                  (detailData.price -
+                    detailData.price * (detailData.discount_rate / 100)) *
+                    detailData.quantity
+                ).toLocaleString(5)
+              }}원</span
+            >
           </div>
           <div class="detailPrice">
             <span class="totalPrice">결제 예상 금액</span>
             <span class="totalPrice">
-              <strong>{{Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))*detailData.quantity).toLocaleString(5)}}원</strong>
+              <strong
+                >{{
+                  Math.round(
+                    (detailData.price -
+                      detailData.price * (detailData.discount_rate / 100)) *
+                      detailData.quantity
+                  ).toLocaleString(5)
+                }}원</strong
+              >
             </span>
           </div>
         </div>
@@ -225,13 +300,12 @@
 </template>
 
 <script>
-// import { ip } from "../../../config.js";
 import axios from "axios";
 import { VueAgile } from "vue-agile";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { VueDaumPostcode } from "vue-daum-postcode";
-import { gonhoIp } from "../../../config";
+import { SERVER_IP } from "../../../config";
 
 export default {
   created() {
@@ -242,7 +316,7 @@ export default {
 
     axios
       .get(
-        `${gonhoIp}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
+        `${SERVER_IP}/order/checkout?product_id=${this.purchaseId}&color_id=${this.purchaseColor}&size_id=${this.purchaseSize}&quantity=${this.purchaseProductNumber}`
       )
       .then((res) => {
         this.detailData = res.data.data;

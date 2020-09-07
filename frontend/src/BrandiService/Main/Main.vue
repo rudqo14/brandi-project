@@ -11,30 +11,29 @@
             </h1>
           </div>
           <article class="productList">
-            <div class="product" v-for="product in product.data" v-bind:key="product.product_id">
+            <div
+              class="product"
+              v-for="product in product.data"
+              v-bind:key="product.product_id"
+            >
               <div class="productImage" @click="linkToDetail(product)">
                 <img :src="product.thumbnail_image" alt="thumbnail  img" />
               </div>
               <div class="productName">{{ product.product_name }}</div>
               <div class="productPrice">
-                <span class="discountRate" v-if="product.discount_rate">{{ product.discount_rate }}%</span>
+                <span class="discountRate" v-if="product.discount_rate"
+                  >{{ product.discount_rate }}%</span
+                >
                 <span class="discountPrice" v-if="product.discount_rate">
-                  {{
-                  numberWithCommas(
-                  Math.round(
-                  (parseInt(product.price) *
-                  ((100 - product.discount_rate) / 100)) /
-                  10
-                  ) * 10
-                  )
-                  }}
+                  {{ numberWithCommas(product.sales_price) }}
                 </span>
                 <span
                   :class="{
                     noneDisCountPrice: !product.discount_rate,
                     price: product.discount_rate,
                   }"
-                >{{ numberWithCommas(Math.floor(product.price)) }}</span>
+                  >{{ numberWithCommas(product.original_price) }}</span
+                >
               </div>
             </div>
           </article>
@@ -46,15 +45,13 @@
 <script>
 import axios from "axios";
 import Banner from "../Components/Banner";
-import { SERVICE_API_URL } from "../../../config";
-import { sip } from "../../../config";
+import { SERVER_IP } from "../../../config";
 
 export default {
   components: {
     Banner,
   },
   created() {
-    console.log(this.product.product_name);
     this.getProductData();
   },
   data() {
@@ -64,7 +61,7 @@ export default {
   },
   methods: {
     getProductData() {
-      axios.get(`${SERVICE_API_URL}/product`).then((res) => {
+      axios.get(`${SERVER_IP}/product`).then((res) => {
         this.product = res.data;
       });
     },

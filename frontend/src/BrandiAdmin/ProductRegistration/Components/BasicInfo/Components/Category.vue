@@ -12,24 +12,38 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <select class="mainCategoryBox" @change="getSubCategory" v-model="mainCategoryId">
+            <select
+              class="mainCategoryBox"
+              @change="getSubCategory"
+              v-model="mainCategoryId"
+            >
               <option value selected>1차 카테고리를 선택해주세요</option>
               <option
                 v-for="list in mainCategory"
                 :key="list.main_category_no"
                 :value="list.main_category_no"
-              >{{ list.name }}</option>
+                >{{ list.name }}</option
+              >
             </select>
           </div>
           <div class="secondaryCategory">
-            <select class="subCategoryBox" @change="selectSubCategory" v-model="subCategoryId">
-              <option value v-if="!mainCategoryId">1차 카테고리를 먼저 선택해주세요</option>
-              <option value selected v-if="mainCategoryId">2차 카테고리를 선택해주세요</option>
+            <select
+              class="subCategoryBox"
+              @change="selectSubCategory"
+              v-model="subCategoryId"
+            >
+              <option value v-if="!mainCategoryId"
+                >1차 카테고리를 먼저 선택해주세요</option
+              >
+              <option value selected v-if="mainCategoryId"
+                >2차 카테고리를 선택해주세요</option
+              >
               <option
                 v-for="list in subCategory"
                 :key="list.sub_category_no"
                 :value="list.sub_category_no"
-              >{{ list.name }}</option>
+                >{{ list.name }}</option
+              >
             </select>
           </div>
         </div>
@@ -41,7 +55,7 @@
 <script>
 import axios from "axios";
 import { mapMutations } from "vuex";
-import { ADMIN_API_URL } from "../../../../../../config";
+import { SERVER_IP } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -63,7 +77,7 @@ export default {
 
     // 1차 카테고리를 가져오는 메소드 (첫 렌더링 때 사용)
     getMainCategoryData() {
-      axios.get(`${ADMIN_API_URL}/admin/product/category`).then((res) => {
+      axios.get(`${SERVER_IP}/admin/product/category`).then((res) => {
         this.mainCategory = res.data.data;
       });
     },
@@ -74,7 +88,7 @@ export default {
       this.getMainCategoryId(event.target.value);
 
       axios
-        .get(`${ADMIN_API_URL}/admin/product/category/${this.mainCategoryId}`)
+        .get(`${SERVER_IP}/admin/product/category/${this.mainCategoryId}`)
         .then((res) => {
           this.subCategory = res.data.data;
         })

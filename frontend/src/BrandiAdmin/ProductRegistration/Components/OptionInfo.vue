@@ -48,7 +48,8 @@
                         v-for="list in option.data.color"
                         :value="list.name"
                         :key="list.color_no"
-                      >{{ list.name }}</option>
+                        >{{ list.name }}</option
+                      >
                     </select>
                   </td>
                   <div class="colorButtonBox">
@@ -63,20 +64,27 @@
                         v-if="colorSelectList.length > 1"
                         :value="list"
                         @click="colorSelectDelete"
-                      >-</button>
+                      >
+                        -
+                      </button>
                     </td>
                   </div>
                 </tr>
                 <tr class="sizeOpt bodyTable">
                   <td class="optionCate">사이즈</td>
                   <td class="sizeSelectBOx">
-                    <select @change="selectSizes" v-for="list in sizeSelectList" :key="list">
+                    <select
+                      @change="selectSizes"
+                      v-for="list in sizeSelectList"
+                      :key="list"
+                    >
                       <option value>사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
                         :value="list.name"
-                      >{{ list.name }}</option>
+                        >{{ list.name }}</option
+                      >
                     </select>
                   </td>
                   <div class="sizeButtonBox">
@@ -91,7 +99,9 @@
                         v-if="sizeSelectList.length > 1"
                         :value="list"
                         @click="sizeSelectDelete"
-                      >-</button>
+                      >
+                        -
+                      </button>
                     </td>
                   </div>
                 </tr>
@@ -127,7 +137,9 @@
               </thead>
               <tbody class="secondBody">
                 <tr>
-                  <td colspan="4">옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.</td>
+                  <td colspan="4">
+                    옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
+                  </td>
                 </tr>
                 <tr
                   v-if="applyOn"
@@ -163,7 +175,14 @@
                     </div>
                   </td>
                   <td>
-                    <v-btn @click="applyOption(index)" class="mx-2" fab dark small color="error">
+                    <v-btn
+                      @click="applyOption(index)"
+                      class="mx-2"
+                      fab
+                      dark
+                      small
+                      color="error"
+                    >
                       <v-icon dark>mdi-minus</v-icon>
                     </v-btn>
                   </td>
@@ -180,7 +199,7 @@
 <script>
 import axios from "axios";
 import { mapState, mapMutations } from "vuex";
-import { ADMIN_API_URL } from "../../../../config";
+import { SERVER_IP } from "../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -212,7 +231,7 @@ export default {
   methods: {
     ...mapMutations(AdminStore, ["upDateAllOptions"]),
     getOptionData() {
-      axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
+      axios.get(`${SERVER_IP}/admin/product/option`).then((res) => {
         this.option = res.data;
       });
     },
