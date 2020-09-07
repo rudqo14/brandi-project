@@ -39,9 +39,7 @@
             <div class="productOption">{{ order.color }} / {{ order.size }}</div>
             <div class="orderQuantity">{{ order.quantity }} 개</div>
           </div>
-          <div
-            class="orderPrice"
-          >{{ numberWithCommas(getDiscountPrice(order.price, order.discount_rate) * order.quantity) }} 원</div>
+          <div class="orderPrice">{{ numberWithCommas(order.total_price) }} 원</div>
           <div class="orderStatus">{{ order.order_status }}</div>
         </div>
       </div>
@@ -210,6 +208,7 @@ export default {
       }
 
       .orderPrice {
+        margin-left: 15px;
         font-size: 20px;
         font-weight: bold;
       }
@@ -217,7 +216,7 @@ export default {
       .orderStatus {
         font-size: 18px;
         font-weight: bold;
-        margin-left: 153px;
+        margin-left: 145px;
       }
     }
   }
