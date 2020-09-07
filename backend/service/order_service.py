@@ -163,6 +163,9 @@ class OrderService:
         # 셀러의 판매 상품(내가 고른 상품)에 대한 정보를 리턴해 줍니다.
         seller_product_info = self.order_dao.get_seller_product_info(product_info, db_connection)
 
+        # 할인된 가격 계산
+        seller_product_info['sales_price'] = round(seller_product_info['original_price'] * (100 - seller_product_info['discount_rate'])/ 100, -1)
+
         # 유저의 정보를 넘겨줌으로써 유저의 정보와 배송지 정보를 리턴해 줍니다.
         orderer_info = self.order_dao.get_orderer_info(user_no, db_connection)
 
