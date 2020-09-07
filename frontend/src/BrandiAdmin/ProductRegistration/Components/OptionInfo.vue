@@ -41,9 +41,9 @@
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
-                      :ref="list"
+                      value="defaultColorValue"
                     >
-                      <option value selected>색상 옵션을 선택해 주세요</option>
+                      <option value="0" selected>색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.name"
@@ -70,8 +70,13 @@
                 <tr class="sizeOpt bodyTable">
                   <td class="optionCate">사이즈</td>
                   <td class="sizeSelectBOx">
-                    <select @change="selectSizes" v-for="list in sizeSelectList" :key="list">
-                      <option value>사이즈 옵션을 선택해 주세요</option>
+                    <select
+                      @change="selectSizes"
+                      v-for="list in sizeSelectList"
+                      :key="list"
+                      value="defaultColorValue"
+                    >
+                      <option value="0">사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
@@ -163,7 +168,14 @@
                     </div>
                   </td>
                   <td>
-                    <v-btn @click="applyOption(index)" class="mx-2" fab dark small color="error">
+                    <v-btn
+                      @click="applyOptionDelete(index)"
+                      class="mx-2"
+                      fab
+                      dark
+                      small
+                      color="error"
+                    >
                       <v-icon dark>mdi-minus</v-icon>
                     </v-btn>
                   </td>
@@ -180,7 +192,7 @@
 <script>
 import axios from "axios";
 import { mapState, mapMutations } from "vuex";
-import { ADMIN_API_URL } from "../../../../config";
+import { SERVER_IP } from "../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -206,69 +218,97 @@ export default {
       sizeSelectList: [1],
       applyOn: false,
       hasFocus: false,
+      defaultColorValue: 0,
+      changeColor: 0,
+      applyAddClicks: 0,
     };
   },
 
   methods: {
     ...mapMutations(AdminStore, ["upDateAllOptions"]),
+
+    // 컬러, 사이즈 옵션 데이터 불러오는 메소드
     getOptionData() {
-      axios.get(`${ADMIN_API_URL}/admin/product/option`).then((res) => {
+      axios.get(`${SERVER_IP}/admin/product/option`).then((res) => {
         this.option = res.data;
       });
     },
 
+    // 컬러 옵션 열을 추가하는 메소드
     colorSelectAdd() {
       this.colorListSize++;
       this.colorSelectList.push(this.colorListSize);
     },
 
+    // 컬로 옵셔느 열을 삭제하는 메소드
     colorSelectDelete(e) {
       let colorSelectId = parseInt(e.target.value);
       const idx = this.colorSelectList.indexOf(colorSelectId);
       this.colorSelectList.splice(idx, 1);
+      this.updateOptionData[0].color.splice(idx, 1);
     },
 
+    // 사이즈 옵션 열을 추가하는 메소드
     sizeSelectAdd() {
       this.sizeListSize++;
       this.sizeSelectList.push(this.sizeListSize);
     },
 
+    // 사이즈 옵션 열을 삭제하는 메소드
     sizeSelectDelete(e) {
       let sizeSelectId = parseInt(e.target.value);
       const idx = this.sizeSelectList.indexOf(sizeSelectId);
       this.sizeSelectList.splice(idx, 1);
+      this.updateOptionData[0].size.splice(idx, 1);
     },
 
+    // 선택한 컬러를 업데이트옵션 데이터에 넣어주는 메소드
     selectColors(e) {
       let colorName = e.target.value;
-      console.log("colorName: ", colorName);
+
       if (this.updateOptionData[0].color.includes(colorName)) {
         alert("이미 선택된 옵션입니다.");
-        this.$refs.list[0].focus();
+        e.target.value = this.defaultColorValue;
       } else {
         this.optionData[0].color.splice(0, 1);
         this.optionData[0].color.push(colorName);
         this.updateOptionData[0].color.push(colorName);
       }
+
+      console.log("updataOptionData: ", this.updateOptionData[0].color);
     },
 
-    changeDefaultSelect() {
-      console.log(this.$refs);
-      this.$refs.backDefault.focus();
-    },
-
+    // 선택한 사이즈를 업데이트옵션 데이터에 넣어주는 메소드
     selectSizes(e) {
       let sizeName = e.target.value;
-      this.optionData[0].size.splice(0, 1);
-      this.optionData[0].size.push(sizeName);
-      this.updateOptionData[0].size.push(sizeName);
+
+      if (this.updateOptionData[0].size.includes(sizeName)) {
+        alert("이미 선택된 옵션입니다.");
+        e.target.value = this.defaultColorValue;
+      } else {
+        this.optionData[0].size.splice(0, 1);
+        this.optionData[0].size.push(sizeName);
+        this.updateOptionData[0].size.push(sizeName);
+      }
     },
 
+    // 적용 버튼을 눌렀을 때 선택한 옵션들이 아래 테이블로 적용되는 메소드
     clickApply() {
-      this.applyOptions();
-      this.applyOn = true;
+      this.applyAddClicks++;
+      if (this.applyAddClicks === 1) {
+        this.applyOptions();
+        this.applyOn = true;
+      } else {
+        this.applyOptionData = [];
+        alert(
+          "옵션이 이미 적용되었습니다. 확인을 누르시면 초기화됩니다. \n새로 적용하시겠습니까?"
+        );
+        this.applyOptions();
+        this.applyOn = true;
+      }
     },
 
+    // 선택된 옵션들을 색상, 사이즈별로 새로운 배열에 넣어주는 메소드
     applyOptions() {
       for (let i = 0; i <= this.updateOptionData[0].color.length - 1; i++) {
         for (let j = 0; j <= this.updateOptionData[0].size.length - 1; j++) {
@@ -281,7 +321,8 @@ export default {
       }
     },
 
-    applyOption(index) {
+    // 적용된 옵션 삭제 하는 메소드
+    applyOptionDelete(index) {
       this.applyOptionData.splice(index, 1);
     },
 

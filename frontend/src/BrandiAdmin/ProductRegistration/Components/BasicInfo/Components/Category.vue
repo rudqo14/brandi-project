@@ -41,7 +41,7 @@
 <script>
 import axios from "axios";
 import { mapMutations } from "vuex";
-import { ADMIN_API_URL } from "../../../../../../config";
+import { SERVER_IP } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
@@ -63,7 +63,7 @@ export default {
 
     // 1차 카테고리를 가져오는 메소드 (첫 렌더링 때 사용)
     getMainCategoryData() {
-      axios.get(`${ADMIN_API_URL}/admin/product/category`).then((res) => {
+      axios.get(`${SERVER_IP}/admin/product/category`).then((res) => {
         this.mainCategory = res.data.data;
       });
     },
@@ -74,7 +74,7 @@ export default {
       this.getMainCategoryId(event.target.value);
 
       axios
-        .get(`${ADMIN_API_URL}/admin/product/category/${this.mainCategoryId}`)
+        .get(`${SERVER_IP}/admin/product/category/${this.mainCategoryId}`)
         .then((res) => {
           this.subCategory = res.data.data;
         })

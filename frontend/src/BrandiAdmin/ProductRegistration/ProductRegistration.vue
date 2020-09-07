@@ -40,7 +40,7 @@ import { mapActions, mapMutations, mapState, mapGetters } from "vuex";
 import BasicInfo from "./Components/BasicInfo/BasicInfo";
 import OptionInfo from "./Components/OptionInfo";
 import SellingInfo from "./Components/SellingInfo";
-import { ADMIN_API_URL } from "../../../config";
+import { SERVER_IP } from "../../../config";
 
 const AdminStore = "adminStore";
 
@@ -93,7 +93,7 @@ export default {
       form.append("minSalesQuantity", productDatas.minSalesQuantity);
       form.append("maxSalesQuantity", productDatas.maxSalesQuantity);
 
-      // 필수항목 입력 확인
+      // 필수항목들이 모두 입력 됐는지 확인하는 메소드
       const checkingData = () => {
         if (productDatas.mainCategoryId === null) {
           alert("1차 카테고리를 선택해주세요.");
@@ -124,7 +124,7 @@ export default {
 
           // 상품 등록 데이터 POST 로 서버에 보내기
           axios
-            .post(`${ADMIN_API_URL}/admin/product`, form, {
+            .post(`${SERVER_IP}/admin/product`, form, {
               headers: {
                 "Content-Type": "multipart/form-data",
               },

@@ -164,7 +164,7 @@
 <script>
 import axios from "axios";
 import { mapMutations, mapState } from "vuex";
-import { ADMIN_API_URL } from "../../../../../../config";
+import { SERVER_IP } from "../../../../../../config";
 
 const AdminStore = "adminStore";
 
