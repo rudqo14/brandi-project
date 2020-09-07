@@ -158,6 +158,9 @@
               </td>
               <td>{{ item.productName }}</td>
               <td>{{ item.productCode }}</td>
+              <!-- <td><router-link
+                  :to="`/admin//${item.productCode }`"
+              >{{ item.productCode  }}</router-link></td>-->
               <td>{{ item.productNo }}</td>
               <td>{{Math.floor(item.sellPrice).toLocaleString(5) + "원"}}</td>
               <td>{{Math.floor(item.discountPrice).toLocaleString(5) + "원"}}</td>
@@ -224,7 +227,9 @@ export default {
       //전체해제
       //getter를 통해 종속성을 추적
       get: function () {
-        return !this.tableData.length && false;
+        if (!this.tableData.length) {
+          return false;
+        }
         return this.tableData
           ? this.selected.length == this.tableData.length
           : false;
@@ -277,9 +282,6 @@ export default {
 
   methods: {
     axiosConnect() {
-      console.log(
-        `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
-      );
       axios
         .get(
           `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
@@ -630,6 +632,10 @@ export default {
       font-size: 14px;
       text-align: center;
       border-collapse: collapse;
+
+      .linkDetail {
+        text-decoration: underline;
+      }
 
       th,
       td {

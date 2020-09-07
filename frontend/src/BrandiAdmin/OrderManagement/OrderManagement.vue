@@ -173,8 +173,10 @@ export default {
       //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
       //전체해제
       //getter를 통해 종속성을 추적
-      get: function () {
-        return !this.orderData.length && false;
+      get() {
+        if (!this.orderData.length) {
+          return false;
+        }
         return this.orderData
           ? this.selected.length == this.orderData.length
           : false;
@@ -182,7 +184,7 @@ export default {
 
       //setter를 통해 변경을 알림
       //select한 체크박스값을 배열안에 넣어 적용
-      set: function (value) {
+      set(value) {
         const selected = [];
 
         if (value) {
@@ -333,7 +335,6 @@ export default {
           `${gonhoIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
         )
         .then((res) => {
-          console.log(res);
           this.orderData = res.data.data;
           this.totalNumData = res.data.total_number;
         });

@@ -79,15 +79,19 @@ export default {
     },
     linkToMyPage() {
       if (this.getToken) {
-        this.$router.push("/mypage");
+        if (this.$route.path !== "/mypage/orderList") {
+          this.$router.push("/mypage");
+        }
       } else {
-        this.$router.push("/login");
+        if (this.$route.path !== "/login") {
+          this.$router.push("/login");
+        }
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters(serviceStore, ["getToken"])
-  }
+    ...mapGetters(serviceStore, ["getToken"]),
+  },
 };
 </script>
 

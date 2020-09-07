@@ -119,9 +119,9 @@ export const router = new VueRouter({
           name: "productDetail",
         },
         {
-          path: "UserManagement",
+          path: "userManagement",
           component: UserManagement,
-          name: "UserManagement",
+          name: "userManagement",
         },
       ],
     },

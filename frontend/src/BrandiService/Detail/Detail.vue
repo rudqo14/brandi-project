@@ -43,7 +43,7 @@
               v-for="(item, index) in detailData.colors"
               class="colorToggle"
               v-bind:key="index"
-              @click="colorClickHandler(item)"
+              @click="colorClickHandler(item, index)"
             >{{ item.color_name }}</div>
           </div>
         </div>
@@ -163,6 +163,7 @@ export default {
       purchaseSizeId: "",
       purchaseId: "",
       colorData: [],
+      productQuantity: 0,
       // detailHtml: detailOption.data.html,
     };
   },
@@ -171,7 +172,7 @@ export default {
     agile: VueAgile,
   },
   methods: {
-    colorClickHandler(item) {
+    colorClickHandler(item, index) {
       //중복된 통신은 한번만 처리하도록 함
       if (this.colorToggleData === item.color_name) {
         return;
@@ -185,6 +186,7 @@ export default {
           `${gonhoIp}/product/${this.$route.params.id}?color_id=${item.color_id}`
         )
         .then((res) => {
+          // this.productQuantity = res.data.data[index].quantity;
           this.colorData = res.data.data;
         });
     },
@@ -209,6 +211,7 @@ export default {
 
     //옵션 사이즈 토글에서 원하는 사이즈 선택시 적용
     optionSizeHandler(colorData, index) {
+      this.productQuantity = colorData[index].quantity;
       this.sizeToggleData = colorData[index].size;
       this.purchaseInputNumber = this.input;
       this.input = 1;
@@ -232,6 +235,9 @@ export default {
         return alert("최소 구매 수량은 1개 입니다.");
 
       if (this.input === 20) return alert("최대 구매 수량은 20개 입니다.");
+
+      if (this.input >= this.productQuantity)
+        return alert(`상품의 재고 수량은 ${this.productQuantity}개 입니다.`);
 
       input: isPlus ? (this.input += 1) : (this.input -= 1);
     },
@@ -463,6 +469,7 @@ export default {
           .border {
             height: 100%;
             border: 1px solid #cdcdcd;
+            background-color: #cdcdcd;
           }
 
           .numberBtn {
