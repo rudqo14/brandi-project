@@ -1150,7 +1150,7 @@ class ProductDao:
                 name = %s
             """
 
-            cursor.execute(select_color_id_query, option['colorName'])
+            cursor.execute(select_color_id_query, option['color'])
             color_id = cursor.fetchone()
 
             return color_id['color_no']
@@ -1188,7 +1188,7 @@ class ProductDao:
                 name = %s
             """
 
-            cursor.execute(select_size_id_query, option['sizeName'])
+            cursor.execute(select_size_id_query, option['size'])
             size_id = cursor.fetchone()
 
             return size_id['size_no']
