@@ -12,17 +12,10 @@
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
           <span v-if="detailData.discount_rate" class="percent">{{ detailData.discount_rate }}%</span>
-          <span class="price">
-            {{
-            (
-            Math.round((detailData.price -
-            detailData.price * (detailData.discount_rate / 100))/10)*10
-            ).toLocaleString(5) + "원"
-            }}
-          </span>
+          <span class="price">{{parseInt(detailData.sales_price).toLocaleString()+"원"}}</span>
           <span class="cost">
             {{
-            Math.floor(detailData.price).toLocaleString(5) + "원"
+            Math.floor(detailData.original_price).toLocaleString(5) + "원"
             }}
           </span>
         </div>
@@ -93,30 +86,14 @@
               <span class="border"></span>
               <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
             </div>
-            <p>
-              {{
-              (
-              (detailData.price -
-              detailData.price * (detailData.discount_rate / 100)) *
-              input
-              ).toLocaleString(5) + "원"
-              }}
-            </p>
+            <p>{{}}</p>
           </div>
         </div>
         <div class="detailpriceContainer">
           <p>총 {{ input }}개의 상품</p>
           <p class="totalPrice">
             총 금액
-            <strong>
-              {{
-              (
-              (detailData.price -
-              detailData.price * (detailData.discount_rate / 100)) *
-              input
-              ).toLocaleString(5) + "원"
-              }}
-            </strong>
+            <strong>{{parseInt(detailData.sales_price).toLocaleString()+"원"}}</strong>
           </p>
         </div>
         <button @click="buyNowHandler" class="purchaseBtn">바로 구매하기</button>
@@ -134,13 +111,13 @@
 </template>
 
 <script>
-import { gonhoIp } from "../../../config.js";
+import { SERVER_IP } from "../../../config.js";
 import axios from "axios";
 import { VueAgile } from "vue-agile";
 
 export default {
   created() {
-    axios.get(`${gonhoIp}/product/${this.$route.params.id}`).then((res) => {
+    axios.get(`${SERVER_IP}/product/${this.$route.params.id}`).then((res) => {
       console.log(res);
       this.detailData = res.data.data;
       this.purchaseId = this.detailData.product_id;
@@ -183,7 +160,7 @@ export default {
 
       axios
         .get(
-          `${gonhoIp}/product/${this.$route.params.id}?color_id=${item.color_id}`
+          `${SERVER_IP}/product/${this.$route.params.id}?color_id=${item.color_id}`
         )
         .then((res) => {
           // this.productQuantity = res.data.data[index].quantity;

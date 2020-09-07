@@ -27,7 +27,7 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">총 결제 금액 :</div>
-            <div class="rowTitle">{{detailData.total_price.toLocaleString(5) + "원"}}</div>
+            <div class="rowTitle">{{Math.round(detailData.total_price).toLocaleString(5) + "원"}}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">결제 정보 :</div>
@@ -55,49 +55,6 @@
             <div class="rowTitle">결제 일시 :</div>
             <div class="rowTitle">{{detailData.paid_time}}</div>
           </div>
-          <!-- <div class="infoRow">
-            <div class="rowTitle">연락처 :</div>
-            <div class="rowTitle">
-              {{ordererPhoneNum}}
-              <template>
-                <div class="text-center">
-                  <v-dialog v-model="ordererDialog" width="500">
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn small color="red lighten-2" dark v-bind="attrs" v-on="on">변경</v-btn>
-                    </template>
-                    <v-card>
-                      <v-card-title class="headline green lighten-2"></v-card-title>
-                      <v-card-title class="headline white lighten-2">주문자 연락처 변경</v-card-title>
-                      <v-divider />
-                      <div class="phoneNumContainer">
-                        <div class="rowContainer">
-                          <div class="category">주문자 연락처:</div>
-                          <div>{{ordererPhoneNum}}</div>
-                        </div>
-                        <div class="rowContainer">
-                          <div class="category">변경할 핸드폰 번호:</div>
-                          <div>
-                            <input
-                              class="phoneNum"
-                              maxlength="11"
-                              v-model="onlyNumber"
-                              placeholder="전화번호"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                      <v-divider />
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn color="success" id="orderer" dark @click="orderPhoneNumHandler">변경요청</v-btn>
-                        <v-btn @click="cancelPhoneNumHandler">취소</v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </div>
-              </template>
-            </div>
-          </div>-->
         </div>
       </div>
       <div class="orderInfoContainer">
@@ -119,10 +76,10 @@
           <div class="infoRow">
             <div class="rowTitle">상품 판매가 :</div>
             <div class="rowTitle">
-              {{detailData.price.toLocaleString(5) + "원"}}
+              {{parseInt(detailData.original_price).toLocaleString(5) + "원"}}
               <strong
                 class="redColor"
-              >(할인가 {{(Math.round((detailData.price -(detailData.price * (detailData.discount_rate / 100)))/10)*10).toLocaleString(5)}}원)</strong>
+              >(할인가 {{parseInt(detailData.sales_price).toLocaleString(5)}}원)</strong>
             </div>
           </div>
           <div class="infoRow">
@@ -179,6 +136,7 @@
                             <input
                               class="phoneNum"
                               maxlength="11"
+                              ref="phoneNum"
                               v-model="onlyNumber"
                               placeholder="전화번호"
                             />
@@ -273,7 +231,7 @@
 <script>
 import moment from "moment";
 import axios from "axios";
-import { sip } from "../../../config";
+import { SERVER_IP } from "../../../config";
 import { VueDaumPostcode } from "vue-daum-postcode";
 
 export default {
@@ -285,8 +243,8 @@ export default {
       dialog: false,
       ordererDialog: false,
       onlyNumber: "",
-      recipientPhoneNum: "01088887777",
-      ordererPhoneNum: "01022224444",
+      recipientPhoneNum: "",
+      ordererPhoneNum: "",
       shippingDialog: false,
       detailAddress: "",
       daumAddress: "",
@@ -304,7 +262,7 @@ export default {
   methods: {
     axiosConnect() {
       axios
-        .get(`${sip}/admin/order/detail/${this.$route.params.id}`)
+        .get(`${SERVER_IP}/admin/order/detail/${this.$route.params.id}`)
         .then((res) => {
           this.detailData = res.data.data;
           this.recipientPhoneNum = this.detailData.phone_number;
@@ -331,6 +289,7 @@ export default {
     //수취자 정보 > 연락처 수정
     phoneNumHandler(e) {
       if (!this.onlyNumber) {
+        this.$refs.phoneNum.focus();
         return alert("번호를 입력해주세요.");
       }
       this.dialog = false;
@@ -375,9 +334,22 @@ export default {
       this.shippingDialog = false;
     },
 
-    //어드민 > 상품상세페이지 모든 정보 저장
+    //데이터 전달
     productDetailSaved() {
       if (confirm("해당 주문건에 대한 수정내역을 저장하시겠습니까?") == true) {
+        console.log(this.daumAddress);
+        console.log(this.detailAddress);
+        console.log(this.sigunguCode);
+        console.log(this.recipientPhoneNum);
+        axios
+          .patch(`${SERVER_IP}/admin/user/shippingDetail`, {
+            address: this.daumAddress,
+            additionalAddress: this.detailAddress,
+            zipCode: this.sigunguCode,
+            userNo: this.detailData.user_no,
+            phoneNumber: this.recipientPhoneNum,
+          })
+          .then((res) => {});
       } else {
         return false;
       }

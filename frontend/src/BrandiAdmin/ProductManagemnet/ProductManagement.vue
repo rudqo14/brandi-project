@@ -181,7 +181,7 @@
 </template>
 
 <script>
-import { gonhoIp } from "../../../config";
+import { SERVER_IP } from "../../../config";
 import axios from "axios";
 
 export default {
@@ -284,7 +284,7 @@ export default {
     axiosConnect() {
       axios
         .get(
-          `${gonhoIp}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
+          `${SERVER_IP}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
         )
         .then((res) => {
           this.tableData = res.data.data[0];
