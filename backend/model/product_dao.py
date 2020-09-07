@@ -294,16 +294,16 @@ class ProductDao(Dao):
 
             FROM products as P
 
-            LEFT JOIN product_images as PI
+            INNER JOIN product_images as PI
             ON P.product_no = PI.product_id
             AND PI.close_time = '9999-12-31 23:59:59'
             AND PI.is_main = 1
 
-            LEFT JOIN images as I
+            INNER JOIN images as I
             ON PI.image_id = I.image_no
             AND I.is_deleted = 0
 
-            LEFT JOIN product_details as PD
+            INNER JOIN product_details as PD
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
@@ -374,7 +374,7 @@ class ProductDao(Dao):
 
             FROM products AS P
 
-            LEFT JOIN product_details AS PD
+            INNER JOIN product_details AS PD
             ON P.product_no = PD.product_id
             AND PD.is_activated = 1
             AND PD.is_displayed = 1
