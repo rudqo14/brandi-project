@@ -282,27 +282,17 @@ class ProductDao(Dao):
                 I.image_medium AS thumbnail_image,
                 PD.name AS product_name,
                 PD.price AS original_price,
-                P.discount_rate,
-                ROUND(PD.price * (100 - P.discount_rate)/ 100, -1) AS sales_price
-
-            FROM (
-                SELECT products.*,
                 CASE
-                    WHEN product_details.discount_rate IS NULL THEN 0
+                    WHEN PD.discount_rate IS NULL THEN 0 -- discount_rate이 NULL 인 경우 0
                     ELSE CASE
-                        WHEN product_details.discount_start_date IS NULL THEN product_details.discount_rate
-                        WHEN NOW() BETWEEN product_details.discount_start_date AND product_details.discount_end_date THEN product_details.discount_rate
-                        ELSE 0
+                        WHEN PD.discount_start_date IS NULL THEN PD.discount_rate -- 할인 기간이 무기한인 경우
+                        WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate -- 할인기간이 유효한 경우
+                        ELSE 0 -- 할인 기간이 아닌 경우
                         END
                     END
                 AS discount_rate
 
-                FROM products
-
-            INNER JOIN product_details
-            ON products.product_no = product_details.product_id
-            AND product_details.close_time = '9999-12-31 23:59:59'
-            ) AS P
+            FROM products AS P
 
             INNER JOIN product_images as PI
             ON P.product_no = PI.product_id

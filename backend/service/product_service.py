@@ -98,6 +98,9 @@ class ProductService:
         # 상품의 기준은 진열여부=True, 판매여부=True
         products = self.product_dao.select_product_list(db_connection)
 
+        for product in products:
+            product['sales_price'] = round(product['original_price'] * (100-product['discount_rate'])/ 100, -1)
+
         # 모든 상품을 리턴
         return products
 

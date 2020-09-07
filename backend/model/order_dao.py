@@ -89,8 +89,8 @@ class OrderDao(Dao):
 
             INNER JOIN option_details AS P10
             ON P8.product_option_no = P10.product_option_id
-            AND P3.start_time >= P10.start_time
-            AND P10.close_time >= P3.start_time
+            AND P3.start_time >= P10.start_time -- 주문 시에 유효한 정보
+            AND P10.close_time >= P3.start_time -- 주문 시에 유효한 정보
 
             INNER JOIN sizes AS P4
             ON P10.size_id = P4.size_no
@@ -104,16 +104,16 @@ class OrderDao(Dao):
                 select_list += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
-                AND P3.start_time >= P6.start_time
-                AND P6.close_time >= P3.start_time
+                AND P3.start_time >= P6.start_time -- 주문 시에 유효한 정보
+                AND P6.close_time >= P3.start_time -- 주문 시에 유효한 정보
                 AND P6.name LIKE %(product_name)s
                 """
             else:
                 select_list += """
                 INNER JOIN product_details AS P6
                 ON P8.product_id = P6.product_id
-                AND P3.start_time >= P6.start_time
-                AND P6.close_time >= P3.start_time
+                AND P3.start_time >= P6.start_time -- 주문 시에 유효한 정보
+                AND P6.close_time >= P3.start_time -- 주문 시에 유효한 정보
                 """
 
             # JOIN 추가
@@ -372,11 +372,11 @@ class OrderDao(Dao):
                 P4.zip_code,
                 P1.delivery_request,
                 CASE
-                    WHEN P7.discount_rate IS NULL THEN 0
+                    WHEN P7.discount_rate IS NULL THEN 0 -- 상품 미할인인 경우
                     ELSE CASE
-                        WHEN P7.discount_start_date IS NULL THEN P7.discount_rate
-                        WHEN P1.start_time BETWEEN P7.discount_start_date AND P7.discount_end_date THEN P7.discount_rate
-                        ELSE 0
+                        WHEN P7.discount_start_date IS NULL THEN P7.discount_rate -- 상품 할인이 무기한인 경우
+                        WHEN P1.start_time BETWEEN P7.discount_start_date AND P7.discount_end_date THEN P7.discount_rate -- 상품 할인 기간 유효한 경우
+                        ELSE 0 -- 상품 할인기간이 아닌경우
                         END
                     END
                 AS discount_rate
@@ -466,7 +466,7 @@ class OrderDao(Dao):
                     S.name AS size_name,
                     S.size_no AS size_id,
                     PD.name,
-                    PD.price,
+                    PD.price AS original_price,
                     I.image_small,
                     CASE
                         WHEN PD.discount_rate IS NULL THEN 0
