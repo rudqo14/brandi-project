@@ -1,4 +1,4 @@
-import json, datetime, time, io
+import json, datetime, time, io, math
 from PIL import Image
 
 from utils import ResizeImage
@@ -304,6 +304,9 @@ class ProductService:
         details = self.product_dao.select_product_details(product_id, db_connection)
         details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
         details['colors']     = self.product_dao.select_product_option_colors(product_id, db_connection)
+
+        # 할인 가격 계산
+        details['sales_price'] = round(details['original_price'] * (100-details['discount_rate'])/ 100, -1)
 
         # 이미지가 없을 때, (배열 안에 null이 들어 있습니다.)
         # 첫번째 요소가 null이면 빈 배열 반환

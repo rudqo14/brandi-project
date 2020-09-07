@@ -38,20 +38,11 @@ class OrderDao(Dao):
                 P6.name AS product_name,
                 P4.name AS size,
                 P5.name AS color,
-                P6.price,
                 P2.quantity,
                 P11.name AS user_name,
                 P7.phone_number,
                 P9.name AS order_status,
-                CASE
-                    WHEN P6.discount_rate IS NULL THEN 0
-                    ELSE CASE
-                        WHEN P6.discount_start_date IS NULL THEN P6.discount_rate
-                        WHEN P3.start_time BETWEEN P6.discount_start_date AND P6.discount_end_date THEN P6.discount_rate
-                        ELSE 0
-                        END
-                    END
-                AS discount_rate
+                P3.total_price
 
             FROM
                 orders AS P1
@@ -369,7 +360,7 @@ class OrderDao(Dao):
                 P4.phone_number,
                 P6.product_no,
                 P7.name AS product_name,
-                P7.price,
+                P7.price AS original_price,
                 P1.total_price,
                 P8.name AS color,
                 P9.name AS size,
