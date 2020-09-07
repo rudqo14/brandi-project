@@ -215,18 +215,15 @@ class OrderService:
         current_quantity_info = self.order_dao.get_current_quantity(order_info, db_connection)
 
         # 새로운 재고 생성하는 메소드 실행
-        new_quantity = self.order_dao.insert_quantities(order_info, db_connection)
-
-        # 새로운 quantity의 start_time을 가져오기 위한 data
-        quantity_data = {
-            "table_name"    : "quantities",
-            "table_column"  : "quantity_no",
-            "info"          : new_quantity
-        }
+        new_quantity_no = self.order_dao.insert_quantities(order_info, db_connection)
 
         # start_time 가져오는 메소드 실행
-        start_time = self.order_dao.get_start_time(quantity_data, db_connection)
+        start_time = self.order_dao.get_order_detail_start_time(new_quantity_no, db_connection)
+
+        # 원래 재고 pk에 close_time 설정
         current_quantity_info['close_time'] = start_time
+
+        # 원래 재고 row의 close_time 설정하는 메소드 실행
         updated_quantity = self.order_dao.update_quantities(current_quantity_info, db_connection)
 
         return new_quantity
