@@ -1,3 +1,5 @@
+import math
+
 class OrderService:
 
     def __init__(self, order_dao):
@@ -129,6 +131,8 @@ class OrderService:
 
         # 주문 상세 정보 조회 메소드 실행
         order_detail = self.order_dao.get_detail(order_detail, db_connection)
+
+        order_detail['sales_price'] = round((order_detail['original_price'] * (100 - order_detail['discount_rate'])) / 100, -1)
 
         return order_detail
 
