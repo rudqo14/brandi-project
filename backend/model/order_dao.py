@@ -1,4 +1,6 @@
-class OrderDao:
+from .dao import Dao
+
+class OrderDao(Dao):
 
     def get_ordercompleted_list(self, filter_info, db_connection):
 
@@ -598,3 +600,4 @@ class OrderDao:
 
         except Exception as e:
             raise e
+
