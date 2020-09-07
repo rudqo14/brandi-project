@@ -1,6 +1,8 @@
 import uuid
 
-class ProductDao:
+from .dao import Dao
+
+class ProductDao(Dao):
 
     def insert_product(self, db_connection):
 

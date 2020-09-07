@@ -4,7 +4,8 @@ from flask_request_validator import (
     validate_params,
     Param,
     PATH,
-    GET
+    GET,
+    JSON
 )
 
 from connection import get_connection
@@ -385,6 +386,82 @@ def create_admin_user_endpoints(user_service):
             return jsonify({"message" : f'{e}'}), 500
 
         finally:
+            if db_connection:
+                db_connection.close()
+
+    @admin_user_app.route('/shippingDetail', methods=['PATCH'], endpoint='update_user_shippng_detail')
+    @catch_exception
+    @validate_params(
+        Param('userNo', JSON, int),
+        Param('phoneNumber', JSON, str),
+        Param('address', JSON, str),
+        Param('additionalAddress', JSON, str),
+        Param('zipCode', JSON, int)
+    )
+    def update_user_shipping_detail(*args):
+
+        """
+        유저의 배송지 정보를 변경합니다.
+
+        Args:
+            userNo : 유저의 pk
+            phoneNumber : 변경할 유저의 핸드폰번호
+            address : 변경할 유저의 주소
+            additionalAddress : 변경할 유저의 상세주소
+            zipCode : 변경할 유저의 우편번호
+
+        Returns:
+            200, {message : SUCCESS} : 변경 성공
+            400, {message : UNAUTHORIZED} : 존재하는 유저가 없을 시
+            500, {message : NO_DATABASE_CONNECTION} : DB 연결 실패
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-07 (tnwjd060124@gmail.com)
+
+        """
+
+        db_connection = None
+
+        try:
+
+            db_connection = get_connection()
+
+            if db_connection:
+
+                # 파라미터 유효성 검사를 거친 정보들을 user_info 에 저장
+                user_info = {
+                    'user_no'               : args[0],
+                    'phone_number'          : args[1],
+                    'address'               : args[2],
+                    'additional_address'    : args[3],
+                    'zip_code'              : args[4]
+                }
+
+                # 유저의 배송정보 변경하는 메소드 실행
+                user = user_service.update_user_shipping_detail(user_info, db_connection)
+
+                # 메소드 실행 결과가 None이 아닐 경우
+                if user:
+
+                    db_connection.commit()
+
+                    return jsonify({"message" : "SUCCESS"}), 200
+
+                # 메소드 실행 결과가 None일 경우
+                return jsonify({"message" : "UNAUTHORIZED"}), 401
+
+            # DB 연결 실패
+            return jsonify({"message" : "NO_DATABASE_CONNECTION"}), 500
+
+        # 정의하지 않은 에러를 잡아줌
+        except Exception as e:
+            return jsonify({"message" : f"{e}"}), 400
+
+        finally:
+
             if db_connection:
                 db_connection.close()
 
