@@ -7,8 +7,6 @@
       <input
         @input="inputSimpleDescription"
         label="한줄 상품 설명을 입력해주세요."
-        solo
-        dense
       ></input>
     </div>
   </div>

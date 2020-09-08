@@ -41,15 +41,14 @@
                       v-for="list in colorSelectList"
                       :key="list"
                       class="colorSelect"
-                      :ref="list"
+                      value="defaultColorValue"
                     >
-                      <option value selected>색상 옵션을 선택해 주세요</option>
+                      <option value="0" selected>색상 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.color"
                         :value="list.name"
                         :key="list.color_no"
-                        >{{ list.name }}</option
-                      >
+                      >{{ list.name }}</option>
                     </select>
                   </td>
                   <div class="colorButtonBox">
@@ -64,9 +63,7 @@
                         v-if="colorSelectList.length > 1"
                         :value="list"
                         @click="colorSelectDelete"
-                      >
-                        -
-                      </button>
+                      >-</button>
                     </td>
                   </div>
                 </tr>
@@ -77,14 +74,14 @@
                       @change="selectSizes"
                       v-for="list in sizeSelectList"
                       :key="list"
+                      value="defaultColorValue"
                     >
-                      <option value>사이즈 옵션을 선택해 주세요</option>
+                      <option value="0">사이즈 옵션을 선택해 주세요</option>
                       <option
                         v-for="list in option.data.size"
                         :key="list.size_no"
                         :value="list.name"
-                        >{{ list.name }}</option
-                      >
+                      >{{ list.name }}</option>
                     </select>
                   </td>
                   <div class="sizeButtonBox">
@@ -99,9 +96,7 @@
                         v-if="sizeSelectList.length > 1"
                         :value="list"
                         @click="sizeSelectDelete"
-                      >
-                        -
-                      </button>
+                      >-</button>
                     </td>
                   </div>
                 </tr>
@@ -137,9 +132,7 @@
               </thead>
               <tbody class="secondBody">
                 <tr>
-                  <td colspan="4">
-                    옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
-                  </td>
+                  <td colspan="4">옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.</td>
                 </tr>
                 <tr
                   v-if="applyOn"
@@ -168,6 +161,7 @@
                             v-model="option.quantity"
                             class="stockQuantity"
                             type="text"
+                            placeholder="0"
                           />
                           <span>개</span>
                         </div>
@@ -176,7 +170,7 @@
                   </td>
                   <td>
                     <v-btn
-                      @click="applyOption(index)"
+                      @click="applyOptionDelete(index)"
                       class="mx-2"
                       fab
                       dark
@@ -225,45 +219,57 @@ export default {
       sizeSelectList: [1],
       applyOn: false,
       hasFocus: false,
+      defaultColorValue: 0,
+      changeColor: 0,
+      applyAddClicks: 0,
     };
   },
 
   methods: {
     ...mapMutations(AdminStore, ["upDateAllOptions"]),
+
+    // 컬러, 사이즈 옵션 데이터 불러오는 메소드
     getOptionData() {
       axios.get(`${SERVER_IP}/admin/product/option`).then((res) => {
         this.option = res.data;
       });
     },
 
+    // 컬러 옵션 열을 추가하는 메소드
     colorSelectAdd() {
       this.colorListSize++;
       this.colorSelectList.push(this.colorListSize);
     },
 
+    // 컬로 옵셔느 열을 삭제하는 메소드
     colorSelectDelete(e) {
       let colorSelectId = parseInt(e.target.value);
       const idx = this.colorSelectList.indexOf(colorSelectId);
       this.colorSelectList.splice(idx, 1);
+      this.updateOptionData[0].color.splice(idx, 1);
     },
 
+    // 사이즈 옵션 열을 추가하는 메소드
     sizeSelectAdd() {
       this.sizeListSize++;
       this.sizeSelectList.push(this.sizeListSize);
     },
 
+    // 사이즈 옵션 열을 삭제하는 메소드
     sizeSelectDelete(e) {
       let sizeSelectId = parseInt(e.target.value);
       const idx = this.sizeSelectList.indexOf(sizeSelectId);
       this.sizeSelectList.splice(idx, 1);
+      this.updateOptionData[0].size.splice(idx, 1);
     },
 
+    // 선택한 컬러를 업데이트옵션 데이터에 넣어주는 메소드
     selectColors(e) {
       let colorName = e.target.value;
-      console.log("colorName: ", colorName);
+
       if (this.updateOptionData[0].color.includes(colorName)) {
         alert("이미 선택된 옵션입니다.");
-        this.$refs.list[0].focus();
+        e.target.value = this.defaultColorValue;
       } else {
         this.optionData[0].color.splice(0, 1);
         this.optionData[0].color.push(colorName);
@@ -271,41 +277,57 @@ export default {
       }
     },
 
-    changeDefaultSelect() {
-      console.log(this.$refs);
-      this.$refs.backDefault.focus();
-    },
-
+    // 선택한 사이즈를 업데이트옵션 데이터에 넣어주는 메소드
     selectSizes(e) {
       let sizeName = e.target.value;
-      this.optionData[0].size.splice(0, 1);
-      this.optionData[0].size.push(sizeName);
-      this.updateOptionData[0].size.push(sizeName);
+
+      if (this.updateOptionData[0].size.includes(sizeName)) {
+        alert("이미 선택된 옵션입니다.");
+        e.target.value = this.defaultColorValue;
+      } else {
+        this.optionData[0].size.splice(0, 1);
+        this.optionData[0].size.push(sizeName);
+        this.updateOptionData[0].size.push(sizeName);
+      }
     },
 
+    // 적용 버튼을 눌렀을 때 선택한 옵션들이 아래 테이블로 적용되는 메소드
     clickApply() {
-      this.applyOptions();
-      this.applyOn = true;
+      this.applyAddClicks++;
+      if (this.applyAddClicks === 1) {
+        this.applyOptions();
+        this.applyOn = true;
+      } else {
+        this.applyOptionData = [];
+        alert(
+          "옵션이 이미 적용되었습니다. 확인을 누르시면 초기화됩니다. \n새로 적용하시겠습니까?"
+        );
+        this.applyOptions();
+        this.applyOn = true;
+      }
     },
 
+    // 선택된 옵션들을 색상, 사이즈별로 새로운 배열에 넣어주는 메소드
     applyOptions() {
       for (let i = 0; i <= this.updateOptionData[0].color.length - 1; i++) {
         for (let j = 0; j <= this.updateOptionData[0].size.length - 1; j++) {
           this.applyOptionData.push({
             color: this.updateOptionData[0].color[i],
             size: this.updateOptionData[0].size[j],
-            quantity: 0,
+            quantity: null,
           });
         }
       }
     },
 
-    applyOption(index) {
+    // 적용된 옵션 삭제 하는 메소드
+    applyOptionDelete(index) {
       this.applyOptionData.splice(index, 1);
     },
 
     updateQuantity() {
       this.upDateAllOptions(this.applyOptionData);
+      console.log("stock: ", this.applyOptionData[0].quantity);
     },
   },
 };
@@ -422,8 +444,7 @@ export default {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: white;
-                border-radius: 3px;
+                border: none;
                 margin: 5px 0;
                 height: 40px;
               }
@@ -460,6 +481,7 @@ export default {
                 border-radius: 3px;
                 width: 100%;
                 height: 40px;
+                cursor: pointer;
               }
             }
           }
@@ -484,7 +506,7 @@ export default {
 
             .optionItem,
             .optionValue {
-              width: 20%;
+              width: 15%;
             }
           }
         }
@@ -535,6 +557,7 @@ export default {
           border-radius: 3px;
           width: 100%;
           height: 40px;
+          cursor: pointer;
         }
       }
 

@@ -1,8 +1,6 @@
 import uuid
 
-from .dao import Dao
-
-class ProductDao(Dao):
+class ProductDao:
 
     def insert_product(self, db_connection):
 
@@ -96,7 +94,8 @@ class ProductDao(Dao):
                     discount_start_date,
                     discount_end_date,
                     min_sales_quantity,
-                    max_sales_quantity
+                    max_sales_quantity,
+                    start_time
                 ) VALUES (
                     %(product_id)s,
                     %(sellYn)s,
@@ -111,7 +110,8 @@ class ProductDao(Dao):
                     %(discountStartDate)s,
                     %(discountEndDate)s,
                     %(minSalesQuantity)s,
-                    %(maxSalesQuantity)s
+                    %(maxSalesQuantity)s,
+                    %(now)s
                 )
                 """
 
@@ -521,7 +521,7 @@ class ProductDao(Dao):
         except Exception as e:
             raise e
 
-    def insert_option_detail(self, product_option_id, option, db_connection):
+    def insert_option_detail(self, now, product_option_id, option, db_connection):
 
         """
 
@@ -548,8 +548,10 @@ class ProductDao(Dao):
                 INSERT INTO option_details (
                     product_option_id,
                     color_id,
-                    size_id
+                    size_id,
+                    start_time
                 ) VALUES (
+                    %s,
                     %s,
                     %s,
                     %s
@@ -558,7 +560,7 @@ class ProductDao(Dao):
 
                 affected_row = cursor.execute(
                     insert_option_details_query,
-                    (product_option_id, option['color_id'], option['size_id'])
+                    (product_option_id, option['color_id'], option['size_id'], now)
                 )
 
                 if affected_row <= 0 :
@@ -808,12 +810,8 @@ class ProductDao(Dao):
             ON P.product_no = PO.product_id
             AND PO.is_deleted = False
 
-            LEFT JOIN option_details AS OD
-            ON PO.product_option_no = OD.product_option_id
-            AND OD.close_time = '9999-12-31 23:59:59'
-
             LEFT JOIN colors AS C
-            ON OD.color_id = C.color_no
+            ON PO.color_id = C.color_no
 
             WHERE
                 P.product_no = %s
@@ -875,18 +873,14 @@ class ProductDao(Dao):
             ON P.product_no = PO.product_id
             AND PO.is_deleted = False
 
-            LEFT JOIN option_details AS OD
-            ON PO.product_option_no = OD.product_option_id
-            AND OD.close_time = '9999-12-31 23:59:59'
-
             LEFT JOIN colors AS C
-            ON OD.color_id = C.color_no
+            ON PO.color_id = C.color_no
 
             LEFT JOIN sizes AS S
-            ON OD.size_id = S.size_no
+            ON PO.size_id = S.size_no
 
             LEFT JOIN quantities AS Q
-            ON OD.option_detail_no = Q.option_detail_id
+            ON PO.product_option_no = Q.product_option_id
             AND Q.close_time = '9999-12-31 23:59:59'
 
             WHERE
@@ -983,22 +977,24 @@ class ProductDao(Dao):
 
             INNER JOIN product_details
             ON product_details.product_id = products.product_no
+            AND product_details.close_time = '9999-12-31 23:59:59'
             ) AS P
 
             INNER JOIN product_images as PI
             ON P.product_no = PI.product_id
+            AND PI.close_time = '9999-12-31 23:59:59'
+            AND PI.is_main = 1
 
             INNER JOIN images as I
             ON PI.image_id = I.image_no
+            AND I.is_deleted = 0
 
             INNER JOIN product_details as PD
             ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
 
             WHERE
-                PI.is_main = 1
-                AND PI.close_time > now()
-                AND PD.close_time > now()
-
+                P.is_deleted = False
             """
 
             # Filtering 시작
@@ -1195,3 +1191,454 @@ class ProductDao(Dao):
 
             return size_id['size_no']
 
+    def select_product_detail(self, product_id, db_connection):
+
+        """
+
+        [상품 관리 > 상품 수정]
+        관리자 페이지에서 등록된 상품 상세정보(product_details)를 Return 해줍니다.
+
+        Args:
+            product_id    : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            mainCategoryId    : Main Category ID
+            subCategoryId     : Sub Category ID
+            sellYn            : 상품 판매여부 (Boolean)
+            exhibitionYn      : 상품 진열여부 (Boolean)
+            productName       : 상품이름
+            simpleDescription : 상품 한 줄 설명
+            detailInformation : 상품 상세 설명
+            price             : 상품가격
+            discountRate      : 상품 할인율
+            discountStartDate : 할인 시작일
+            discountEndDate   : 할인 종료일
+            minSalesQuantity  : 최소판매 수량
+            maxSalesQuantity  : 최대판매 수량
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            # product_id에 해당하는 상품 상세 정보 조회
+            select_product_detail_query = """
+            SELECT
+            	P.product_code as productCode,
+                PD.is_activated as sellYn,
+                PD.is_displayed as exhibitYn,
+                MC.name as mainCategory,
+                SC.name as subCategory,
+                PD.name as productName,
+                PD.simple_description as simpleDescription,
+                PD.detail_information as detailInformation,
+                PD.price,PD.discount_rate as discountRate,
+                PD.discount_start_date as discountStartDate,
+                PD.discount_end_date as discountEndDate,
+                PD.min_sales_quantity as minSalesQuantity,
+                PD.max_sales_quantity as maxSalesQuantity
+            FROM products as P
+
+            INNER JOIN product_details as PD
+            ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN main_categories as MC
+            ON PD.main_category_id = MC.main_category_no
+
+            INNER JOIN sub_categories as SC
+            ON PD.sub_category_id = SC.sub_category_no
+
+            WHERE
+                P.product_no = %s
+                AND P.is_deleted = 0
+            """
+
+            cursor.execute(select_product_detail_query, product_id)
+            product_detail = cursor.fetchone()
+
+            return product_detail
+
+    def select_product_image(self, product_id, db_connection):
+
+        """
+
+        [상품 관리 > 상품 수정]
+        관리자 페이지에서 등록된 상품 상세정보(product_details)를 Return 해줍니다.
+
+        Args:
+            product_id    : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            image_url : image URL List
+            [
+              {
+                "image_medium": 중간 사이즈(medium) image URL
+              }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            # product_id에 해당하는 상품 이미지 URL 조회
+            select_product_image_query = """
+            SELECT
+            	I.image_medium AS imageMedium
+            FROM products as P
+
+            INNER JOIN product_details as PD
+            ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN product_images as PI
+            ON P.product_no = PI.product_id
+            AND PI.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN images as I
+            ON PI.image_id = I.image_no
+            AND I.is_deleted = 0
+
+            WHERE
+            	P.product_no = %s
+                AND P.is_deleted = 0
+
+            ORDER BY
+            	I.image_no ASC
+            """
+
+            cursor.execute(select_product_image_query, product_id)
+            product_image = cursor.fetchall()
+
+            return {"imageUrl" : product_image}
+
+    def select_product_option(self, product_id, db_connection):
+
+        """
+
+        [상품 관리 > 상품 수정]
+        관리자 페이지에서 등록된 상품 상세정보(product_details)를 Return 해줍니다.
+
+        Args:
+            product_id    : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            optionQuantity : 옵션별 수량 List
+            [
+                {
+                    "colorName"       : 색상 이름
+                    "sizeName"        : 사이즈 이름
+                    "productOptionNo" : Option Number(PK)
+                    "quantity"        : 옵션별 재고 수량
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            # product_id에 해당하는 상품 옵션 조회
+            select_product_option_query = """
+            SELECT
+            	PO.product_option_no AS productOptionNo,
+                OD.option_detail_no AS optionDetailNo,
+                C.name AS colorName,
+                S.name AS sizeName,
+                Q.quantity AS quantity
+            FROM products as P
+
+            INNER JOIN product_details AS PD
+            ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN product_options AS PO
+            ON P.product_no = PO.product_id
+            AND PO.is_deleted = 0
+
+            INNER JOIN option_details AS OD
+            ON OD.product_option_id = PO.product_option_no
+            AND OD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN quantities AS Q
+            ON Q.option_detail_id = OD.option_detail_no
+            AND Q.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN colors AS C
+            ON C.color_no = OD.color_id
+
+            INNER JOIN sizes AS S
+            ON S.size_no = OD.size_id
+
+            WHERE
+            	P.product_no = %s
+                AND P.is_deleted=0;
+            """
+
+            cursor.execute(select_product_option_query, product_id)
+            product_option = cursor.fetchall()
+
+            return {"optionQuantity" : product_option}
+
+    def select_product_option_to_compare(self, product_id, db_connection):
+
+        """
+
+        [상품 관리 > 상품 수정]
+        관리자 페이지에서 등록된 상품 상세정보(product_details)를 Return 해줍니다.
+
+        Args:
+            product_id    : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            optionQuantity : 옵션별 수량 List
+            [
+                {
+                    "colorName"       : 색상 이름
+                    "sizeName"        : 사이즈 이름
+                    "productOptionNo" : Option Number(PK)
+                    "quantity"        : 옵션별 재고 수량
+                }
+            ]
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            # product_id에 해당하는 상품 옵션 조회
+            select_product_option_query = """
+            SELECT
+                C.name AS color,
+                S.name AS size,
+                Q.quantity AS quantity
+            FROM products as P
+
+            INNER JOIN product_details AS PD
+            ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN product_options AS PO
+            ON P.product_no = PO.product_id
+            AND PO.is_deleted = 0
+
+            INNER JOIN option_details AS OD
+            ON OD.product_option_id = PO.product_option_no
+            AND OD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN quantities AS Q
+            ON Q.option_detail_id = OD.option_detail_no
+            AND Q.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN colors AS C
+            ON C.color_no = OD.color_id
+
+            INNER JOIN sizes AS S
+            ON S.size_no = OD.size_id
+
+            WHERE
+            	P.product_no = %s
+                AND P.is_deleted=0;
+            """
+
+            cursor.execute(select_product_option_query, product_id)
+            product_option = cursor.fetchall()
+
+            return {"optionQuantity" : product_option}
+
+    def select_product_detail_to_compare(self, product_id, db_connection):
+
+        """
+
+        [상품 관리 > 상품 수정]
+        관리자 페이지에서 등록된 상품 상세정보(product_details)를 Return 해줍니다.
+
+        Args:
+            product_id    : products 테이블의 PK
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            mainCategoryId    : Main Category ID
+            subCategoryId     : Sub Category ID
+            sellYn            : 상품 판매여부 (Boolean)
+            exhibitionYn      : 상품 진열여부 (Boolean)
+            productName       : 상품이름
+            simpleDescription : 상품 한 줄 설명
+            detailInformation : 상품 상세 설명
+            price             : 상품가격
+            discountRate      : 상품 할인율
+            discountStartDate : 할인 시작일
+            discountEndDate   : 할인 종료일
+            minSalesQuantity  : 최소판매 수량
+            maxSalesQuantity  : 최대판매 수량
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-05 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            # product_id에 해당하는 상품 상세 정보 조회
+            select_product_detail_query = """
+            SELECT
+                PD.is_activated as sellYn,
+                PD.is_displayed as exhibitionYn,
+                MC.main_category_no as mainCategoryId,
+                SC.sub_category_no as subCategoryId,
+                PD.name as productName,
+                PD.simple_description as simpleDescription,
+                PD.detail_information as detailInformation,
+                PD.price,PD.discount_rate as discountRate,
+                PD.discount_start_date as discountStartDate,
+                PD.discount_end_date as discountEndDate,
+                PD.min_sales_quantity as minSalesQuantity,
+                PD.max_sales_quantity as maxSalesQuantity
+            FROM products as P
+
+            INNER JOIN product_details as PD
+            ON PD.product_id = P.product_no
+            AND PD.close_time = '9999-12-31 23:59:59'
+
+            INNER JOIN main_categories as MC
+            ON PD.main_category_id = MC.main_category_no
+
+            INNER JOIN sub_categories as SC
+            ON PD.sub_category_id = SC.sub_category_no
+
+            WHERE
+                P.product_no = %s
+                AND P.is_deleted = 0
+            """
+
+            cursor.execute(select_product_detail_query, product_id)
+            product_detail = cursor.fetchone()
+
+            return product_detail
+
+    def select_now(self, db_connection):
+        with db_connection.cursor() as cursor:
+            cursor.execute("SELECT NOW() AS now_time")
+            now = cursor.fetchone()
+
+            return now['now_time']
+#update_product_option
+
+    def update_product_option(self, now, product_option_id, option, db_connection):
+
+        """
+
+        옵션 상세 정보 테이블(option_details)에 insert 하고 option_details_no(PK)를 Return 합니다.
+
+        Args:
+            db_connection : DATABASE Connection Instance
+
+        Returns:
+            option_details_no(PK)
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-08-29 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        try:
+            with db_connection.cursor() as cursor:
+
+                insert_option_details_query = """
+                INSERT INTO option_details (
+                    product_option_id,
+                    color_id,
+                    size_id
+                ) VALUES (
+                    %s,
+                    %s,
+                    %s
+                )
+                """
+
+                affected_row = cursor.execute(
+                    insert_option_details_query,
+                    (product_option_id, option['color_id'], option['size_id'])
+                )
+
+                if affected_row <= 0 :
+                    raise Exception('QUERY_FAILED')
+
+                # 등록한 images 테이블의 row id Return
+                return cursor.lastrowid
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def close_option_detail(self, now, option_detail_no, db_connection):
+
+        with db_connection.cursor() as cursor:
+            update_previous_option_detail_query = """
+            UPDATE
+                option_details
+            SET
+                close_time = %s
+            WHERE
+                option_detail_no = %s
+                AND close_time = '9999-12-31 23:59:59'
+            """
+
+            cursor.execute(
+                update_previous_option_detail_query,
+                (now, option_detail_no)
+            )
+
+            return None
+
+    def close_product_detail(self, now, product_id, db_connection):
+        with db_connection.cursor() as cursor:
+            update_previous_option_detail_query = """
+            UPDATE
+                product_details
+            SET
+                close_time = %s
+            WHERE
+                product_id = %s
+                AND close_time = '9999-12-31 23:59:59'
+            """
+
+            cursor.execute(
+                update_previous_option_detail_query,
+                (now, product_id)
+            )
+
+            return None

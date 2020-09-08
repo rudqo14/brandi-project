@@ -16,15 +16,10 @@
           </div>
           <div></div>
           <h3 class="socialTitle">간편 로그인 / 가입</h3>
-          <GoogleLogin
-            class="googleLogin"
-            :params="params"
-            :onSuccess="onSuccess"
-          >
+          <GoogleLogin class="googleLogin" :params="params" :onSuccess="onSuccess">
             <div class="imgContainer">
               <img src="/Images/google-logo.png" />
-            </div>
-            Google 계정으로 계속하기
+            </div>Google 계정으로 계속하기
           </GoogleLogin>
         </div>
       </main>
@@ -33,9 +28,8 @@
 </template>
 
 <script>
-import { ClientId, ADMIN_API_URL } from "../../../config.js";
+import { ClientId, SERVER_IP } from "../../../config.js";
 import { GoogleLogin } from "vue-google-login";
-import { SERVER_IP } from "../../../config.js";
 import axios from "axios";
 import Footer from "../Components/Footer";
 import { mapMutations } from "vuex";

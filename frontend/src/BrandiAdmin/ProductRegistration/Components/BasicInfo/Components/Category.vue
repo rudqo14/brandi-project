@@ -12,38 +12,24 @@
         </div>
         <div class="cateSelect">
           <div class="primaryCategory">
-            <select
-              class="mainCategoryBox"
-              @change="getSubCategory"
-              v-model="mainCategoryId"
-            >
-              <option value selected>1차 카테고리를 선택해주세요</option>
+            <select class="mainCategoryBox" @change="getSubCategory" v-model="mainCategoryId">
+              <option value="0" selected>1차 카테고리를 선택해주세요</option>
               <option
                 v-for="list in mainCategory"
                 :key="list.main_category_no"
                 :value="list.main_category_no"
-                >{{ list.name }}</option
-              >
+              >{{ list.name }}</option>
             </select>
           </div>
           <div class="secondaryCategory">
-            <select
-              class="subCategoryBox"
-              @change="selectSubCategory"
-              v-model="subCategoryId"
-            >
-              <option value v-if="!mainCategoryId"
-                >1차 카테고리를 먼저 선택해주세요</option
-              >
-              <option value selected v-if="mainCategoryId"
-                >2차 카테고리를 선택해주세요</option
-              >
+            <select class="subCategoryBox" @change="selectSubCategory">
+              <option value v-if="!mainCategoryId">1차 카테고리를 먼저 선택해주세요</option>
+              <option value selected v-if="mainCategoryId">2차 카테고리를 선택해주세요</option>
               <option
                 v-for="list in subCategory"
                 :key="list.sub_category_no"
                 :value="list.sub_category_no"
-                >{{ list.name }}</option
-              >
+              >{{ list.name }}</option>
             </select>
           </div>
         </div>
@@ -66,8 +52,10 @@ export default {
 
   data() {
     return {
-      mainCategory: [],
-      subCategory: [],
+      mainCategory: "",
+      subCategory: "",
+      mainCategoryId: 0,
+      subCategoryId: null,
       key: "",
     };
   },
@@ -86,6 +74,7 @@ export default {
     // 2차 카테고리 데이터를 가져오는 메소드 (1차 카테고리가 바뀔 때 마다 2차 카테고리 변경)
     getSubCategory(event) {
       this.getMainCategoryId(event.target.value);
+      console.log(event.target.value);
 
       axios
         .get(`${SERVER_IP}/admin/product/category/${this.mainCategoryId}`)
@@ -100,6 +89,7 @@ export default {
     // 2차 카테고리 ID 를 state 로 전달해주는 메소드
     selectSubCategory(event) {
       this.getSubCategoryId(event.target.value);
+      console.log(event.target.value);
     },
   },
 };
@@ -162,6 +152,7 @@ export default {
           select {
             appearance: menulist-button;
             background-color: white;
+            cursor: pointer;
             border: 1px solid lightgray;
             padding-left: 3px;
             border-radius: 3px;

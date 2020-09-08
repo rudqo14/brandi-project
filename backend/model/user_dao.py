@@ -1,8 +1,6 @@
 from flask import jsonify
 
-from .dao import Dao
-
-class UserDao(Dao):
+class UserDao:
 
     def signup_user(self, user_info, db_connection):
 
@@ -517,11 +515,6 @@ class UserDao(Dao):
             INNER JOIN product_options AS P4
             ON P3.product_option_id = P4.product_option_no
 
-            INNER JOIN option_details AS P5
-            ON P4.product_option_no = P5.product_option_id
-            AND P2.start_time >= P5.start_time
-            AND P5.close_time >= P2.start_time
-
             INNER JOIN product_images AS P6
             ON P4.product_id = P6.product_id
             AND P6.is_main = 1
@@ -537,10 +530,10 @@ class UserDao(Dao):
             AND P8.close_time >= P2.start_time
 
             INNER JOIN colors AS P9
-            ON P9.color_no = P5.color_id
+            ON P9.color_no = P4.color_id
 
             INNER JOIN sizes AS P10
-            ON P10.size_no = P5.size_id
+            ON P10.size_no = P4.size_id
 
             INNER JOIN order_status AS P11
             ON P11.order_status_no = P2.order_status_id
@@ -643,16 +636,11 @@ class UserDao(Dao):
             AND P1.start_time >= P9.start_time
             AND P9.close_time >= P1.start_time
 
-            INNER JOIN option_details AS P10
-            ON P6.product_option_no = P10.product_option_id
-            AND P1.start_time >= P10.start_time
-            AND P10.close_time >= P1.start_time
-
             INNER JOIN colors AS P11
-            ON P10.color_id = P11.color_no
+            ON P6.color_id = P11.color_no
 
             INNER JOIN sizes AS P12
-            ON P10.size_id = P12.size_no
+            ON P6.size_id = P12.size_no
 
             INNER JOIN order_status AS P13
             ON P1.order_status_id = P13.order_status_no

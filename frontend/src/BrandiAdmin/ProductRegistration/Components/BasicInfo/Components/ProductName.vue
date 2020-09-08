@@ -43,14 +43,12 @@ export default {
 <style lang="scss" scoped>
 .productName {
   display: flex;
-  height: 100px;
   border-bottom: 1px solid lightgray;
 
   .inputName {
     display: flex;
     align-items: center;
     width: 302px;
-    height: 100%;
     padding-left: 15px;
     border-right: 1px solid lightgray;
     font-size: 15px;
@@ -70,6 +68,8 @@ export default {
     .inputBox {
       display: flex;
       align-items: center;
+
+      height: 40px;
       background-color: #fff;
       box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2),
         0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
@@ -77,8 +77,10 @@ export default {
 
       input {
         outline: none;
+        padding: 10px;
+        margin: 10px;
         width: 100%;
-        margin-left: 10px;
+        height: 100%;
       }
     }
 
