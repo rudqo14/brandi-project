@@ -1,6 +1,8 @@
 from flask import jsonify
 
-class UserDao:
+from .dao import Dao
+
+class UserDao(Dao):
 
     def signup_user(self, user_info, db_connection):
 
@@ -665,3 +667,47 @@ class UserDao:
 
             return order_detail
 
+    def update_user_shipping_detail(self, user_info, db_connection):
+
+        """
+
+        유저의 배송지 정보를 변경합니다.
+
+        Args:
+            user_info:
+                user_no : 유저의 pk
+                phone_number : 변경할 유저의 핸드폰번호
+                address : 변경할 유저의 주소
+                additional_address : 변경할 유저의 상세주소
+                zip_code : 변경할 유저의 우편번호
+            db_connection : 연결된 db 객체
+
+        Returns : 정보가 변경된 유저의 pk
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-07 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+            update_shipping_detail = """
+            UPDATE
+                user_shipping_details
+            SET
+                phone_number = %(phone_number)s,
+                address = %(address)s,
+                additional_address = %(additional_address)s,
+                zip_code = %(zip_code)s
+            WHERE
+                user_id = %(user_no)s
+            """
+
+            affected_rows = cursor.execute(update_shipping_detail, user_info)
+
+            if affected_rows < 1:
+                return None
+
+            return affected_rows

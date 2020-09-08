@@ -7,11 +7,18 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense />
+          <v-select
+            v-model="selectSearch"
+            class="select"
+            :items="items"
+            label="Select.."
+            dense
+          />
           <input
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
             class="search"
+            ref="search"
             placeholder="검색어를 입력하세요."
           />
         </div>
@@ -26,7 +33,8 @@
             class="btnV"
             name="전체"
             v-bind:color="sellData === item ? 'primary' : 'white'"
-          >{{item}}</v-btn>
+            >{{ item }}</v-btn
+          >
         </div>
         <div>
           <a-date-picker
@@ -47,8 +55,20 @@
         </div>
       </div>
       <div class="centerContainer">
-        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
-        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
+        <v-btn
+          tile
+          @click="searchFilterHandler"
+          class="btnSearch"
+          color="primary"
+          >검색</v-btn
+        >
+        <v-btn
+          tile
+          v-on:click="filterResetHandler"
+          class="searchReset"
+          color="white"
+          >초기화</v-btn
+        >
       </div>
     </article>
     <div class="subTitle">
@@ -62,8 +82,12 @@
             </div>
           </div>
           <div v-if="isToggleOrder === true" class="toggleDataContainer">
-            <div class="toggleList" v-on:click="orderToggleClick">최신주문일순</div>
-            <div class="toggleList" v-on:click="orderToggleClick">주문일의 역순</div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              최신주문일순
+            </div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              주문일의 역순
+            </div>
           </div>
         </div>
         <div class="toggleContainer">
@@ -89,8 +113,12 @@
         <v-btn color="primary" small>주문취소처리</v-btn>
       </div>
       <div class="excelContainer">
-        <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-        <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+        <v-btn class="excelBtn" color="success" small
+          >선택상품 엑셀다운로드</v-btn
+        >
+        <v-btn class="excelBtn" color="success" small
+          >전체상품 엑셀다운로드</v-btn
+        >
       </div>
     </div>
     <article class="tableArticle">
@@ -116,21 +144,27 @@
           <tbody>
             <tr v-for="(item, i) in orderData" :key="i">
               <td class="checkboxContainer">
-                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
+                <input
+                  v-model="selected"
+                  :value="i"
+                  class="checkbox"
+                  type="checkbox"
+                />
               </td>
               <td>{{ item.order_time }}</td>
               <td>{{ item.order_no }}</td>
               <td class="linkDetail">
                 <router-link
                   :to="`/admin/productDetail/${item.order_detail_no}`"
-                >{{ item.order_detail_no }}</router-link>
+                  >{{ item.order_detail_no }}</router-link
+                >
               </td>
               <td class="productName">{{ item.product_name }}</td>
               <td>{{ item.color }} / {{ item.size }}</td>
               <td>{{ item.quantity }}</td>
               <td>{{ item.user_name }}</td>
               <td>{{ item.phone_number }}</td>
-              <td>{{ Math.floor(item.price).toLocaleString(5) + "원" }}</td>
+              <td>{{ Math.floor(item.total_price).toLocaleString(5) + "원" }}</td>
               <td>{{ item.order_status }}</td>
             </tr>
           </tbody>
@@ -141,13 +175,20 @@
           <v-btn color="primary" small>주문취소처리</v-btn>
         </div>
         <div class="excelContainer">
-          <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-          <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+          <v-btn class="excelBtn" color="success" small
+            >선택상품 엑셀다운로드</v-btn
+          >
+          <v-btn class="excelBtn" color="success" small
+            >전체상품 엑셀다운로드</v-btn
+          >
         </div>
       </div>
       <template>
         <div class="text-center">
-          <v-pagination v-model="page" :length="Math.ceil(totalNumData / toggleNumber)" />
+          <v-pagination
+            v-model="page"
+            :length="Math.ceil(totalNumData / toggleNumber)"
+          />
         </div>
       </template>
     </article>
@@ -157,7 +198,7 @@
 <script>
 import moment from "moment";
 import axios from "axios";
-import { gonhoIp } from "../../../config";
+import { SERVER_IP } from "../../../config";
 import dateData from "../../../Data/orderDateBtn.json";
 
 export default {
@@ -188,7 +229,7 @@ export default {
         const selected = [];
 
         if (value) {
-          this.orderData.forEach(function (item, i) {
+          this.orderData.forEach(function(item, i) {
             selected.push(i);
           });
         }
@@ -228,17 +269,18 @@ export default {
       endValue: null,
       endOpen: false,
       searchInputContents: "",
-      selectSearch: "",
+      selectSearch: "Select..",
       searchFilter: "",
       startDate: "",
       endDate: "",
       checked: [],
       selected: [],
+      isLoadingScreen: false,
     };
   },
 
   watch: {
-    page: function () {
+    page: function() {
       this.axiosConnect();
     },
     startValue(val) {
@@ -332,7 +374,7 @@ export default {
     axiosConnect() {
       axios
         .get(
-          `${gonhoIp}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
+          `${SERVER_IP}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
         )
         .then((res) => {
           this.orderData = res.data.data;
@@ -489,7 +531,7 @@ export default {
 
     //초기화 버튼 클릭시에 필터링에 해당하는 데이터들 모두 초기화시킨다.
     filterResetHandler() {
-      this.selectSearch = "";
+      this.selectSearch = "Select..";
       this.sellData = "3일";
       this.saleData = "전체";
       this.displayData = "전체";
@@ -518,14 +560,29 @@ export default {
         this.searchFilter = "";
       }
 
-      if (!this.searchFilter && !this.startDate && !this.endDate) {
+      console.log("this.selectSearch: ", this.selectSearch);
+      console.log("this.searchFilter: ", this.searchFilter);
+      console.log("this.searchInputContents: ", this.searchInputContents);
+
+      if (
+        this.selectSearch === "Select.." &&
+        !this.searchFilter &&
+        !this.startDate &&
+        !this.endDate
+      ) {
         return alert(
           "날짜 조건이 없을 경우에는 필수 필터 조건 검색이 존재합니다.\n(주문번호 or 주문상세번호 or 주문자명 or 핸드폰번호"
         );
       }
 
-      if (this.searchFilter && !this.searchInputContents) {
-        return alert("검색어를 입력해주세요.");
+      if (
+        this.selectSearch !== "Select.." &&
+        !this.searchFilter &&
+        !this.searchInputContents
+      ) {
+        alert("검색어를 입력해주세요.");
+        this.$refs.search.focus();
+        return;
       }
 
       this.axiosConnect();

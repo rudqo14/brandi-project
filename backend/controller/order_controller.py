@@ -137,9 +137,8 @@ def create_service_order_endpoints(order_service):
     service_order_app = Blueprint('service_order_app', __name__, url_prefix='/order')
 
     @service_order_app.route('/checkout', methods=['GET'])
-    # @login_required
-    # 테스트를 하기위한 임의의 유저 id를 지정
-    def product_info_to_purchase(user_no=4):
+    @login_required
+    def product_info_to_purchase(user_info):
 
         """
 
@@ -180,6 +179,8 @@ def create_service_order_endpoints(order_service):
             400 : KEY_ERROR_COLOR_ID
             400 : KEY_ERROR_SIZE_ID
             400 : KEY_ERROR_QUANTITY
+            400 : THIS_PRODUCT_DOES_NOT_EXISTS
+            400 : UNAUTHORIZED
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -222,6 +223,9 @@ def create_service_order_endpoints(order_service):
                 if not 'quantity' in product_info.keys():
                     raise Exception('KEY_ERROR_QUANTITY')
 
+                # 받아온 user_info객체에서 user_no를 가져옵니다.
+                user_no = user_info['user_no']
+
                 # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
                 # 로그인이 되어있는 사용자만이 구매를 할 수 있기 때문에 user_no도 넘겨줍니다.
                 purchase_info = order_service.get_product_info_to_purchase(product_info, user_no, db_connection)
@@ -242,9 +246,8 @@ def create_service_order_endpoints(order_service):
                 db_connection.close()
 
     @service_order_app.route('/completed', methods=['POST'])
-    #@login_required
-    # 테스트를 하기위한 임의의 유저 id를 지정
-    def order_completed(user_no=4):
+    @login_required
+    def order_completed(user_info):
 
         """
 
@@ -293,8 +296,12 @@ def create_service_order_endpoints(order_service):
                 # Body로 들어온 정보를 order_info에 담기.
                 order_info = request.json
 
+                user_no = user_info['user_no']
+
                 # 받아온 정보들로 주문하기
-                order_service.FUNCTION_NAME(user_no, order_info, db_connection)
+                order_service.create_order_completed(order_info, user_no, db_connection)
+
+                db_connection.commit()
 
                 return jsonify({'message' : 'ORDER_COMPLETED!!!'}), 200
 
@@ -302,7 +309,8 @@ def create_service_order_endpoints(order_service):
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
         except Exception as e:
-            return jsonify({'message' : e}), 400
+            db_connection.rollback()
+            return jsonify({"message" : f"{e}"}), 400
 
         finally:
             if db_connection:

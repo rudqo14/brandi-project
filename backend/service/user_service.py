@@ -253,3 +253,43 @@ class UserService:
             return order_detail
 
         return None
+
+    def update_user_shipping_detail(self, user_info, db_connection):
+
+        """
+
+        유저의 배송지 정보를 변경합니다.
+
+        Args:
+            user_info:
+                user_no : 유저의 pk
+                phone_number : 변경할 유저의 핸드폰번호
+                address : 변경할 유저의 이메일주소
+                additional_address : 변경할 유저의 상세주소
+                zip_code : 변경할 유저의 우편번호
+            db_connection: 연결된 db 객체
+
+        Returns:
+            user : 변경된 유저의 pk
+            None : userNo 에 해당하는 유저가 없을 시
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-07 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        # user_info로 들어온 userNo에 해당하는 유저가 존재하는지 확인
+        user = self.user_dao.check_user(user_info, db_connection)
+
+        if user:
+
+            # 유저의 배송지 정보를 변경하는 메소드 실행
+            shipping_detail = self.user_dao.update_user_shipping_detail(user_info, db_connection)
+
+            return shipping_detail
+
+        # userNo에 해당하는 유저가 존재하지 않는 경우 None 리턴
+        return None

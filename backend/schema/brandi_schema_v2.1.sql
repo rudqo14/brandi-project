@@ -629,7 +629,7 @@ INSERT INTO social_networks
     name
 ) VALUES (
     1,
-    'Google'
+    '구글'
 );
 
 -- users Table Create SQL
@@ -1099,11 +1099,11 @@ INSERT INTO user_shipping_details
 ) VALUES (
     1,
     1,
-    '서울특별시 강남구 테헤란로 32길 26 청송빌딩',
-    '브랜디',
+    '서울특별시 강남구 테헤란로 32길 26',
+    '청송빌딩 브랜디',
     '손수정수령',
     '01012345678',
-    '15279'
+    '42535'
 ), (
     2,
     2,
@@ -1111,12 +1111,12 @@ INSERT INTO user_shipping_details
     '위코드',
     '이곤호수령',
     '01012345678',
-    '15279'
+    '54436'
 ), (
     3,
     3,
-    '서울특별시 강남구 테헤란로 32길 26 청송빌딩',
-    '브랜디',
+    '서울특별시 강남구 테헤란로 32길 26',
+    '청송빌딩 브랜디',
     '이민호수령',
     '01022223333',
     '15279'
@@ -1127,7 +1127,7 @@ INSERT INTO user_shipping_details
     '서울 어딘가',
     '김경배수령',
     '01033334444',
-    '15279'
+    '86352'
 ), (
     5,
     5,
@@ -1135,7 +1135,7 @@ INSERT INTO user_shipping_details
     '서울 어딘가',
     '배정규수령',
     '01044445555',
-    '15279'
+    '10001'
 );
 
 -- order_status Table Create SQL
@@ -1466,13 +1466,14 @@ INSERT INTO sub_categories
 -- orders_details Table Create SQL
 CREATE TABLE orders_details
 (
-    `order_detail_no`   INT         NOT NULL    AUTO_INCREMENT COMMENT 'pk', 
-    `order_id`          INT         NOT NULL    COMMENT '주문_id', 
-    `user_shipping_id`  INT         NOT NULL    COMMENT '배송지_id', 
-    `order_status_id`   INT         NOT NULL    COMMENT '주문상태_id', 
-    `start_time`        DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT '선분이력관리용(생성)', 
-    `close_time`        DATETIME    NOT NULL    DEFAULT '9999-12-31 23:59:59'COMMENT '선분이력관리용(삭제)', 
-    `delivery_request`         VARCHAR(500)    NULL        COMMENT '배송시 요청사항', 
+    `order_detail_no`   INT           NOT NULL    AUTO_INCREMENT COMMENT 'pk', 
+    `order_id`          INT           NOT NULL    COMMENT '주문_id', 
+    `user_shipping_id`  INT           NOT NULL    COMMENT '배송지_id', 
+    `order_status_id`   INT           NOT NULL    COMMENT '주문상태_id', 
+    `total_price`       DECIMAL(10,2) NOT NULL    COMMENT '구매할 상품 전체 가격',
+    `start_time`        DATETIME      NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT '선분이력관리용(생성)', 
+    `close_time`        DATETIME      NOT NULL    DEFAULT '9999-12-31 23:59:59'COMMENT '선분이력관리용(삭제)', 
+    `delivery_request`  VARCHAR(500)      NULL    COMMENT '배송시 요청사항', 
     PRIMARY KEY (order_detail_no)
 );
 
@@ -1494,6 +1495,7 @@ INSERT INTO orders_details
     order_id,
     user_shipping_id,
     order_status_id,
+    total_price,
     start_time,
     delivery_request
 ) VALUES (
@@ -1501,6 +1503,7 @@ INSERT INTO orders_details
     1,
     1,
     1,
+    20000,
     '2020-08-18 15:00:00',
     NULL
 ), (
@@ -1508,6 +1511,7 @@ INSERT INTO orders_details
     2,
     2,
     1,
+    8890,
     '2020-08-25 10:00:00',
     '부재 시 전화주세요'
 ), (
@@ -1515,6 +1519,7 @@ INSERT INTO orders_details
     3,
     3,
     1,
+    28770,
     '2020-07-25 10:00:00',
     '부재 시 경비실에 맡겨주세요'
 ), (
@@ -1522,6 +1527,7 @@ INSERT INTO orders_details
     4,
     4,
     1,
+    8820,
     '2020-05-25 12:30:00',
     NULL
 ), (
@@ -1529,6 +1535,7 @@ INSERT INTO orders_details
     5,
     5,
     1,
+    13230,
     '2020-05-20 11:20:00',
     '부재 시 문앞에 놔주세요'
 );
