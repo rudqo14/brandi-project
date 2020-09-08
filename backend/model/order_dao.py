@@ -34,7 +34,7 @@ class OrderDao:
             SELECT
                 P3.start_time AS order_time,
                 P1.order_no,
-                P2.order_product_no AS order_detail_no,
+                P3.order_detail_no,
                 P6.name AS product_name,
                 P4.name AS size,
                 P5.name AS color,
