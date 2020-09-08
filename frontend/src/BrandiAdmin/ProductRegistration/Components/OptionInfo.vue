@@ -161,6 +161,7 @@
                             v-model="option.quantity"
                             class="stockQuantity"
                             type="text"
+                            placeholder="0"
                           />
                           <span>개</span>
                         </div>
@@ -274,8 +275,6 @@ export default {
         this.optionData[0].color.push(colorName);
         this.updateOptionData[0].color.push(colorName);
       }
-
-      console.log("updataOptionData: ", this.updateOptionData[0].color);
     },
 
     // 선택한 사이즈를 업데이트옵션 데이터에 넣어주는 메소드
@@ -315,7 +314,7 @@ export default {
           this.applyOptionData.push({
             color: this.updateOptionData[0].color[i],
             size: this.updateOptionData[0].size[j],
-            quantity: 0,
+            quantity: null,
           });
         }
       }
@@ -328,6 +327,7 @@ export default {
 
     updateQuantity() {
       this.upDateAllOptions(this.applyOptionData);
+      console.log("stock: ", this.applyOptionData[0].quantity);
     },
   },
 };
@@ -444,8 +444,7 @@ export default {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                background-color: white;
-                border-radius: 3px;
+                border: none;
                 margin: 5px 0;
                 height: 40px;
               }
@@ -482,6 +481,7 @@ export default {
                 border-radius: 3px;
                 width: 100%;
                 height: 40px;
+                cursor: pointer;
               }
             }
           }
@@ -506,7 +506,7 @@ export default {
 
             .optionItem,
             .optionValue {
-              width: 20%;
+              width: 15%;
             }
           }
         }
@@ -557,6 +557,7 @@ export default {
           border-radius: 3px;
           width: 100%;
           height: 40px;
+          cursor: pointer;
         }
       }
 
