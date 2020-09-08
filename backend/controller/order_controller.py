@@ -129,6 +129,60 @@ def create_admin_order_endpoints(order_service):
             if db_connection:
                 db_connection.close()
 
+    @admin_order_app.route('/delete/<order_id>', methods=['DELETE'], endpoint='delete_order')
+    @catch_exception
+    @validate_params(
+        Param('order_id', PATH, int)
+    )
+    def delete_order(order_id):
+
+        db_connection = None
+
+        try:
+
+            # db 연결
+            db_connection = get_connection()
+
+            if db_connection:
+
+                # 주문 취소 메소드 실행하기 위한 data
+                order_data = {
+                    "order_id" : order_id
+                }
+
+                # order_id 에 해당하는 주문완료 data가 있는지 확인 리턴값으로 order_detail_id 가 포함된 dictionary
+                order = order_service.get_completed_order_detail(order_data, db_connection)
+
+                # order_detail_id 가 None이 아닌경우
+                if order['order_detail_id']:
+
+                    # 주문 취소 메소드 실행 하기 위해 order_detail_id 설정
+                    order_data = {**order_data, **order}
+
+                    # 주문 완료 data가 있는 경우에만 취소하는 메소드 실행
+                    result = order_service.delete_completed_order(order_data, db_connection)
+
+                    if result:
+
+                        return jsonify({"message" : "DELETE_SUCCESS"}), 200
+
+                    # 주문취소 실패
+                    db_connection.rollback()
+                    return jsoinfy({"message" : "DELETE_FAIL"}), 400
+
+                # order_id에 해당하는 주문완료 data가 없을 때
+                return jsoinfy({"message" : "NO_ORDER_DATA"}), 401
+
+        except Exception as e:
+            db_connection.rollback()
+            return jsoinfy({"message" : f"{e}"}), 400
+
+        finally:
+
+            if db_connection:
+                db_connection.close()
+
+
     return admin_order_app
 
 def create_service_order_endpoints(order_service):

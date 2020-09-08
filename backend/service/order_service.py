@@ -242,4 +242,59 @@ class OrderService:
         updated_quantity = self.order_dao.update_quantities(current_quantity_info, db_connection)
         print(11)
 
-        return 1
+        return new_quantity
+
+    def get_completed_order_detail(self, order_data, db_connection):
+
+        """
+
+        인자로 들어온 order_id에 해당하는 주문 완료 data가 있는지 확인합니다.
+
+        Args:
+            order_data:
+                order_id : 주문 pk
+            db_connection : 연결된 db 객체
+
+        Returns:
+            {"order_detail_id" : 주문 완료 data의 pk}
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-08 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        order_detail = self.order_dao.get_order_completed_detail(order_data, db_connection)
+
+        return order_detail
+
+    def delete_completed_order(self, order_data, db_connection):
+
+        """
+
+        인자로 들어온 order_id의 주문을 취소 처리 합니다.
+
+        Args:
+            order_data:
+                order_id : 주문 pk
+                order_detail_id : 주문 완료 상태의 주문 상세 pk
+            db_connection : 연결된 db 객체
+
+        Returns:
+            order_detail_id : 새로 생성된 (주문 취소된) 주문 상세 pk
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-08 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        # 주문 취소 상태로 row 생성 하기 위한 order_status_id 설정(주문 취소 = 2)
+        order_data['order_status_id'] = 2
+
+        # 주문 취소 상태의 order_detail row 생성
+        deleted_order_detail = self.order_dao.delete_order(order_data, db_connection)
