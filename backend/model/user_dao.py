@@ -530,10 +530,10 @@ class UserDao:
             AND P8.close_time >= P2.start_time
 
             INNER JOIN colors AS P9
-            ON P4.color_no = P5.color_id
+            ON P9.color_no = P4.color_id
 
             INNER JOIN sizes AS P10
-            ON P4.size_no = P5.size_id
+            ON P10.size_no = P4.size_id
 
             INNER JOIN order_status AS P11
             ON P11.order_status_no = P2.order_status_id
