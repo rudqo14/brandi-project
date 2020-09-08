@@ -1,46 +1,50 @@
 <template>
   <div v-if="order.data.length">
-    <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
-      <div class="orderTop">
-        <div class="topLeft">
-          <div>{{ getDate(order.start_time) }}</div>
-          <div class="divider"></div>
-          <div class="orderDetailNo">{{ getOrderDetailNo(order.start_time, order.order_detail_no) }}</div>
-        </div>
-        <div class="toDetail" @click="linkToOrderDetail(order.order_detail_no)">
-          <span>주문상세보기</span>
-          <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" />
-        </div>
-      </div>
-      <div class="orderMid">판매자 배송 상품</div>
-      <div class="orderDetail">
-        <div class="detailTop">
-          <div class="cellerName">브랜디</div>
-          <div class="topMenu">
-            <div>주문금액</div>
-            <div>진행상황</div>
-          </div>
-        </div>
-        <div class="detailBottom">
-          <div class="imgContainer">
-            <img
-              :src="order.image_small"
-              alt="small_image"
-              @click="linkToProductDetail"
-              :value="order.product_no"
-            />
-          </div>
-          <div class="productDetail">
+    <div class="container">
+      <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
+        <div class="orderTop">
+          <div class="topLeft">
+            <div>{{ getDate(order.start_time) }}</div>
+            <div class="divider"></div>
             <div
-              class="productName"
-              @click="linkToProductDetail"
-              :value="order.product_no"
-            >{{ order.product_name}}</div>
-            <div class="productOption">{{ order.color }} / {{ order.size }}</div>
-            <div class="orderQuantity">{{ order.quantity }} 개</div>
+              class="orderDetailNo"
+            >{{ getOrderDetailNo(order.start_time, order.order_detail_no) }}</div>
           </div>
-          <div class="orderPrice">{{ numberWithCommas(order.total_price) }} 원</div>
-          <div class="orderStatus">{{ order.order_status }}</div>
+          <div class="toDetail" @click="linkToOrderDetail(order.order_detail_no)">
+            <span>주문상세보기</span>
+            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" />
+          </div>
+        </div>
+        <div class="orderMid">판매자 배송 상품</div>
+        <div class="orderDetail">
+          <div class="detailTop">
+            <div class="cellerName">브랜디</div>
+            <div class="topMenu">
+              <div>주문금액</div>
+              <div>진행상황</div>
+            </div>
+          </div>
+          <div class="detailBottom">
+            <div class="imgContainer">
+              <img
+                :src="order.image_small"
+                alt="small_image"
+                @click="linkToProductDetail"
+                :value="order.product_no"
+              />
+            </div>
+            <div class="productDetail">
+              <div
+                class="productName"
+                @click="linkToProductDetail"
+                :value="order.product_no"
+              >{{ order.product_name}}</div>
+              <div class="productOption">{{ order.color }} / {{ order.size }}</div>
+              <div class="orderQuantity">{{ order.quantity }} 개</div>
+            </div>
+            <div class="orderPrice">{{ numberWithCommas(order.total_price) }} 원</div>
+            <div class="orderStatus">{{ order.order_status }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -85,21 +89,23 @@ export default {
       const dates = new Date(x);
       const month =
         (dates.getMonth() + 1 < 10 ? "0" : "") + (dates.getMonth() + 1);
-
-      return `${dates.getFullYear()}.${month}.${dates.getDate()}`;
+      const date = (dates.getDate() < 10 ? "0" : "") + dates.getDate();
+      return `${dates.getFullYear()}.${month}.${date}`;
     },
     getOrderDetailNo(orderdate, orderid) {
       const dates = new Date(orderdate);
       const month =
         (dates.getMonth() + 1 < 10 ? "0" : "") + (dates.getMonth() + 1);
-      return `${dates.getFullYear()}${month}${dates.getDate()}${orderid}`;
+      const date = (dates.getDate() < 10 ? "0" : "") + dates.getDate();
+      return `${dates.getFullYear()}${month}${date}${orderid}`;
     },
     numberWithCommas(x) {
       return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     },
     // 상품 상세페이지로 이동
     linkToProductDetail(e) {
-      this.$router.push(`/detail/${e.target.value}`);
+      console.log(e.target.attributes.value.value);
+      this.$router.push(`/detail/${e.target.attributes.value.value}`);
     },
     // 주문 상세페이지로 이동
     linkToOrderDetail(orderDetailId) {
@@ -117,7 +123,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .orderContainer {
+  margin-bottom: 100px;
   width: 1260px;
 
   .orderTop {
