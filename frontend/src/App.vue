@@ -1,7 +1,7 @@
 <template>
   <v-app id="app">
     <Header v-if="$route.path.indexOf('admin') == -1" />
-    <router-view></router-view>
+    <router-view :key="$route.fullPath"></router-view>
     <Footer v-if="$route.path.indexOf('admin') == -1" />
   </v-app>
 </template>

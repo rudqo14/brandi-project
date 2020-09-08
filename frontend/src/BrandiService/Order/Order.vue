@@ -15,7 +15,7 @@
             </div>
             <div class="optionContainer">
               <h3>{{ detailData.name }}</h3>
-              <p class="option">{{ detailData.color }}</p>
+              <p class="option">{{ detailData.color_name }} / {{detailData.size_name}}</p>
               <p class="option">{{ detailData.quantity }}개</p>
             </div>
           </div>
@@ -157,7 +157,7 @@
         </div>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" disabled :value="detailData.orderer_name" />
+          <input class="nameInput" placeholder="이름" disabled :value="detailData.receiver" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
@@ -254,7 +254,7 @@ export default {
         this.daumAddress = this.detailData.address;
         this.detailAddress = this.detailData.additional_address;
         this.sigunguCode = this.detailData.zip_code;
-        this.name = this.detailData.orderer_name;
+        this.name = this.detailData.receiver;
 
         this.phoneNumber = this.detailData.phone_number;
         this.showPhoneNum = this.detailData.phone_number;
@@ -298,7 +298,7 @@ export default {
       this.daumAddress = this.detailData.address;
       this.detailAddress = this.detailData.additional_address;
       this.sigunguCode = this.detailData.zip_code;
-      this.name = this.detailData.orderer_name;
+      this.name = this.detailData.receiver;
       this.isDaumToggle = false;
     },
 
@@ -365,7 +365,7 @@ export default {
       }
 
       this.phoneNumber = this.showPhoneNum;
-      this.detailData.orderer_name = this.name;
+      this.detailData.receiver = this.name;
       this.detailData.address = this.daumAddress;
       this.detailData.additional_address = this.detailAddress;
       this.detailData.zip_code = this.sigunguCode;
@@ -433,7 +433,7 @@ export default {
             size_id: this.detailData.size_id,
             quantity: this.detailData.quantity,
             total_price: this.detailData.sales_price * this.detailData.quantity,
-            receiver: this.detailData.orderer_name,
+            receiver: this.detailData.receiver,
             phone_number: this.phoneNumber,
             zip_code: this.sigunguCode,
             address: this.daumAddress,
