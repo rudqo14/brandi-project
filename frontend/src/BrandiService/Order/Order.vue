@@ -32,21 +32,43 @@
         <h1>주문자 정보</h1>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" v-model="nameInput" ref="nameInput" placeholder="이름" />
+          <input
+            class="nameInput"
+            v-model="nameInput"
+            ref="nameInput"
+            maxlength="16"
+            placeholder="이름"
+          />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
-          <input class="phoneNumber" v-model="orderPhoneFirst" ref="orderPhoneFirst" />
+          <input
+            class="phoneNumber"
+            @keyup="onlyNumber"
+            maxlength="11"
+            v-model="orderPhone"
+            ref="orderPhone"
+          />
+          <!-- <p>-</p>
+          <input
+            class="phoneNumber"
+            @keyup="onlyNumber"
+            maxlength="4"
+            v-model="orderPhone"
+            ref="orderPhone"
+          />
           <p>-</p>
-          <input class="phoneNumber" v-model="orderPhoneSecond" ref="orderPhoneSecond" />
-          <p>-</p>
-          <input class="phoneNumber" v-model="orderPhoneThird" ref="orderPhoneThird" />
+          <input
+            class="phoneNumber"
+            @keyup="onlyNumber"
+            maxlength="4"
+            v-model="orderPhoneThird"
+            ref="orderPhoneThird"
+          />-->
         </div>
         <div class="orderInfoContainer">
           <span class="name">이메일</span>
-          <input class="email" />
-          <p>@</p>
-          <input class="email" />
+          <input class="email" ref="email" v-model="email" />
         </div>
       </article>
       <article class="orderInfo">
@@ -78,29 +100,11 @@
                     <input
                       class="phoneNumber"
                       type="tel"
-                      maxlength="3"
-                      placeholder="010"
-                      ref="phoneNumFirst"
+                      maxlength="11"
+                      placeholder="(-)없이 번호를 입력해주세요."
+                      ref="phoneNum"
                       @keyup="onlyNumber"
-                      v-model="phoneNumberFirst"
-                    />
-                    <input
-                      class="phoneNumber"
-                      type="tel"
-                      maxlength="4"
-                      @keyup="onlyNumber"
-                      placeholder="0000"
-                      ref="phoneNumSecond"
-                      v-model="phoneNumberSecond"
-                    />
-                    <input
-                      class="phoneNumber"
-                      type="tel"
-                      maxlength="4"
-                      @keyup="onlyNumber"
-                      placeholder="0000"
-                      ref="phoneNumThird"
-                      v-model="phoneNumberThird"
+                      v-model="showPhoneNum"
                     />
                   </div>
                   <div class="rowContainer">
@@ -153,23 +157,19 @@
         </div>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" disabled v-model="name" />
+          <input class="nameInput" placeholder="이름" disabled :value="detailData.orderer_name" />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
-          <input class="phoneNumber" :value="phoneNumberFirst" disabled />
-          <p>-</p>
-          <input class="phoneNumber" :value="phoneNumberSecond" disabled />
-          <p>-</p>
-          <input class="phoneNumber" :value="phoneNumberThird" disabled />
+          <input class="phoneNumber" :value="phoneNumber" disabled />
         </div>
         <div class="addressInfoContainer">
           <span class="name">배송주소</span>
           <div>
-            <input class="address" :value="sigunguCode" disabled />
+            <input class="address" :value="detailData.zip_code" disabled />
             <br />
-            <input class="address" :value="daumAddress" disabled />
-            <input class="address" :value="detailAddress" disabled />
+            <input class="address" :value="detailData.address" disabled />
+            <input class="address" :value="detailData.additional_address" disabled />
             <p class="shippingMemo">
               * 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수
               있습니다
@@ -239,10 +239,6 @@ export default {
     this.purchaseProductNumber = localStorage.getItem("purchaseProductNumber");
     this.purchaseId = localStorage.getItem("purchaseId");
     const token = localStorage.getItem("access_token");
-    // const data = {};
-    // const headers = {
-    //   headers: { Authorization: this.token },
-    // };
 
     axios
       .get(
@@ -259,9 +255,9 @@ export default {
         this.detailAddress = this.detailData.additional_address;
         this.sigunguCode = this.detailData.zip_code;
         this.name = this.detailData.orderer_name;
-        this.phoneNumberFirst = this.detailData.phone_number.substring(0, 3);
-        this.phoneNumberSecond = this.detailData.phone_number.substring(3, 7);
-        this.phoneNumberThird = this.detailData.phone_number.substring(7, 11);
+
+        this.phoneNumber = this.detailData.phone_number;
+        this.showPhoneNum = this.detailData.phone_number;
       });
   },
 
@@ -271,25 +267,22 @@ export default {
       toggleData: "배송시 요청사항을 선택해주세요.",
       directInput: false,
       dialog: false,
-      // isAddressAdd: false,
       isDaumToggle: false,
       daumAddress: "",
       sigunguCode: "",
       detailAddress: "",
       name: "",
-      phoneNumberFirst: "",
-      phoneNumberSecond: "",
-      phoneNumberThird: "",
+      phoneNumber: "",
+      showPhoneNum: "",
       purchaseColor: "",
       purchaseSize: "",
       purchaseProductNumber: "",
       purchaseId: "",
-      detailData: [],
-      orderPhoneFirst: "",
-      orderPhoneSecond: "",
-      orderPhoneThird: "",
+      detailData: {},
+      orderPhone: "",
       nameInput: "",
       token: "",
+      email: "",
     };
   },
   components: { Header, Footer, VueDaumPostcode },
@@ -306,9 +299,6 @@ export default {
       this.detailAddress = this.detailData.additional_address;
       this.sigunguCode = this.detailData.zip_code;
       this.name = this.detailData.orderer_name;
-      this.phoneNumberFirst = this.detailData.phone_number.substring(0, 3);
-      this.phoneNumberSecond = this.detailData.phone_number.substring(3, 7);
-      this.phoneNumberThird = this.detailData.phone_number.substring(7, 11);
       this.isDaumToggle = false;
     },
 
@@ -332,11 +322,6 @@ export default {
       this.isModalOn = !this.isModalOn;
     },
 
-    //상세 주소 입력 활/비활성화
-    // addAddressHandler() {
-    //   this.isAddressAdd = !this.isAddressAdd;
-    // },
-
     //다음 우편 정보 상태값 토글
     findAddressHandler() {
       this.isDaumToggle = !this.isDaumToggle;
@@ -354,25 +339,20 @@ export default {
     //number의 값이 아닌 텍스트가 들어가면
     //Input에 값이 들어가지 않게끔 구현
     onlyNumber() {
-      this.phoneNumberFirst = this.phoneNumberFirst.replace(/[^0-9]/g, "");
-      this.phoneNumberSecond = this.phoneNumberSecond.replace(/[^0-9]/g, "");
-      this.phoneNumberThird = this.phoneNumberThird.replace(/[^0-9]/g, "");
+      this.showPhoneNum = this.showPhoneNum.replace(/[^0-9]/gi, "");
+
+      this.orderPhone = this.orderPhone.replace(/[^0-9]/gi, "");
     },
 
     deliveredCheckHandler() {
+      console.log(this.showPhoneNum);
       if (!this.name) {
         alert("수령인을 입력해주세요.");
         this.$refs.recipient.focus();
         return;
-      } else if (
-        !this.phoneNumberFirst ||
-        !this.phoneNumberSecond ||
-        !this.phoneNumberThird
-      ) {
+      } else if (!this.showPhoneNum) {
         alert("휴대폰 번호를 입력해주세요.");
-        !this.phoneNumberThird && this.$refs.phoneNumThird.focus();
-        !this.phoneNumberSecond && this.$refs.phoneNumSecond.focus();
-        !this.phoneNumberFirst && this.$refs.phoneNumFirst.focus();
+        !this.showPhoneNum && this.$refs.phoneNum.focus();
 
         return;
       } else if (
@@ -384,59 +364,98 @@ export default {
         return;
       }
 
+      this.phoneNumber = this.showPhoneNum;
+      this.detailData.orderer_name = this.name;
+      this.detailData.address = this.daumAddress;
+      this.detailData.additional_address = this.detailAddress;
+      this.detailData.zip_code = this.sigunguCode;
       this.dialog = false;
     },
-    paymentHandler() {
+
+    //이메일 정규표현식 적용
+    //사용가능한 문자 체크와
+    //@와 dot이 들어가있는지 체크하는 패턴
+    checkEmailHandler() {
+      const regExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+
+      if (!this.email) {
+        alert("이메일을 입력해주세요.");
+        this.$refs.email.focus();
+        e.preventDefault();
+      } else if (this.email.match(regExp) === null) {
+        alert("이메일 형식을 확인해주세요.");
+        this.$refs.email.focus();
+        e.preventDefault();
+      }
+    },
+
+    //이름의 값이 있는지 없는지 검사하기
+    checkNameHandler() {
       if (!this.nameInput) {
         alert("이름을 입력해주세요.");
         this.$refs.nameInput.focus();
-        return;
+        e.preventDefault();
       }
+    },
 
-      if (
-        !this.orderPhoneFirst ||
-        !this.orderPhoneSecond ||
-        !this.orderPhoneThird
-      ) {
+    //휴대폰번호가 있는지 없는지 검사
+    checkPhoneNumHandler() {
+      if (!this.orderPhone) {
         alert("핸드폰 번호를 입력해주세요.");
-        this.$refs.orderPhoneThird.focus();
-        this.$refs.orderPhoneSecond.focus();
-        this.$refs.orderPhoneFirst.focus();
-        return;
+        this.$refs.orderPhone.focus();
+        e.preventDefault();
       }
+    },
+
+    //결제하기 버튼 누를시에 값이 들어가있는지 검사후,
+    //백엔드 통신(POST)를 통해 데이터 전달
+    paymentHandler() {
+      this.checkNameHandler();
+      this.checkPhoneNumHandler();
+      this.checkEmailHandler();
+
+      let toggleDataPost;
 
       if (this.toggleData === "배송시 요청사항을 선택해주세요.") {
-        const toggleDataPost = "";
+        toggleDataPost = "";
       } else {
-        const toggleDataPost = this.toggleData;
+        toggleDataPost = this.toggleData;
       }
+
+      const token = localStorage.getItem("access_token");
 
       axios
         .post(
-          `${SERVER_IP}/`,
-          {},
+          `${SERVER_IP}/order/completed`,
+          {
+            product_id: this.detailData.product_id,
+            color_id: this.detailData.color_id,
+            size_id: this.detailData.size_id,
+            quantity: this.detailData.quantity,
+            total_price: this.detailData.sales_price * this.detailData.quantity,
+            receiver: this.detailData.orderer_name,
+            phone_number: this.phoneNumber,
+            zip_code: this.sigunguCode,
+            address: this.daumAddress,
+            additional_address: this.detailAddress,
+            delivery_request: toggleDataPost,
+            product_option_id: this.detailData.product_option_id,
+          },
           {
             headers: {
               Authorization: token,
-              product_id: this.detailData.product_id,
-              color_id: this.detailData.color_id,
-              size_id: this.detailData.size_id,
-              quantity: this.detailData.quantity,
-              total_price:
-                this.detailData.sales_price * this.detailData.quantity,
-              receiver: orderer_name,
-              phone_number:
-                this.orderPhoneFirst +
-                this.orderPhoneSecond +
-                this.orderPhoneThird,
-              zip_code: this.sigunguCode,
-              address: this.daumAddress,
-              additional_address: this.detailAddress,
-              delivered_request: toggleDataPost,
             },
           }
         )
-        .then((res) => {});
+        .then((res) => {
+          if (res.data.message === "ORDER_COMPLETED!!!") {
+            alert("결제가 완료되었습니다.");
+            this.$router.push("/main");
+          } else {
+            alert("통신실패");
+            this.$router.push("/main");
+          }
+        });
     },
   },
 };
@@ -572,17 +591,17 @@ export default {
     }
 
     .phoneNumber {
-      width: 100px;
+      width: 300px;
       height: 45px;
       padding: 0 10px;
-      text-align: center;
+      /* text-align: center; */
       border: none;
       outline: none;
       background-color: #f5f5f5;
     }
 
     .email {
-      width: 200px;
+      width: 400px;
       height: 45px;
       padding: 0 10px;
       border: none;
@@ -790,7 +809,7 @@ export default {
 
       .phoneNumber {
         text-align: center;
-        width: 100px;
+        width: 300px;
         height: 40px;
         margin-right: 5px;
         border: 1px solid #bdbdbd;
