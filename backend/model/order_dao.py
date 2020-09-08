@@ -582,7 +582,7 @@ class OrderDao:
 
         """
 
-        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+        user의 id를 받아와 orders라는 주문 테이블의 행을 추가합니다.
 
         Args:
             user_no       : 토큰에서 부터 받아온 해당 유저의 id
@@ -630,14 +630,14 @@ class OrderDao:
 
         """
 
-        user의 id를 받아와 orders_details라는 주문 테이블의 행을 추가합니다.
+        order객체를 받아와 orders_details라는 주문 테이블의 행을 추가합니다.
 
         Args:
             order_info    : 구매할 상품과 유저에 관한 정보가 담겨있는 객체
             db_connection : 연결된 db 객체
 
         Returns:
-            order_no : insert한 해당 orders_details라는 테이블의 id(pk)
+            order_detail_no : insert한 해당 orders_details라는 테이블의 id(pk)
 
         Authors:
             minho.lee0716@gmail.com (이민호)
@@ -650,8 +650,8 @@ class OrderDao:
         try:
 
             with db_connection.cursor() as cursor:
-                print(order_info)
 
+                # 정보를 받아온 order_info객체를 인자로 주어 orders_details라는 테이블에 행을 생성하는 쿼리문 입니다.
                 insert_orders_details_query = """
                 INSERT INTO orders_details (
                     order_id,
@@ -667,14 +667,13 @@ class OrderDao:
                     %(delivery_request)s
                 )
                 """
-                print('#####')
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
+
                 new_orders_details_row = cursor.execute(insert_orders_details_query, order_info)
-                print(new_orders_details_row)
+
+                # 쿼리가 잘 실행되지 않았을 경우의 예외처리입니다.
                 if new_orders_details_row <= 0:
                     raise Exception('QUERY_FAILED')
 
-                print(cursor.lastrowid)
 
                 # orders_details의 생성된 테이블의 pk를 반환해줍니다.
                 return cursor.lastrowid
@@ -689,14 +688,14 @@ class OrderDao:
 
         """
 
-        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+        order_info객체를 받아와 order_product라는 테이블에 행을 추가합니다.
 
         Args:
-            user_no       : 토큰에서 부터 받아온 해당 유저의 id
+            order_info    : order_product테이블에 필요한 정보
             db_connection : 연결된 db 객체
 
         Returns:
-            order_no : insert한 해당 orders라는 테이블의 id(pk)
+            order_product_no : insert한 해당 order_product라는 테이블의 id(pk)
 
         Authors:
             minho.lee0716@gmail.com (이민호)
@@ -710,7 +709,7 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
-                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # order_info객체를 인자로 주고, 필요한 정보를 사용해 order_product테이블에 행을 추가하는 쿼리문입니다.
                 insert_order_product_query = """
                 INSERT INTO order_product (
                     order_detail_id,
@@ -727,10 +726,11 @@ class OrderDao:
 
                 new_order_product_row = cursor.execute(insert_order_product_query, order_info)
 
+                # 쿼리문이 잘 실행되지 않았을 경우의 예외처리입니다.
                 if new_order_product_row <= 0:
                     raise Exception('QUERY_FAILED')
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                # order_product의 생성된 테이블의 pk를 반환해줍니다.
                 return cursor.lastrowid
 
         except KeyError as e:
@@ -907,7 +907,7 @@ class OrderDao:
         서브쿼리를 줄이기 위해, product_option_no(pk)를 가져와 리턴해 줍니다.
 
         Args:
-            order_info    : 토큰에서 부터 받아온 해당 유저의 id
+            order_info    : product_option_no을 가져오기 위한 정보들
             db_connection : 연결된 db 객체
 
         Returns:
@@ -927,7 +927,7 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
-                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # 나중에 사용될 서브쿼리를 줄이기 위해, product_option_no을 가져오기 위한 쿼리문 입니다.
                 select_product_option_no_query = """
                 SELECT
                     product_option_no
@@ -942,10 +942,10 @@ class OrderDao:
                 AND product_id = %(product_id)s
                 """
 
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
                 cursor.execute(select_product_option_no_query, order_info)
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                # orders_details의 생성된 테이블의 pk를 반환해줍니다.(타입은 딕셔너리 입니다.)
+                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
                 return cursor.fetchone()
 
         except KeyError as e:
@@ -1017,7 +1017,7 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
-                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # 유저의 id를 확인후, 해당 유저의 배송지 정보를 가져오는 쿼리문 입니다.
                 select_user_shipping_details_query = """
                 SELECT
                     USD.receiver,
@@ -1033,8 +1033,7 @@ class OrderDao:
                 USD.user_id = %(user_no)s
                 """
 
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-
+                # 유저의 id를 확인후, 해당 유저의 배송지 정보를 추가하는 쿼리문 입니다
                 insert_user_shipping_details_query = """
                 INSERT INTO user_shipping_details (
                     user_id,
@@ -1053,8 +1052,10 @@ class OrderDao:
                 )
                 """
 
+                # 유저의 id를 확인후, 해당 유저의 배송지 정보를 업데이트하는 쿼리문 입니다.
                 update_user_shipping_details_query = """
-                UPDATE user_shipping_details
+                UPDATE
+                user_shipping_details
 
                 SET
                 receiver           = %(receiver)s,
@@ -1067,20 +1068,20 @@ class OrderDao:
                 user_id = %(user_no)s
                 """
 
+                user_shipping_info = cursor.execute(select_user_shipping_details_query, order_info)
+
                 # 사용자의 배송지 정보가 존재한다면,
-                a = cursor.execute(select_user_shipping_details_query, order_info)
-                print(a)
-                if a:
+                if user_shipping_info:
 
                     # 들어온 배송지의 정보로 Update를 해줍니다.
                     cursor.execute(update_user_shipping_details_query, order_info)
 
+                # 사용자의 배송지 정보가 존재하지 않는다면,,
                 else:
 
                     # 사용자의 배송지 정보가 존재하지 않았다면, 들어온 배송지의 정보를 Insert 해줍니다.
                     cursor.execute(insert_user_shipping_details_query, order_info)
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
                 return 1
 
         except KeyError as e:

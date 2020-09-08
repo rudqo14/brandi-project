@@ -145,13 +145,13 @@ def create_service_order_endpoints(order_service):
 
         Args:
             header:
-                Authorization : access_token (여기서 user_no를 가져옴)
+                Authorization(user_info) : {'user_no' : 해당 유저의 id}
 
-            Query Parameter:
-                product_id  : 구매할 상품의 ID(번호)
-                color_id    : 구매할 상품의 색상
-                size_id     : 구매할 상품의 사이즈
-                quantity    : 구매할 상품의 개수
+            Params:
+                product_id : 구매할 상품의 ID(번호)
+                color_id   : 구매할 상품의 색상
+                size_id    : 구매할 상품의 사이즈
+                quantity   : 구매할 상품의 개수
 
         Returns:
             200 : data, {
@@ -189,6 +189,7 @@ def create_service_order_endpoints(order_service):
             2020-09-02 (minho.lee0716@gmail.com) : 메소드 변경 POST > GET
             2020-09-03 (minho.lee0716@gmail.com) : 예외 처리
                 Params가 들어오지 않았을 경우 + Params의 키 값이 잘못 들어왔을 경우
+            2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
 
         """
 
@@ -198,17 +199,17 @@ def create_service_order_endpoints(order_service):
         try:
             db_connection = get_connection()
 
-            # DB에 연결이 됐다면
+            # DB에 연결이 잘 되었다면,
             if db_connection:
 
-                # 먼저 Query Parameter가 들어오지 않았을 경우의 에러조건입니다.
+                # 먼저 Params가 들어오지 않았을 경우의 에러조건입니다.
                 if not request.args:
                     raise Exception('QUERY_PARAMETER_DOES_NOT_EXISTS')
 
-                # Query Parameter로 들어온 정보를 product_info에 담습니다.
+                # Params로 들어온 정보를 product_info에 담습니다.
                 product_info = request.args
 
-                # Query Parameter로 들어온 키 값이 잘못된 경우의 에러조건입니다.
+                # Params로 들어온 키 값이 잘못된 경우의 에러조건입니다.
                 if not 'product_id' in product_info.keys():
                     raise Exception('KEY_ERROR_PRODUCT_ID')
 
@@ -254,7 +255,7 @@ def create_service_order_endpoints(order_service):
 
         Args:
             header:
-                Authorization : access_token (여기서 user_no를 가져옴)
+                Authorization(user_info) : {'user_no' : 해당 유저의 id}
 
             body:
                 product_id         : 상품의 id
@@ -279,6 +280,7 @@ def create_service_order_endpoints(order_service):
 
         History:
             2020-09-03 (minho.lee0716@gmail.com) : 초기생성
+            2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
 
         """
 
@@ -291,12 +293,13 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 됐다면
             if db_connection:
 
-                # Body로 들어온 정보를 order_info에 담기.
+                # Body로 들어온 정보를 order_info에 담아줍니다.
                 order_info = request.json
 
+                # 데코레이터에서 받아온 객체에서 user_no의 값을 user_no라는 변수에 넣어줍니다.
                 user_no = user_info['user_no']
 
-                # 받아온 정보들로 주문하기
+                # order의 정보와 user의 정보를 주문하는 함수를 호줄시켜 인자로 넘겨줍니다.
                 order_service.create_order_completed(order_info, user_no, db_connection)
 
                 db_connection.commit()
@@ -306,7 +309,10 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
+        # 에러가 발생한 경우,
         except Exception as e:
+
+            # DB를 원래대로 되돌립니다.
             db_connection.rollback()
             return jsonify({"message" : f"{e}"}), 400
 

@@ -198,48 +198,40 @@ class OrderService:
 
         # orders_details테이블과 user_shipping_details테이블에 필요한 user_no의 정보를 order_info에 넣어줍니다.
         order_info['user_no'] = user_no
-        print(1)
 
         # 해당 유저의 배송지 정보가 없었으면, 새로 받아온 후, 그 배송지 정보를 넣어주고,
         # 만약 유저의 배송지 정보가 있었는데, 새로운 정보가 들어왔다면 그 정보로 UPDATE를 해줍니다.
         self.order_dao.update_user_shipping_details_info(order_info, db_connection)
-        print(2)
+
 
         # 유저의 id를 넘겨주고, orders 테이블에 insert후, 해당 order_no의 id(pk)를 가져옵니다.
         order_info['order_no'] = self.order_dao.insert_orders(user_no, db_connection)
-        print(3)
-        print(order_info)
 
-        # orders_details에 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
+        # orders_details에서 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
         order_info['order_detail_no']  = self.order_dao.insert_orders_details(order_info, db_connection)
-        print(4)
 
-        # 서브쿼리를 줄이기 위해, product_option_no을 가져와 order_info에 넣어줍니다.
+        # 서브쿼리를 줄이기 위해 메소드를 실행하여 product_option_no을 가져와 order_info에 넣어줍니다.
         product_option_no = self.order_dao.get_product_option_no(order_info, db_connection)
+
+        # 위에서 반환된 product_option_no은 딕셔너리이므로, order_info와 병합해 줍니다.
         order_info = {**order_info, **product_option_no}
 
-        # order_product 테이블 row 생성
+        # order_product에서 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
         order_info['order_product_no'] = self.order_dao.insert_order_product(order_info, db_connection)
-        print(6)
 
-        # 현재 제품의 재고 pk 가져오는 메소드 실행
+        # 현재 제품의 재고의 수량을 가져오는 메소드 실행하여 id(pk)를 반환해 줍니다.
         current_quantity_info = self.order_dao.get_current_quantity(order_info, db_connection)
-        print(7)
 
-        # 새로운 재고 생성하는 메소드 실행
+        # 현재 제품의 새로운 재고를 생성하는 메소드 실행하여 id(pk)를 반홥해 줍니다.
         new_quantity_no = self.order_dao.insert_quantities(order_info, db_connection)
-        print(8)
 
-        # start_time 가져오는 메소드 실행
+        # 현재 제품의 새로운 재고가 생성된 테이블의 선분이력 생성시간을 가져옵니다.
         start_time = self.order_dao.get_quantity_start_time(new_quantity_no, db_connection)
-        print(9)
 
-        # 원래 재고 pk에 close_time 설정
+        # 원래 재고의 선분이력 종료시간을 update해주기 위해 새로운 테이블의 생성시간은 딕셔너리에 넣어줍니다.
         current_quantity_info['close_time'] = start_time
-        print(10)
 
-        # 원래 재고 row의 close_time 설정하는 메소드 실행
+        # 원래 재고의 선분이력 종료시간에 새롭게 생성된 재고의 생성성시간을 넣어줍니다.
         updated_quantity = self.order_dao.update_quantities(current_quantity_info, db_connection)
-        print(11)
 
         return 1
