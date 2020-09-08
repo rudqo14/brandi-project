@@ -1,8 +1,8 @@
 const adminStore = {
   namespaced: true,
   state: {
-    sellYn: true,
-    exhibitionYn: true,
+    sellYn: 1,
+    exhibitionYn: 1,
     mainCategoryId: null,
     subCategoryId: null,
     productName: null,
@@ -38,16 +38,16 @@ const adminStore = {
 
   mutations: {
     sellYesHandler(state) {
-      state.sellYn = true;
+      state.sellYn = 1;
     },
     sellNoHandler(state) {
-      state.sellYn = false;
+      state.sellYn = 0;
     },
     exhibitionYes(state) {
-      state.exhibitionYn = true;
+      state.exhibitionYn = 1;
     },
     exhibitionNo(state) {
-      state.exhibitionYn = false;
+      state.exhibitionYn = 0;
     },
 
     getMainCategoryId(state, mainCategoryId) {

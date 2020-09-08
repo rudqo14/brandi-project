@@ -10,9 +10,7 @@
           <v-radio label="간편 업로드" value="radio-1"></v-radio>
           <v-radio label="에디터 사용 (html 가능)" value="에디터사용"></v-radio>
         </v-radio-group>
-        <div>
-          ( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)
-        </div>
+        <div>( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)</div>
       </div>
       <div class="alertText">
         <i class="fas fa-exclamation-triangle"></i> 미판매 선택시 앱에서 Sold
@@ -23,14 +21,12 @@
           <i class="far fa-image"></i>
           <span>사진 삽입</span>
         </v-btn>
-        <span class="inputImageCheckMessage"
-          >이미지 확장자는 JPG, PNG만 등록 가능합니다.</span
-        >
+        <span class="inputImageCheckMessage">이미지 확장자는 JPG, PNG만 등록 가능합니다.</span>
       </div>
       <div class="editorContainer">
-        <ckeditor @input="upDateDetailInformation" :config="editorConfig"
-          ><text-area></text-area
-        ></ckeditor>
+        <ckeditor @input="upDateDetailInformation" :config="editorConfig">
+          <text-area></text-area>
+        </ckeditor>
       </div>
     </div>
   </div>

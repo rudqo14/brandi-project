@@ -93,7 +93,7 @@ export default {
       form.append("minSalesQuantity", productDatas.minSalesQuantity);
       form.append("maxSalesQuantity", productDatas.maxSalesQuantity);
 
-      // 필수항목 입력 확인
+      // 필수항목들이 모두 입력 됐는지 확인하는 메소드
       const checkingData = () => {
         if (productDatas.mainCategoryId === null) {
           alert("1차 카테고리를 선택해주세요.");
