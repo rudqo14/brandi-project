@@ -114,7 +114,7 @@
           <div class="infoRow">
             <div class="rowTitle">연락처 :</div>
             <div class="rowTitle">
-              {{ recipientPhoneNum }}
+              {{ detailData.phone_number }}
               <template>
                 <div class="text-center">
                   <v-dialog v-model="dialog" width="500">
@@ -128,7 +128,7 @@
                       <div class="phoneNumContainer">
                         <div class="rowContainer">
                           <div class="category">수취자 연락처1:</div>
-                          <div>{{ recipientPhoneNum }}</div>
+                          <div>{{ detailData.phone_number }}</div>
                         </div>
                         <div class="rowContainer">
                           <div class="category">변경할 핸드폰 번호:</div>
@@ -160,7 +160,9 @@
         <div class="orderInfoContent">
           <div class="infoRow">
             <div class="rowTitle">배송지 :</div>
-            <div class="rowTitle">{{ `${daumAddress} ${detailAddress} (${sigunguCode})` }}</div>
+            <div
+              class="rowTitle"
+            >{{ `${detailData.address} ${detailData.additional_address} (${detailData.zip_code})` }}</div>
           </div>
           <div class="infoRow">
             <div class="rowTitle">배송시 요청사항 :</div>
@@ -251,6 +253,7 @@ export default {
       sigunguCode: "",
       isDaumToggle: false,
       detailData: "",
+      isAxiosPatch: false,
     };
   },
   watch: {
@@ -265,10 +268,9 @@ export default {
         .get(`${SERVER_IP}/admin/order/detail/${this.$route.params.id}`)
         .then((res) => {
           this.detailData = res.data.data;
-          this.recipientPhoneNum = this.detailData.phone_number;
-          this.daumAddress = this.detailData.address;
-          this.detailAddress = this.detailData.additional_address;
-          this.sigunguCode = this.detailData.zip_code;
+          this.axiosPhone = this.detailData.phone_number;
+          this.axiosAddress = this.detailData.address;
+          // this.recipientPhoneNum = this.detailData.phone_number;
         });
     },
 
@@ -287,27 +289,27 @@ export default {
     },
 
     //수취자 정보 > 연락처 수정
-    phoneNumHandler(e) {
+    phoneNumHandler() {
       if (!this.onlyNumber) {
         this.$refs.phoneNum.focus();
         return alert("번호를 입력해주세요.");
       }
       this.dialog = false;
 
-      this.recipientPhoneNum = this.onlyNumber;
+      this.detailData.phone_number = this.onlyNumber;
       this.onlyNumber = "";
     },
 
-    //주문자 정보 > 연락처 수정
-    orderPhoneNumHandler() {
-      if (!this.onlyNumber) {
-        return alert("번호를 입력해주세요.");
-      }
-      this.ordererDialog = false;
+    // //주문자 정보 > 연락처 수정
+    // orderPhoneNumHandler() {
+    //   if (!this.onlyNumber) {
+    //     return alert("번호를 입력해주세요.");
+    //   }
+    //   this.ordererDialog = false;
 
-      this.ordererPhoneNum = this.onlyNumber;
-      this.onlyNumber = "";
-    },
+    //   this.ordererPhoneNum = this.onlyNumber;
+    //   this.onlyNumber = "";
+    // },
 
     //핸드폰 번호 바꾸는 모달창 취소시 동작
     //모든값을 초기화시킨다.
@@ -319,9 +321,9 @@ export default {
 
     dialogCanceled() {
       this.shippingDialog = false;
-      this.daumAddress = this.detailData.address;
-      this.detailAddress = this.detailData.additional_address;
-      this.sigunguCode = this.detailData.zip_code;
+      // this.daumAddress = this.detailData.address;
+      // this.detailAddress = this.detailData.additional_address;
+      // this.sigunguCode = this.detailData.zip_code;
     },
 
     deliveredCheckHandler() {
@@ -332,26 +334,38 @@ export default {
       }
 
       this.shippingDialog = false;
+      this.detailData.address = this.daumAddress;
+      this.detailData.additional_address = this.detailAddress;
+      this.detailData.zip_code = this.sigunguCode;
     },
 
     //데이터 전달
     productDetailSaved() {
-      if (confirm("해당 주문건에 대한 수정내역을 저장하시겠습니까?") == true) {
-        console.log(this.daumAddress);
-        console.log(this.detailAddress);
-        console.log(this.sigunguCode);
-        console.log(this.recipientPhoneNum);
-        axios
-          .patch(`${SERVER_IP}/admin/user/shippingDetail`, {
-            address: this.daumAddress,
-            additionalAddress: this.detailAddress,
-            zipCode: this.sigunguCode,
-            userNo: this.detailData.user_no,
-            phoneNumber: this.recipientPhoneNum,
-          })
-          .then((res) => {});
-      } else {
-        return false;
+      if (
+        this.detailData.address !== this.axiosAddress ||
+        this.detailData.phone_number !== this.axiosPhone
+      ) {
+        if (
+          confirm("해당 주문건에 대한 수정내역을 저장하시겠습니까?") == true
+        ) {
+          axios
+            .patch(
+              `${SERVER_IP}/admin/user/shippingDetail`,
+              {
+                address: this.detailData.address,
+                additionalAddress: this.detailData.additional_address,
+                zipCode: this.detailData.zip_code,
+                userNo: this.detailData.user_no,
+                phoneNumber: this.detailData.phone_number,
+              },
+              {}
+            )
+            .then((res) => {
+              this.$router.go(`/admin/productDetail/${this.$route.params.id}`);
+            });
+        } else {
+          return false;
+        }
       }
     },
   },
