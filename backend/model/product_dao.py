@@ -846,6 +846,8 @@ class ProductDao:
                 DB에서 데이터의 순서에 의해, 마지막에 역순으로 정렬
             2020-09-04 (tnwjd060124@gmail.com) : 수정
                 현재 이력만 조회하는 조건 수정
+            2020-09-01 (minho.lee0716@gmail.com) : 수정
+                상품과 사이즈를 선택 시, 수량이 1개 이상인 상품만 주도록 쿼리문 변경
 
         """
 
@@ -877,6 +879,7 @@ class ProductDao:
                 P.product_no = %(product_id)s
                 AND P.is_deleted = False
                 AND C.color_no = %(color_id)s
+                AND Q.quantity > 0
 
             ORDER BY
                 S.size_no DESC;
