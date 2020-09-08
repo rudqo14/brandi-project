@@ -1,8 +1,6 @@
 import uuid
 
-from .dao import Dao
-
-class ProductDao(Dao):
+class ProductDao:
 
     def insert_product(self, db_connection):
 
@@ -808,12 +806,8 @@ class ProductDao(Dao):
             ON P.product_no = PO.product_id
             AND PO.is_deleted = False
 
-            LEFT JOIN option_details AS OD
-            ON PO.product_option_no = OD.product_option_id
-            AND OD.close_time = '9999-12-31 23:59:59'
-
             LEFT JOIN colors AS C
-            ON OD.color_id = C.color_no
+            ON PO.color_id = C.color_no
 
             WHERE
                 P.product_no = %s
@@ -875,18 +869,14 @@ class ProductDao(Dao):
             ON P.product_no = PO.product_id
             AND PO.is_deleted = False
 
-            LEFT JOIN option_details AS OD
-            ON PO.product_option_no = OD.product_option_id
-            AND OD.close_time = '9999-12-31 23:59:59'
-
             LEFT JOIN colors AS C
-            ON OD.color_id = C.color_no
+            ON PO.color_id = C.color_no
 
             LEFT JOIN sizes AS S
-            ON OD.size_id = S.size_no
+            ON PO.size_id = S.size_no
 
             LEFT JOIN quantities AS Q
-            ON OD.option_detail_no = Q.option_detail_id
+            ON PO.product_option_no = Q.product_option_id
             AND Q.close_time = '9999-12-31 23:59:59'
 
             WHERE

@@ -1,6 +1,6 @@
-from .dao import Dao
+import datetime
 
-class OrderDao(Dao):
+class OrderDao:
 
     def get_ordercompleted_list(self, filter_info, db_connection):
 
@@ -87,16 +87,11 @@ class OrderDao(Dao):
             INNER JOIN product_options AS P8
             ON P2.product_option_id = P8.product_option_no
 
-            INNER JOIN option_details AS P10
-            ON P8.product_option_no = P10.product_option_id
-            AND P3.start_time >= P10.start_time -- 주문 시에 유효한 정보
-            AND P10.close_time >= P3.start_time -- 주문 시에 유효한 정보
-
             INNER JOIN sizes AS P4
-            ON P10.size_id = P4.size_no
+            ON P8.size_id = P4.size_no
 
             INNER JOIN colors AS P5
-            ON P10.color_id = P5.color_no
+            ON P8.color_id = P5.color_no
             """
 
             # 제품명 필터 존재하는 경우 추가
@@ -252,16 +247,11 @@ class OrderDao(Dao):
             INNER JOIN product_options AS P8
             ON P2.product_option_id = P8.product_option_no
 
-            INNER JOIN option_details AS P10
-            ON P8.product_option_no = P10.product_option_id
-            AND P3.start_time >= P10.start_time
-            AND P10.close_time >= P3.start_time
-
             INNER JOIN sizes AS P4
-            ON P10.size_id = P4.size_no
+            ON P8.size_id = P4.size_no
 
             INNER JOIN colors AS P5
-            ON P10.color_id = P5.color_no
+            ON P8.color_id = P5.color_no
             """
 
             # 제품명 필터 존재하는 경우 추가
@@ -399,9 +389,6 @@ class OrderDao(Dao):
             INNER JOIN product_options P5
             ON P11.product_option_id = P5.product_option_no
 
-            INNER JOIN option_details P12
-            ON P5.product_option_no = P12.product_option_id
-
             INNER JOIN products P6
             ON P5.product_id = P6.product_no
 
@@ -409,10 +396,10 @@ class OrderDao(Dao):
             ON P5.product_id = P7.product_id
 
             INNER JOIN colors P8
-            ON P12.color_id = P8.color_no
+            ON P5.color_id = P8.color_no
 
             INNER JOIN sizes P9
-            ON P12.size_id = P9.size_no
+            ON P5.size_id = P9.size_no
 
             INNER JOIN users P10
             ON P2.user_id = P10.user_no
@@ -500,15 +487,11 @@ class OrderDao(Dao):
                 ON P.product_no = PO.product_id
                 AND PO.is_deleted = False
 
-                LEFT JOIN option_details AS OD
-                ON PO.product_option_no = OD.product_option_id
-                AND OD.close_time = '9999-12-31 23:59:59'
-
                 LEFT JOIN colors AS C
-                ON OD.color_id = C.color_no
+                ON PO.color_id = C.color_no
 
                 LEFT JOIN sizes AS S
-                ON OD.size_id = S.size_no
+                ON PO.size_id = S.size_no
 
                 WHERE
                     P.is_deleted = False
@@ -739,14 +722,10 @@ class OrderDao(Dao):
                     FROM
                     product_options AS PO
 
-                    LEFT JOIN option_details AS OD
-                    ON PO.product_option_no = OD.product_option_id
-
                     WHERE
                         PO.is_deleted = False
-                        AND OD.close_time = '9999-12-31 23:59:59'
-                        AND OD.color_id = %(color_id)s
-                        AND OD.size_id = %(size_id)s
+                        AND PO.color_id = %(color_id)s
+                        AND PO.size_id = %(size_id)s
                     ),
                     %(quantity)s
                 )
@@ -847,10 +826,10 @@ class OrderDao(Dao):
                 # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
                 insert_quantities_query = """
                 INSERT INTO quantities (
-                    option_detail_id,
+                    product_option_id,
                     quantity
                 ) VALUES (
-                %(option_detail_no)s,
+                %(product_option_no)s,
                 (
                     SELECT
                         Q.quantity
@@ -859,7 +838,7 @@ class OrderDao(Dao):
 
                     WHERE
                         Q.close_time = '9999-12-31 23:59:59'
-                        AND Q.option_detail_id =  %(option_detail_no)s
+                        AND Q.product_option_id =  %(product_option_no)s
                 ) - %(quantity)s
                 )
                 """
@@ -913,7 +892,7 @@ class OrderDao(Dao):
                 quantities AS Q
 
                 WHERE
-                Q.option_detail_id = %(option_detail_no)s
+                Q.product_option_id = %(product_option_no)s
                 AND Q.close_time = '9999-12-31 23:59:59'
                 """
 
@@ -980,3 +959,41 @@ class OrderDao(Dao):
 
         except Exception as e:
             raise e
+
+    def get_order_detail_start_time(self, order_detail_no, db_connection):
+
+        """
+
+        인자로 들어온 order_detail_no에 해당하는 row의 start_time을 리턴합니다.
+
+        Args:
+            order_detail_no : order_detail pk
+            db_connection : 연결된 db 객체
+
+        Returns:
+            start_time : row의 start_time
+
+        Author:
+            tnwjd060124@gmail.com (손수정)
+
+        History:
+            2020-09-08 (tnwjd060124@gmail.com) : 초기 생성
+
+        """
+
+        with db_connection.cursor() as cursor:
+
+            select_start_time = """
+            SELECT
+                start_time
+            FROM
+                orders_details
+            WHERE
+                order_detail_no = %s
+            """
+
+            cursor.execute(select_start_time, order_detail_no)
+
+            start_time = cursor.fetchone()
+
+            return start_time['start_time'].strftime('%Y-%m-%d %H:%M:%S')
