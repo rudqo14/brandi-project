@@ -1013,22 +1013,28 @@ ALTER TABLE orders
 INSERT INTO orders
 (
     order_no,
-    user_id
+    user_id,
+    created_at
 ) VALUES (
     1,
-    1
+    1,
+    '2020-08-18 15:00:00'
 ), (
     2,
-    2
+    2,
+    '2020-08-25 10:00:00'
 ), (
     3,
-    3
+    3,
+    '2020-07-25 10:00:00'
 ), (
     4,
-    4
+    4,
+    '2020-05-25 12:30:00'
 ), (
     5,
-    5
+    5,
+    '2020-05-20 11:20:00'
 );
 
 -- sub_categories Table Create SQL

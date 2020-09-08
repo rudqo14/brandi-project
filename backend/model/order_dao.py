@@ -455,7 +455,6 @@ class OrderDao:
                     PD.name,
                     PD.price AS original_price,
                     I.image_small,
-                    OD.product_option_id,
                     CASE
                         WHEN PD.discount_rate IS NULL THEN 0
                         ELSE CASE
