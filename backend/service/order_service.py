@@ -303,3 +303,31 @@ class OrderService:
         current_quantity = self.order_dao.get_current_quantity(product_option_no, db_connection)
 
         return current_quantity
+
+    def get_product_quantity_range(self, product_info, db_connection):
+
+        """
+
+        
+
+        Args:
+            order_info    : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-09 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 해당 옵션의 상품 재고를 가져오기 위해 먼저 해당 상품의 id를 가져오는 메소드를 실행해 줍니다.
+        product_option_no = self.order_dao.get_product_option_no(order_info, db_connection)
+
+        # 해당 옵션의 상품 재고를 가져오기 위해 해당 상품 옵션의 id값을 인자로 넘겨주고 현재 재고를 받아옵니다.
+        current_quantity = self.order_dao.get_current_quantity(product_option_no, db_connection)
+
+        return current_quantity
