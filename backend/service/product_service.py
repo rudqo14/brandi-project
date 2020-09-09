@@ -16,7 +16,7 @@ class ProductService:
         상품등록 - Business Layer(service) function
 
         Args:
-            product_info  : 로 받은 Parameter
+            product_info  :
                 mainCategoryId    : Main Category ID
                 subCategoryId     : Sub Category ID
                 sellYn            : 상품 판매여부 (Boolean)
@@ -52,32 +52,43 @@ class ProductService:
             2020-08-30 (sincerity410@gmail.com) : option 별 재고수량 관련 테이블(product_options, option_details,
                                                   quantities) insert 수행
             2020-09-02 (sincerity410@gmail.com) : product_code(unique 값)의 insert로 구조 수정
+            2020-09-08 (sincerity410@gmail.com) : 스키마 수정에 따른 함수 수정
 
         """
 
-        # 선분 관리할 시간 저장
-        now = self.product_dao.select_now(db_connection)
-        product_info['now'] = now
+        try:
+            # 선분 관리할 현재 시간 product_info에 저장
+            product_info['now'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # product에 insert 한 id를 product_info에 포함 > 상세정보 insert query 실행
-        product_info['product_id'] = self.product_dao.insert_product(db_connection)
-        self.product_dao.insert_product_detail(product_info, db_connection)
+            # product에 insert 한 id를 product_info에 포함 > 상세정보(product_details) insert query 실행
+            product_info['product_id'] = self.product_dao.insert_product(db_connection)
+            self.product_dao.insert_product_detail(product_info, db_connection)
 
-        # nested JSON 구조인 optionQuantity를 form-data로 받아 JSON 변환
-        options = json.loads(product_info['optionQuantity'])
+            # nested JSON 구조인 optionQuantity를 form-data request로 받아 JSON 변환
+            options = json.loads(product_info['optionQuantity'])
 
-        # 상품 옵션 별 produc_options, option_details, quantities 테이블 insert 수행 
-        for option in options :
-            product_option_id  = self.product_dao.insert_product_option(product_info['product_id'], db_connection)
-            color_id           = self.product_dao.select_color_id(option, db_connection)
-            size_id            = self.product_dao.select_size_id(option, db_connection)
-            option['color_id'] = color_id
-            option['size_id']  = size_id
-            option_detail_id   = self.product_dao.insert_option_detail(now, product_option_id, option, db_connection)
-            self.product_dao.insert_quantity(option_detail_id, option, db_connection)
+            # 상품 옵션 별 produc_options, option_details, quantities 테이블 insert 수행 
+            for option in options :
 
-        # Image S3 Upload 및 RDB에 URL Link insert를 위해 product_id return
-        return product_info['product_id']
+                # name으로 입력된 각 옵션의 id를 받아옴
+                color_id = self.product_dao.select_color_id(option, db_connection)
+                size_id  = self.product_dao.select_size_id(option, db_connection)
+
+                # insert_product_option 함수 인자를 줄이기 위해 option 정보 별도 저장
+                option['color_id'] = color_id
+                option['size_id']  = size_id
+
+                # 옵션 정보 저장
+                product_option_id  = self.product_dao.insert_product_option(product_info, option, db_connection)
+
+                # 옵션에 해당하는 수량 정보 저장
+                self.product_dao.insert_quantity(product_info['now'], product_option_id, option, db_connection)
+
+            # Image S3 Upload 및 RDB에 URL Link insert를 위해 product_id return
+            return product_info['product_id']
+
+        except Exception as e:
+            raise e
 
     def get_product_list(self, db_connection):
 
@@ -211,12 +222,16 @@ class ProductService:
 
         """
 
-        # DB connection으로 각 옵션 정보 Return 하는 함수 호출
-        colors = self.product_dao.select_color_list(db_connection)
-        sizes  = self.product_dao.select_size_list(db_connection)
+        try:
+            # DB connection으로 각 옵션 정보 Return 하는 함수 호출
+            colors = self.product_dao.select_color_list(db_connection)
+            sizes  = self.product_dao.select_size_list(db_connection)
 
-        # 모든 옵션 정보 Return
-        return {'color' : colors, 'size' : sizes}
+            # 모든 옵션 정보 Return
+            return {'color' : colors, 'size' : sizes}
+
+        except Exception as e:
+            raise e
 
     def get_main_category_list(self, db_connection) :
 
@@ -243,11 +258,15 @@ class ProductService:
 
         """
 
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
-        main_categories = self.product_dao.select_main_category_list(db_connection)
+        try:
+            # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+            main_categories = self.product_dao.select_main_category_list(db_connection)
 
-        # 모든 Main Category 정보 Return
-        return main_categories
+            # 모든 Main Category 정보 Return
+            return main_categories
+
+        except Exception as e:
+            raise e
 
     def get_sub_category_list(self, main_cetegory_id, db_connection) :
 
@@ -275,11 +294,15 @@ class ProductService:
 
         """
 
-        # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
-        sub_categories = self.product_dao.select_sub_category_list(main_cetegory_id, db_connection)
+        try:
+            # DB connection으로 사이즈 정보 Return 하는 select_size_list 함수 호출
+            sub_categories = self.product_dao.select_sub_category_list(main_cetegory_id, db_connection)
 
-        # 모든 Main Category 정보 Return
-        return sub_categories
+            # 모든 Main Category 정보 Return
+            return sub_categories
+
+        except Exception as e:
+            raise e
 
     def get_product_details(self, product_id, db_connection):
 
@@ -420,13 +443,17 @@ class ProductService:
 
         """
 
-        # page 값으로 offset 정보 획득
-        filter_info['offset'] = filter_info['page'] * filter_info['limit'] - filter_info['limit']
+        try:
+            # page 값으로 offset 정보 획득
+            filter_info['offset'] = filter_info['page'] * filter_info['limit'] - filter_info['limit']
 
-        # DB connection으로 (상품 List & Total Count) Return 하는 select_registered_product_list 함수 호출
-        product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
+            # DB connection으로 (상품 List & Total Count) Return 하는 select_registered_product_list 함수 호출
+            product_list = self.product_dao.select_registered_product_list(filter_info, db_connection)
 
-        return product_list
+            return product_list
+
+        except Exception as e:
+            raise e
 
     def upload_detail_image(self, image, s3_connection):
 
@@ -504,8 +531,8 @@ class ProductService:
         Filtering을 통한 상품 List와 Total Count를 Return 하는Business Layer(service) function
 
         Args:
-
-            db_connection    : DATABASE Connection Instance
+            product_id    : products Table PK
+            db_connection : DATABASE Connection Instance
 
         Returns:
             mainCategoryId    : Main Category ID
@@ -545,21 +572,27 @@ class ProductService:
 
         """
 
-        product_detail = self.product_dao.select_product_detail(product_id, db_connection)
-        product_image  = self.product_dao.select_product_image(product_id, db_connection)
-        product_option = self.product_dao.select_product_option(product_id, db_connection)
+        try:
+            # product_id(products Table PK) 기준으로 상품 상세, 이미지, 옵션에 대한
+            product_detail = self.product_dao.select_product_detail(product_id, db_connection)
+            product_image  = self.product_dao.select_product_image(product_id, db_connection)
+            product_option = self.product_dao.select_product_option(product_id, db_connection)
 
-        # detail, image URL, option 정보를 Dictionary 형태로 Return
-        product_info = {**product_detail, **product_image, **product_option}
+            # detail, image URL, option 정보를 Dictionary 형태로 Return
+            product_info = {**product_detail, **product_image, **product_option}
 
-        return product_info
+            return product_info
 
-    def update_product(self,product_id, product_info, db_connection) :
+        except Exception as e:
+            raise e
+
+    def update_product(self, product_id, product_info, db_connection) :
         """
 
-        상품등록 - Business Layer(service) function
+        상품 등록 >  상품 수정 - Business Layer(service) function
 
         Args:
+            product_id    : products Table PK
             product_info  : 로 받은 Parameter
                 mainCategoryId    : Main Category ID
                 subCategoryId     : Sub Category ID
@@ -584,7 +617,7 @@ class ProductService:
             db_connection : DATABASE Connection Instance
 
         Returns :
-            product_id : products Table의 PK
+            None
 
         Author :
             sincerity410@gmail.com (이곤호)
@@ -593,54 +626,130 @@ class ProductService:
             2020-09-07 (sincerity410@gmail.com) : 초기생성
 
         """
+        try:
+            # 기존 옵션 정보 변수 선언
+            option_quantity = {}
 
-        # 기존 옵션 정보 변수 선언
-        option_quantity = {}
+            # DB와 업데이트 정보 비교를 위한 변수 받아오기
+            option_quantity = json.loads(product_info['optionQuantity'])
 
-        # DB와 업데이트 정보 비교를 위한 변수 받아오기
-        option_quantity['optionQuantity'] = json.loads(product_info['optionQuantity'])
+            # request의 상품 detail 정보를 위해 key-value 제거
+            del product_info['optionQuantity']
 
-        # request의 상품 detail 정보를 위해 key-value 제거
-        del product_info['optionQuantity']
+            # 비교를 위한 DB에서의 상품 상세정보(product_details, product_options) 가져오기
+            product_detail = self.product_dao.select_product_detail_to_compare(product_id, db_connection)
+            product_option = self.product_dao.select_product_option_to_compare(product_id, db_connection)
 
-        # DB에서의 상품 상세정보(product_details, product_options) 가져오기
-        product_detail = self.product_dao.select_product_detail_to_compare(product_id, db_connection)
-        product_option = self.product_dao.select_product_option_to_compare(product_id, db_connection)
+            # 선분 관리할 시간 생성
+            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # 옵션의 변경 발생 -> 옵션정보 수정 및 옵션 선분관리
-        if product_option != option_quantity :
-            # 선분 관리할 시간 저장
-            now = self.product_dao.select_now(db_connection)
+            # 옵션의 변경 발생 -> 옵션정보 수정 및 옵션 삭제(재고수량(quantities Table) 포함)
+            if product_option['optionQuantity'] != option_quantity :
 
-            # 선분이 관리되는 상세 옵션 번호 가져오기
-            option_detail_no = self.product_dao.select_product_option(product_id, db_connection)
+                # request에만 존재하는 옵션을 저장
+                request_only_option = option_quantity
 
-            # 기존 옵션 상세정보의 선분을 닫아주기
-            for option in option_detail_no['optionQuantity']:
-                self.product_dao.close_option_detail(now, option['optionDetailNo'], db_connection)
+                # DB의 상품옵션(product_options)에 대해 for Loop
+                for db_option in product_option['optionQuantity']:
 
-            # 상품 옵션 별 produc_options, option_details, quantities 테이블 insert 수행
-            for option in option_quantity['optionQuantity']:
-                product_option_id  = self.product_dao.insert_product_option(product_id, db_connection)
+                    # request에는 없고 DB에만 있는 상품옵션(product_option) 체크를 위한 Bool 변수
+                    is_option_db = False
 
-                color_id           = self.product_dao.select_color_id(option, db_connection)
-                size_id            = self.product_dao.select_size_id(option, db_connection)
-                option['color_id'] = color_id
-                option['size_id']  = size_id
+                    # request의 상품옵션(product_options)에 대해 for Loop
+                    for request_option in option_quantity:
 
-                option_detail_id   = self.product_dao.insert_option_detail(
-                    now,
-                    product_option_id,
-                    option,
-                    db_connection
-                )
-                self.product_dao.insert_quantity(option_detail_id, option, db_connection)
+                        # option은 동일, 수량만 변경된 경우
+                        if request_option['color'] == db_option['color'] and request_option['size'] == db_option['size'] and request_option['quantity'] != db_option['quantity']:
 
-        # product에 insert 한 id를 product_info에 포함 > 상세정보 insert query 실행
-        if product_detail != product_info:
-            product_info['now']        = now
-            product_info['product_id'] = product_id
-            self.product_dao.close_product_detail(now, product_id, db_connection)
-            self.product_dao.insert_product_detail(product_info, db_connection)
+                            # name으로 입력된 각 옵션의 id를 받아옴
+                            color_id = self.product_dao.select_color_id(request_option, db_connection)
+                            size_id  = self.product_dao.select_size_id(request_option, db_connection)
 
-        return None
+                            # insert_product_option 함수 인자를 줄이기 위해 option 정보 별도 저장
+                            request_option['color_id'] = color_id
+                            request_option['size_id']  = size_id
+
+                            # 상품옵션 정보 Return
+                            product_option_id = self.product_dao.select_product_option_number(product_id, request_option, db_connection)
+
+                            # 기존 수량 정보(quantities 테이블) 선분이력 close
+                            self.product_dao.close_quantity(now, product_option_id, db_connection)
+
+                            # 옵션에 해당하는 수량 정보 저장(선분 생성)
+                            self.product_dao.insert_quantity(now, product_option_id, request_option, db_connection)
+
+                            # DB에도 동일한 option 존재 체크
+                            is_option_db = True
+
+                            # DB, request 모두 존재하는 옵션인 경우 제거
+                            request_only_option.remove(request_option)
+
+                            break
+
+                        # request에는 없고, DB에 남은 옵션을 체크
+                        if request_option['color'] == db_option['color'] and request_option['size'] == db_option['size']:
+
+                            # DB에도 동일한 option 존재 체크
+                            is_option_db = True
+
+                            # DB, request 모두 존재하는 옵션인 경우 제거
+                            request_only_option.remove(request_option)
+
+                            break
+
+                    # request(수정사항)에 새로 추가된 상품옵션(product_options) DB 상품옵션 soft delete
+                    if not is_option_db:
+
+                        # name으로 입력된 각 옵션의 id를 받아옴
+                        color_id = self.product_dao.select_color_id(db_option, db_connection)
+                        size_id  = self.product_dao.select_size_id(db_option, db_connection)
+
+                        # insert_product_option 함수 인자를 줄이기 위해 option 정보 별도 저장
+                        db_option['color_id'] = color_id
+                        db_option['size_id']  = size_id
+
+                        # 상품 옵션 삭제 처리를 위해 product option number select
+                        product_option_id = self.product_dao.select_product_option_number(product_id, db_option, db_connection)
+
+                        # request(수정사항)에 새로 추가된 상품옵션(product_options) DB 상품옵션 soft delete 실행
+                        self.product_dao.delete_product_option(now, product_option_id, db_connection)
+
+                # request에만 존재하는 option 정보 product_options 테이블에 insert
+                for option in request_only_option:
+
+                    # name으로 입력된 각 옵션의 id를 받아옴
+                    color_id = self.product_dao.select_color_id(option, db_connection)
+                    size_id  = self.product_dao.select_size_id(option, db_connection)
+
+                    # insert_product_option 함수 인자를 줄이기 위해 option 정보 별도 저장
+                    option['color_id'] = color_id
+                    option['size_id']  = size_id
+
+                    # product_id 설정
+                    product_info['product_id'] = product_id
+
+                    # 옵션 정보 저장
+                    product_option_id = self.product_dao.insert_product_option(product_info, option, db_connection)
+
+                    # 옵션에 해당하는 수량 정보 저장
+                    self.product_dao.insert_quantity(now, product_option_id, option, db_connection)
+
+            # 상품 상세 정보가 request(form-data)와 DB가 다른 경우
+            if product_detail != product_info:
+
+                # 기존 선분은 close 신규 선분은 start 되는 datatime 선언
+                product_info['now'] = now
+
+                # 새로 생성될 product_detail의 product_id 
+                product_info['product_id'] = product_id
+
+                # 기존 product_details row의 선분 close
+                self.product_dao.close_product_detail(now, product_id, db_connection)
+
+                # product_detail 테이블의 선분 신규 생성
+                self.product_dao.insert_product_detail(product_info, db_connection)
+
+            return None
+
+        except Exception as e:
+            raise e

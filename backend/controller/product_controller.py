@@ -30,17 +30,17 @@ def create_admin_product_endpoints(product_service):
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
     @admin_product_app.route('', methods=['POST'])
-    @catch_exception
+    #@catch_exception
     @validate_params(
         Param('mainCategoryId', FORM, int),
         Param('subCategoryId', FORM, int),
-        Param('sellYn', FORM, int, required=False),
-        Param('exhibitionYn', FORM, int, required=False),
-        Param('productName', FORM, str, required=False),
+        Param('sellYn', FORM, bool),
+        Param('exhibitionYn', FORM, bool),
+        Param('productName', FORM, str),
         Param('simpleDescription', FORM, str, required=False),
-        Param('detailInformation', FORM, str, required=False),
+        Param('detailInformation', FORM, str),
         Param('price', FORM, float),
-        Param('discountRate', FORM, int),
+        Param('discountRate', FORM, int, required=False),
         Param('discountStartDate', FORM, str, required=False),
         Param('discountEndDate', FORM, str, required=False),
         Param('minSalesQuantity', FORM, int),
@@ -123,12 +123,20 @@ def create_admin_product_endpoints(product_service):
                     'optionQuantity'    : args[13]
                 }
 
+                product_info_process = {}
+
+                for key, value in product_info.items():
+                    if value != 'null':
+                        product_info_process[key] = value
+                    else:
+                        product_info_process[key] = None
+
                 # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
                 s3_connection = get_s3_connection()
                 images        = request.files
 
                 # 상품정보를 DB에 저장하는 Function 실행
-                product_id = product_service.create_product(product_info, db_connection)
+                product_id = product_service.create_product(product_info_process, db_connection)
 
                 # 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
                 product_service.upload_product_image(
@@ -143,9 +151,9 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'message' : 'SUCCESS'}), 200
 
-        except Exception as e:
-            db_connection.rollback()
-            return jsonify({"message" : f'{e}'}), 400
+        #except Exception as e:
+        #    db_connection.rollback()
+        #    return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
@@ -311,7 +319,7 @@ def create_admin_product_endpoints(product_service):
                 db_connection.close()
 
     @admin_product_app.route('', methods=['GET'])
-    @catch_exception
+    #catch_exception
     @validate_params(
         Param('sellYn', GET, bool, required=False),
         Param('discountYn', GET, bool, required=False),
@@ -407,8 +415,8 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : product_list}), 200
 
-        except Exception as e:
-            return jsonify({'message' : f"{e}"}), 400
+        #except Exception as e:
+        #    return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
@@ -457,7 +465,7 @@ def create_admin_product_endpoints(product_service):
             return jsonify({'message' : f"{e}"}), 400
 
     @admin_product_app.route('/<product_id>', methods=['GET'])
-    @catch_exception
+    #@catch_exception
     @validate_params(
         Param('product_id', PATH, int)
     )
@@ -506,15 +514,15 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : product_info}), 200
 
-        except Exception as e:
-            return jsonify({'message' : f"{e}"}), 400
+        #except Exception as e:
+        #    return jsonify({'message' : f"{e}"}), 400
 
         finally:
             if db_connection:
                 db_connection.close()
 
     @admin_product_app.route('/<product_id>', methods=['PUT'])
-    @catch_exception
+    #@catch_exception
     @validate_params(
         Param('product_id', PATH, int),
         Param('mainCategoryId', FORM, int),
@@ -633,9 +641,9 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'message' : 'SUCCESS'}), 200
 
-        except Exception as e:
-            db_connection.rollback()
-            return jsonify({"message" : f'{e}'}), 400
+        #except Exception as e:
+        #    db_connection.rollback()
+        #    return jsonify({"message" : f'{e}'}), 400
 
         finally:
             if db_connection:
