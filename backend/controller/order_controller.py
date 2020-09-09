@@ -296,12 +296,32 @@ def create_service_order_endpoints(order_service):
                 # Body로 들어온 정보를 order_info에 담아줍니다.
                 order_info = request.json
 
-                # 데코레이터에서 받아온 객체에서 user_no의 값을 user_no라는 변수에 넣어줍니다.
-                user_no = user_info['user_no']
+                # 데코레이터에서 받아온 user_no의 값을 쓰기 편하도록 order_info에 넣어줍니다.
+                order_info['user_no'] = user_info['user_no']
+
+                # 상품을 주문하기 전, 현재 선택한 옵션의 상품의 재고를 가져옵니다.
+                current_quantity = order_service.get_current_quantity(order_info, db_connection)
+
+                # 만약 사용자가 구매하려는 상품의 개수가 현재 재고보다 많다면,
+                if order_info['quantity'] > current_quantity['current_quantity']:
+
+                    # 구매 가능한 상품의 수가 초과되었다고 에러를 보내줍니다.
+                    return jsonify({'message' : 'The number of products available for purchase has been exceeded.'}), 400
+
+                # 만약 사용자가 구매하려는 상품의 개수가 현재 재고와 작거나 같다면 이어서 결제를 진행합니다.
+                # 구매하기전, 해당 유저의 배송지 정보를 추가 또는 변경해주는 메소드를 호출합니다.
+                order_service.modify_user_shipping_details(order_info, db_connection)
 
                 # order의 정보와 user의 정보를 주문하는 함수를 호줄시켜 인자로 넘겨줍니다.
-                order_service.create_order_completed(order_info, user_no, db_connection)
+                order_service.create_order_completed(order_info, db_connection)
 
+                # 마지막으로 상품결제를 하고, DB에 현재 옵션에 대한 재고가 0보다 작다면,
+                if order_service.get_current_quantity(order_info, db_connection)['current_quantity'] < 0:
+
+                    # 똑같이 구매 가능한 상품의 수가 초과되었다고 에러를 보내줍니다.
+                    return jsonify({'message' : 'The number of products available for purchase has been exceeded.'}), 400
+
+                # 만약 재고가 0개 이상이라면 정상적으로 저장을 해줍니다.
                 db_connection.commit()
 
                 return jsonify({'message' : 'ORDER_COMPLETED!!!'}), 200
