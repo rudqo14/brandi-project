@@ -98,7 +98,7 @@ export default {
         this.currentPage = "coupon";
       } else if (currentUrl === "/mypage/qna") {
         this.currentPage = "qna";
-      } else if (currentUrl === "mypage/faq") {
+      } else if (currentUrl === "/ypage/faq") {
         this.currentPage = "faq";
       } else if (currentUrl === "/mypage/orderList") {
         this.currentPage = "orderList";
@@ -113,7 +113,10 @@ export default {
       } else {
         linkPage = event.target.className.split(" ")[1];
       }
-      this.$router.push(`${linkPage}`);
+
+      if (this.$router.currentRoute.path.split("/")[2] !== linkPage) {
+        this.$router.push(`${linkPage}`);
+      }
     }
   }
 };

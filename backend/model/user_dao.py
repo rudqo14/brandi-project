@@ -348,7 +348,6 @@ class UserDao:
             OFFSET
                 %(offset)s
             """
-            print(select_user_query)
             cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
@@ -493,6 +492,7 @@ class UserDao:
 
             select_user_orders = """
             SELECT
+                P1.order_no,
                 P2.order_detail_no,
                 P2.start_time,
                 P7.image_small,
@@ -543,7 +543,7 @@ class UserDao:
 
             WHERE P1.user_id = %(user_no)s
 
-            ORDER BY P1.order_no
+            ORDER BY P1.order_no DESC
             """
 
             cursor.execute(select_user_orders, user_info)
