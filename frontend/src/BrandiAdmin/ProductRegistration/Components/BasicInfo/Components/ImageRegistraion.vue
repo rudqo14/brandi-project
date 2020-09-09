@@ -8,12 +8,7 @@
       <div class="imageContainer">
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img
-              width="100%"
-              height="100%"
-              :src="imageURL1"
-              alt="img"
-            ></v-img>
+            <v-img width="100%" height="100%" :src="imageURL1" alt="img"></v-img>
           </div>
           <input
             ref="imageURL1"
@@ -38,19 +33,9 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img
-              width="100%"
-              height="100%"
-              :src="imageURL2"
-              alt="img"
-            ></v-img>
+            <v-img width="100%" height="100%" :src="imageURL2" alt="img"></v-img>
           </div>
-          <input
-            ref="imageInput2"
-            type="file"
-            hidden
-            @change="(e) => onChangeImages2(e)"
-          />
+          <input ref="imageInput2" type="file" hidden @change="(e) => onChangeImages2(e)" />
           <v-btn type="button" normal @click="onClickImageUpload2">
             이미지
             <span>선택</span>
@@ -67,19 +52,9 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img
-              width="100%"
-              height="100%"
-              :src="imageURL3"
-              alt="img"
-            ></v-img>
+            <v-img width="100%" height="100%" :src="imageURL3" alt="img"></v-img>
           </div>
-          <input
-            ref="imageInput3"
-            type="file"
-            hidden
-            @change="(e) => onChangeImages3(e)"
-          />
+          <input ref="imageInput3" type="file" hidden @change="(e) => onChangeImages3(e)" />
           <v-btn type="button" normal @click="onClickImageUpload3">
             이미지
             <span>선택</span>
@@ -96,19 +71,9 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img
-              width="100%"
-              height="100%"
-              :src="imageURL4"
-              alt="img"
-            ></v-img>
+            <v-img width="100%" height="100%" :src="imageURL4" alt="img"></v-img>
           </div>
-          <input
-            ref="imageInput4"
-            type="file"
-            hidden
-            @change="(e) => onChangeImages4(e)"
-          />
+          <input ref="imageInput4" type="file" hidden @change="(e) => onChangeImages4(e)" />
           <v-btn type="button" normal @click="onClickImageUpload4">
             이미지
             <span>선택</span>
@@ -125,19 +90,9 @@
         </div>
         <div class="imgWraaper">
           <div class="imgBox">
-            <v-img
-              width="100%"
-              height="100%"
-              :src="imageURL5"
-              alt="img"
-            ></v-img>
+            <v-img width="100%" height="100%" :src="imageURL5" alt="img"></v-img>
           </div>
-          <input
-            ref="imageInput5"
-            type="file"
-            hidden
-            @change="(e) => onChangeImages5(e)"
-          />
+          <input ref="imageInput5" type="file" hidden @change="(e) => onChangeImages5(e)" />
           <v-btn type="button" normal @click="onClickImageUpload5">
             이미지
             <span>선택</span>

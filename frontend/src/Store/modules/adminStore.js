@@ -137,7 +137,7 @@ const adminStore = {
       console.log("state.product_image_4: ", state.product_image_5);
       console.log("state.product_image_5: ", state.product_image_1);
       console.log("state.detailInformation: ", state.detailInformation);
-      console.log("state.allOptions: ", state.optionQuantity);
+      console.log("state.optionQuantity: ", state.optionQuantity);
       console.log("state.price: ", state.price);
       console.log("state.discountRate: ", state.discountRate);
       console.log("state.discountStartDate: ", state.discountStartDate);
