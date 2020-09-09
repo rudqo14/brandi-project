@@ -7,6 +7,7 @@ from flask_request_validator    import (
     GET,
     PATH,
     Param,
+    JSON,
     validate_params
 )
 
@@ -134,9 +135,16 @@ def create_admin_order_endpoints(order_service):
 def create_service_order_endpoints(order_service):
     service_order_app = Blueprint('service_order_app', __name__, url_prefix='/order')
 
-    @service_order_app.route('/checkout', methods=['GET'])
+    @service_order_app.route('/checkout', methods=['GET'], endpoint="product_info_to_purchase")
+    @catch_exception
+    @validate_params(
+        Param('product_id', GET, int),
+        Param('color_id', GET, int),
+        Param('size_id', GET, int),
+        Param('quantity', GET, int),
+    )
     @login_required
-    def product_info_to_purchase(user_info):
+    def product_info_to_purchase(user_info, *args):
 
         """
 
@@ -155,28 +163,25 @@ def create_service_order_endpoints(order_service):
 
         Returns:
             200 : data, {
-                    "additional_address": "서울 어딘가",
-                    "address": "서울특별시",
-                    "color_name": "화이트",
-                    "discount_rate": 30,
-                    "image_small": "https://weplash.s3.ap-northeast-2.amazonaws.com/17993567_1594029656_image5_L.jpg",
-                    "name": "선분이력테스트 (요즘대세/여유핏) 카라 반크롭 반팔티(4color)_버튼나인 - 버튼나인",
-                    "orderer_email": "rudqo@rudqo.com",
-                    "orderer_name": "김경배",
-                    "phone_number": "01033334444",
-                    "price": 11250.0,
-                    "product_id": 1,
-                    "quantity": "3",
-                    "receiver": "김경배수령",
-                    "size_name": "M",
-                    "zip_code": "15279"
+                    "additional_address" : "서울 어딘가",
+                    "address"            : "서울특별시",
+                    "color_id"           : 2,
+                    "color_name"         : "화이트",
+                    "discount_rate"      : 30,
+                    "image_small"        : "작은 사진 이미지 URL주소",
+                    "name"               : "상품 이름",
+                    "orderer_email"      : "rudqo@rudqo.com",
+                    "orderer_name"       : "김경배",
+                    "phone_number"       : "01033334444",
+                    "price"              : 11250.0,
+                    "product_id"         : 1,
+                    "quantity"           : "3",
+                    "receiver"           : "김경배수령",
+                    "size_id"            : 4,
+                    "size_name"          : "M",
+                    "zip_code"           : "15279"
                   }
             400 : VALIDATION_ERROR
-            400 : QUERY_PARAMETER_DOES_NOT_EXISTS
-            400 : KEY_ERROR_PRODUCT_ID
-            400 : KEY_ERROR_COLOR_ID
-            400 : KEY_ERROR_SIZE_ID
-            400 : KEY_ERROR_QUANTITY
             400 : THIS_PRODUCT_DOES_NOT_EXISTS
             400 : UNAUTHORIZED
             500 : NO_DATABASE_CONNECTION_ERROR
@@ -190,6 +195,7 @@ def create_service_order_endpoints(order_service):
             2020-09-03 (minho.lee0716@gmail.com) : 예외 처리
                 Params가 들어오지 않았을 경우 + Params의 키 값이 잘못 들어왔을 경우
             2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
+            2020-09-09 (minho.lee0716@gmail.com) : flask_request_validator를 이용해 Params의 유효성 검사.
 
         """
 
@@ -202,27 +208,18 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 잘 되었다면,
             if db_connection:
 
-                # 먼저 Params가 들어오지 않았을 경우의 에러조건입니다.
-                if not request.args:
-                    raise Exception('QUERY_PARAMETER_DOES_NOT_EXISTS')
+                # 유효성 검사를 통과한 Params로 들어온 정보를 product_info에 담습니다.
+                product_info = {
+                    'product_id' : args[0],
+                    'color_id'   : args[1],
+                    'size_id'    : args[2],
+                    'quantity'   : args[3]
+                }
 
-                # Params로 들어온 정보를 product_info에 담습니다.
-                product_info = request.args
+                # 해당 상품의 구매가능한 수량의 개수를 가져옵니다.
+                # product_quantity_range = order_service.get_product_quantity_range(product_info, db_connection)
 
-                # Params로 들어온 키 값이 잘못된 경우의 에러조건입니다.
-                if not 'product_id' in product_info.keys():
-                    raise Exception('KEY_ERROR_PRODUCT_ID')
-
-                if not 'color_id' in product_info.keys():
-                    raise Exception('KEY_ERROR_COLOR_ID')
-
-                if not 'size_id' in product_info.keys():
-                    raise Exception('KEY_ERROR_SIZE_ID')
-
-                if not 'quantity' in product_info.keys():
-                    raise Exception('KEY_ERROR_QUANTITY')
-
-                # 받아온 user_info객체에서 user_no를 가져옵니다.
+                # 받아온 user_info객체에서 유저의 id를 가져옵니다.
                 user_no = user_info['user_no']
 
                 # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
@@ -237,6 +234,7 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
 
+        # 정의하지 않은 모든 에러를 잡아줍니다.
         except Exception as e:
             return jsonify({'message' : f"{e}"}), 400
 
@@ -244,9 +242,23 @@ def create_service_order_endpoints(order_service):
             if db_connection:
                 db_connection.close()
 
-    @service_order_app.route('/completed', methods=['POST'])
+    @service_order_app.route('/completed', methods=['POST'], endpoint="order_completed")
+    @catch_exception
+    @validate_params(
+        Param('product_id', JSON, int),
+        Param('color_id', JSON, int),
+        Param('size_id', JSON, int),
+        Param('quantity', JSON, int),
+        Param('total_price', JSON, int),
+        Param('receiver', JSON, str),
+        Param('phone_number', JSON, str),
+        Param('zip_code', JSON, str),
+        Param('address', JSON, str),
+        Param('additional_address', JSON, str),
+        Param('delivery_request', JSON, str),
+    )
     @login_required
-    def order_completed(user_info):
+    def order_completed(user_info, *args):
 
         """
 
@@ -281,6 +293,7 @@ def create_service_order_endpoints(order_service):
         History:
             2020-09-03 (minho.lee0716@gmail.com) : 초기생성
             2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
+            2020-09-09 (minho.lee0716@gmail.com) : flask_request_validator를 이용해 Body의 유효성 검사.
 
         """
 
@@ -293,13 +306,25 @@ def create_service_order_endpoints(order_service):
             # DB에 연결이 됐다면
             if db_connection:
 
-                # Body로 들어온 정보를 order_info에 담아줍니다.
-                order_info = request.json
+                # 유효성 검사를 통과한 Body로 들어온 정보를 order_info에 담습니다.
+                order_info = {
+                    "product_id"         : args[0],
+                    "color_id"           : args[1],
+                    "size_id"            : args[2],
+                    "quantity"           : args[3],
+                    "total_price"        : args[4],
+                    "receiver"           : args[5],
+                    "phone_number"       : args[6],
+                    "zip_code"           : args[7],
+                    "address"            : args[8],
+                    "additional_address" : args[9],
+                    "delivery_request"   : args[10]
+                }
 
                 # 데코레이터에서 받아온 user_no의 값을 쓰기 편하도록 order_info에 넣어줍니다.
                 order_info['user_no'] = user_info['user_no']
 
-                # 상품을 주문하기 전, 현재 선택한 옵션의 상품의 재고를 가져옵니다.
+                # 상품을 주문하기 전, 현재 선택한 옵션의 상품 재고를 가져오는 메소드를 실행 후, 변수에 담아줍니다.
                 current_quantity = order_service.get_current_quantity(order_info, db_connection)
 
                 # 만약 사용자가 구매하려는 상품의 개수가 현재 재고보다 많다면,
@@ -312,19 +337,20 @@ def create_service_order_endpoints(order_service):
                 # 구매하기전, 해당 유저의 배송지 정보를 추가 또는 변경해주는 메소드를 호출합니다.
                 order_service.modify_user_shipping_details(order_info, db_connection)
 
-                # order의 정보와 user의 정보를 주문하는 함수를 호줄시켜 인자로 넘겨줍니다.
+                # order의 정보를 인자로 넘겨 주문이력을 생성하는 메소드를 호출해 줍니다.
                 order_service.create_order_completed(order_info, db_connection)
 
-                # 마지막으로 상품결제를 하고, DB에 현재 옵션에 대한 재고가 0보다 작다면,
+                # 마지막으로 상품결제를 하고, 한번 더 검사를 해줍니다.
+                # DB에 현재 옵션에 대한 재고가 0보다 작다면,
                 if order_service.get_current_quantity(order_info, db_connection)['current_quantity'] < 0:
 
                     # 똑같이 구매 가능한 상품의 수가 초과되었다고 에러를 보내줍니다.
                     return jsonify({'message' : 'The number of products available for purchase has been exceeded.'}), 400
 
-                # 만약 재고가 0개 이상이라면 정상적으로 저장을 해줍니다.
+                # 만약 재고가 0개 이상이라면 DB에 정상적으로 저장을 해줍니다.
                 db_connection.commit()
 
-                return jsonify({'message' : 'ORDER_COMPLETED!!!'}), 200
+                return jsonify({'message' : 'SUCCESS'}), 200
 
             # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500
