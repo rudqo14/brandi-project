@@ -126,7 +126,7 @@ def login_required(func):
         # header Authorization에 담긴 access_token 가져옴
         access_token = request.headers.get('Authorization')
 
-        if access_token:
+        if access_token and (access_token != 'null'):
             # access_token decode
             user_no = jwt.decode(access_token, SECRET['secret_key'], SECRET['algorithm'])['user_no']
 
