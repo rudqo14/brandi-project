@@ -184,6 +184,7 @@ def create_service_order_endpoints(order_service):
             400 : VALIDATION_ERROR
             400 : THIS_PRODUCT_DOES_NOT_EXISTS
             400 : UNAUTHORIZED
+            400 : The maximum/minimum number of products that can be purchased is 'quantity' or more/less.
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -196,6 +197,9 @@ def create_service_order_endpoints(order_service):
                 Params가 들어오지 않았을 경우 + Params의 키 값이 잘못 들어왔을 경우
             2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
             2020-09-09 (minho.lee0716@gmail.com) : flask_request_validator를 이용해 Params의 유효성 검사.
+            2020-09-10 (minho.lee0716@gmail.com) : 추가
+                해당 상품의 구매 가능한 최소, 최대 수량을 가져와 받아온 수량을 확인하여
+                최소 구매 수량보다 적게 샀을 경우와 최대 구매 수량보다 많이 샀을 경우에 대한 에러처리를 하였습니다.
 
         """
 
@@ -216,11 +220,23 @@ def create_service_order_endpoints(order_service):
                     'quantity'   : args[3]
                 }
 
-                # 해당 상품의 구매가능한 수량의 개수를 가져옵니다.
-                # product_quantity_range = order_service.get_product_quantity_range(product_info, db_connection)
-
                 # 받아온 user_info객체에서 유저의 id를 가져옵니다.
                 user_no = user_info['user_no']
+
+                # 해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져옵니다.
+                product_quantity_range = order_service.get_product_quantity_range(product_info, db_connection)
+
+                # 가져온 최소, 최대 구매 가능한 상품의 수량을 각 변수에 담아줍니다.
+                min_q = product_quantity_range['min_sales_quantity']
+                max_q = product_quantity_range['max_sales_quantity']
+
+                # 구매하려고 하는 상품의 수량이 최소 구매 가능한 수량보다 작을 때
+                if product_info['quantity'] < min_q:
+                    return jsonify({'message' : f"The minimum number of products that can be purchased is {min_q} or more."}), 400
+
+                # 구매하려고 하는 상품의 수량이 최대 구매 가능한 수량보다 많을 때
+                if product_info['quantity'] > max_q:
+                    return jsonify({'message' : f"The maximum number of products that can be purchased is {max_q} or less."}), 400
 
                 # 상세페이지에서 옵션을 선택 후, 구매하기 클릭시 상품 구매정보를 purchase_info에 담기
                 # 로그인이 되어있는 사용자만이 구매를 할 수 있기 때문에 user_no도 넘겨줍니다.
@@ -262,7 +278,7 @@ def create_service_order_endpoints(order_service):
 
         """
 
-        [ 서비스 > 상품 주문 완료(결제하기) ] 엔드포인트
+        [ 서비스 > 결제 완료(상품 주문 완료) ] 엔드포인트
         [POST] http://ip:5000/order/completed
 
         Args:
@@ -285,6 +301,8 @@ def create_service_order_endpoints(order_service):
         Returns:
             200 : message, SUCCESS
             400 : VALIDATION_ERROR
+            400 : The maximum/minimum number of products that can be purchased is 'quantity' or more/less.
+            400 : The number of products available for purchase has been exceeded.
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -294,6 +312,9 @@ def create_service_order_endpoints(order_service):
             2020-09-03 (minho.lee0716@gmail.com) : 초기생성
             2020-09-08 (minho.lee0716@gmail.com) : 프론트와 API를 맞춰보기 위해 Token관련 데코레이터 사용.
             2020-09-09 (minho.lee0716@gmail.com) : flask_request_validator를 이용해 Body의 유효성 검사.
+            2020-09-10 (minho.lee0716@gmail.com) : 추가
+                해당 상품의 구매 가능한 최소, 최대 수량을 가져와 받아온 수량을 확인하여
+                최소 구매 수량보다 적게 샀을 경우와 최대 구매 수량보다 많이 샀을 경우에 대한 에러처리를 하였습니다.
 
         """
 
@@ -323,6 +344,21 @@ def create_service_order_endpoints(order_service):
 
                 # 데코레이터에서 받아온 user_no의 값을 쓰기 편하도록 order_info에 넣어줍니다.
                 order_info['user_no'] = user_info['user_no']
+
+                # 해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져옵니다.
+                product_quantity_range = order_service.get_product_quantity_range(order_info, db_connection)
+
+                # 가져온 최소, 최대 구매 가능한 상품의 수량을 각 변수에 담아줍니다.
+                min_q = product_quantity_range['min_sales_quantity']
+                max_q = product_quantity_range['max_sales_quantity']
+
+                # 구매하려고 하는 상품의 수량이 최소 구매 가능한 수량보다 작을 때
+                if order_info['quantity'] < min_q:
+                    return jsonify({'message' : f"The minimum number of products that can be purchased is {min_q} or more."}), 400
+
+                # 구매하려고 하는 상품의 수량이 최대 구매 가능한 수량보다 많을 때
+                if order_info['quantity'] > max_q:
+                    return jsonify({'message' : f"The maximum number of products that can be purchased is {max_q} or less."}), 400
 
                 # 상품을 주문하기 전, 현재 선택한 옵션의 상품 재고를 가져오는 메소드를 실행 후, 변수에 담아줍니다.
                 current_quantity = order_service.get_current_quantity(order_info, db_connection)

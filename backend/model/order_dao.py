@@ -1259,3 +1259,66 @@ class OrderDao:
 
         except Exception as e:
             raise e
+
+    def select_product_quantity_range(self, product_info, db_connection):
+
+        """
+
+        해당 상품의 최소구매 수량, 최대구매 수량의 개수를 가져오는 메소드입니다.
+
+        Args:
+            product_info  : 상품 정보
+            db_connection : 연결된 db 객체
+
+        Returns:
+            {
+                "min_sales_quantity" : 1,
+                "max_sales_quantity" : 20
+            }
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # 해당 상품에 대한 최소, 최대 구매 가능한 개수를 가져오는 쿼리문 입니다.
+                select_sales_quantity = """
+                SELECT
+                    PD.min_sales_quantity,
+                    PD.max_sales_quantity
+
+                FROM
+                    products AS P
+
+                LEFT JOIN product_details AS PD
+                ON P.product_no = PD.product_id
+                AND PD.close_time = '9999-12-31 23:59:59'
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+
+                WHERE
+                    P.is_deleted = False
+                    AND P.product_no = %(product_id)s
+                """
+
+                # update쿼리문과 주문 정보를 인자로 주어 현재 재고를 업데이트 해줍니다.
+                affected_row = cursor.execute(select_sales_quantity, product_info)
+
+                # 변경된 사항이 없다면 에러를 보내줍니다.
+                if affected_row < 0:
+                    raise Exception("Query Failed")
+
+                return cursor.fetchone()
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
