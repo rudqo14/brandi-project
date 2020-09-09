@@ -171,10 +171,12 @@ export default {
   computed: {
     selectAll: {
       //체크박스 전체선택/해제
-      //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
-      //전체해제
+      //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면, 전체해제
       //getter를 통해 종속성을 추적
       get() {
+        console.log(this.orderData);
+        console.log(this.selected.length);
+        console.log(this.orderData.length);
         if (!this.orderData.length) {
           return false;
         }
@@ -187,6 +189,7 @@ export default {
       //select한 체크박스값을 배열안에 넣어 적용
       set(value) {
         const selected = [];
+        console.log("value: ", value);
 
         if (value) {
           this.orderData.forEach(function (item, i) {
@@ -194,6 +197,7 @@ export default {
           });
         }
         this.selected = selected;
+        console.log("set", this.selected);
       },
     },
   },
@@ -339,6 +343,11 @@ export default {
         .then((res) => {
           this.orderData = res.data.data;
           this.totalNumData = res.data.total_number;
+        })
+        .catch((error) => {
+          console.log(error);
+
+          this.$router.push("/admin");
         });
     },
 
@@ -519,10 +528,6 @@ export default {
       } else {
         this.searchFilter = "";
       }
-
-      console.log("this.selectSearch: ", this.selectSearch);
-      console.log("this.searchFilter: ", this.searchFilter);
-      console.log("this.searchInputContents: ", this.searchInputContents);
 
       if (
         this.selectSearch === "Select.." &&

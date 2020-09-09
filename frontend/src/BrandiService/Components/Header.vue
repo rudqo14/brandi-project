@@ -64,7 +64,9 @@ export default {
     ...mapMutations(serviceStore, ["getStorageToken"]),
 
     linkToMain() {
-      this.$router.push("/main");
+      this.$route.path !== "/main"
+        ? this.$router.push("/main")
+        : this.$router.go("/main");
     },
     linkToLogin() {
       if (this.getToken) {
@@ -72,16 +74,15 @@ export default {
         localStorage.removeItem("access_token");
         localStorage.removeItem("user_email");
         this.getStorageToken();
-        this.$router.push("/main");
+        this.$route.path !== "/main" && this.$router.push("/main");
       } else {
-        this.$router.push("/login");
+        this.$route.path !== "/login" && this.$router.push("/login");
       }
     },
     linkToMyPage() {
       if (this.getToken) {
-        if (this.$route.path !== "/mypage/orderList") {
+        this.$route.path !== "/mypage/orderList" &&
           this.$router.push("/mypage");
-        }
       } else {
         if (this.$route.path !== "/login") {
           this.$router.push("/login");

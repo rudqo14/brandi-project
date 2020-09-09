@@ -8,6 +8,13 @@
         <div class="prevBtn" slot="prevButton"></div>
         <div class="nextBtn" slot="nextButton"></div>
       </agile>
+      <!-- <agile v-else class="agile" :dots="false">
+        <div class="imgContainer" v-for="(item, index) in detailData.image_list" v-bind:key="index">
+          <img alt="product  image" :src="item" />
+        </div>
+        <div class="prevBtn" slot="prevButton"></div>
+        <div class="nextBtn" slot="nextButton"></div>
+      </agile>-->
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
@@ -93,7 +100,9 @@
           <p>총 {{ input }}개의 상품</p>
           <p class="totalPrice">
             총 금액
-            <strong>{{(parseInt(detailData.sales_price)*input).toLocaleString()+"원"}}</strong>
+            <strong
+              v-if="detailData"
+            >{{(parseInt(detailData.sales_price)*input).toLocaleString()+"원"}}</strong>
           </p>
         </div>
         <button @click="buyNowHandler" class="purchaseBtn">바로 구매하기</button>
@@ -117,10 +126,17 @@ import { VueAgile } from "vue-agile";
 
 export default {
   created() {
-    axios.get(`${SERVER_IP}/product/${this.$route.params.id}`).then((res) => {
-      this.detailData = res.data.data;
-      this.purchaseId = this.detailData.product_id;
-    });
+    axios
+      .get(`${SERVER_IP}/product/${this.$route.params.id}`)
+      .then((res) => {
+        this.detailData = res.data.data;
+        this.purchaseId = this.detailData.product_id;
+      })
+      .catch((error) => {
+        this.$router.push("/main");
+        alert("존재하지 않는 서비스 상품입니다.");
+        return;
+      });
   },
 
   data() {
@@ -140,6 +156,7 @@ export default {
       purchaseId: "",
       colorData: [],
       productQuantity: 0,
+      noneDisplay: false,
       // detailHtml: detailOption.data.html,
     };
   },
@@ -248,6 +265,12 @@ export default {
 </script>
 
 <style lang="scss">
+/* .noneDisplay {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+} */
+
 .ProductInfo {
   width: 1235px;
   margin: 140px auto 80px;

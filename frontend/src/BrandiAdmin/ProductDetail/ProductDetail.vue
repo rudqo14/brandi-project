@@ -145,7 +145,7 @@
                       </div>
                       <v-divider />
                       <v-card-actions>
-                        <v-spacer></v-spacer>
+                        <v-spacer />
                         <v-btn color="success" dark name="recipient" @click="phoneNumHandler">변경요청</v-btn>
                         <v-btn @click="cancelPhoneNumHandler">취소</v-btn>
                       </v-card-actions>
@@ -221,7 +221,8 @@
         </div>
       </div>
       <div class="saveContainer">
-        <v-btn @click="productDetailSaved" color="success" class="saveBtn">저장</v-btn>
+        <v-btn v-if="isAxiosPatch" @click="productDetailSaved" color="success" class="saveBtn">저장</v-btn>
+        <v-btn v-else disabled class="saveBtn">저장</v-btn>
         <v-btn class="saveBtn">
           <router-link :to="`/admin/orderManagement`">취소</router-link>
         </v-btn>
@@ -271,6 +272,11 @@ export default {
           this.axiosPhone = this.detailData.phone_number;
           this.axiosAddress = this.detailData.address;
           // this.recipientPhoneNum = this.detailData.phone_number;
+        })
+        .catch((error) => {
+          this.$router.push("/admin/orderManagement");
+          alert("해당하는 주문 정보가 없어 조회가 불가능합니다.");
+          return;
         });
     },
 
@@ -295,6 +301,10 @@ export default {
         return alert("번호를 입력해주세요.");
       }
       this.dialog = false;
+
+      if (this.detailData.phone_number !== this.onlyNumber) {
+        this.isAxiosPatch = true;
+      }
 
       this.detailData.phone_number = this.onlyNumber;
       this.onlyNumber = "";
@@ -333,6 +343,14 @@ export default {
         return alert("상세 주소를 입력해주세요.");
       }
 
+      if (
+        this.detailData.address !== this.daumAddress ||
+        this.detailData.additional_address !== this.detailAddress ||
+        this.detailData.zip_code !== this.sigunguCode
+      ) {
+        this.isAxiosPatch = true;
+      }
+
       this.shippingDialog = false;
       this.detailData.address = this.daumAddress;
       this.detailData.additional_address = this.detailAddress;
@@ -341,31 +359,25 @@ export default {
 
     //데이터 전달
     productDetailSaved() {
-      if (
-        this.detailData.address !== this.axiosAddress ||
-        this.detailData.phone_number !== this.axiosPhone
-      ) {
-        if (
-          confirm("해당 주문건에 대한 수정내역을 저장하시겠습니까?") == true
-        ) {
-          axios
-            .patch(
-              `${SERVER_IP}/admin/user/shippingDetail`,
-              {
-                address: this.detailData.address,
-                additionalAddress: this.detailData.additional_address,
-                zipCode: this.detailData.zip_code,
-                userNo: this.detailData.user_no,
-                phoneNumber: this.detailData.phone_number,
-              },
-              {}
-            )
-            .then((res) => {
-              this.$router.go(`/admin/productDetail/${this.$route.params.id}`);
-            });
-        } else {
-          return false;
-        }
+      if (confirm("해당 주문건에 대한 수정내역을 저장하시겠습니까?") == true) {
+        axios
+          .patch(
+            `${SERVER_IP}/admin/user/shippingDetail`,
+            {
+              address: this.detailData.address,
+              additionalAddress: this.detailData.additional_address,
+              zipCode: this.detailData.zip_code,
+              userNo: this.detailData.user_no,
+              phoneNumber: this.detailData.phone_number,
+            },
+            {}
+          )
+          .then((res) => {
+            this.$router.go(`/admin/productDetail/${this.$route.params.id}`);
+            this.isAxiosPatch = true;
+          });
+      } else {
+        return false;
       }
     },
   },

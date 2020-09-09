@@ -6,8 +6,10 @@ import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import Antd from "ant-design-vue";
 import "ant-design-vue/dist/antd.css";
+import VueMask from "v-mask";
 Vue.config.productionTip = false;
 
+Vue.use(VueMask);
 Vue.use(Antd);
 Vue.use(Vuetify);
 
