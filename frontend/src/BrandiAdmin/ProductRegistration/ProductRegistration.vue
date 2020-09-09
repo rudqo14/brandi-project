@@ -75,7 +75,9 @@ export default {
       form.append("mainCategoryId", productDatas.mainCategoryId);
       form.append("subCategoryId", productDatas.subCategoryId);
       form.append("productName", productDatas.productName);
-      form.append("simpleDescription", productDatas.simpleDescription);
+      if (productDatas.simpleDescription !== null) {
+        form.append("simpleDescription", productDatas.simpleDescription);
+      }
       form.append("product_image_1", productDatas.product_image_1);
       form.append("product_image_2", productDatas.product_image_2);
       form.append("product_image_3", productDatas.product_image_3);
@@ -88,8 +90,10 @@ export default {
       );
       form.append("price", productDatas.price);
       form.append("discountRate", productDatas.discountRate);
-      form.append("discountStartDate", productDatas.discountStartDate);
-      form.append("discountEndDate", productDatas.discountEndDate);
+      if (productDatas.discountStartDate !== null) {
+        form.append("discountStartDate", productDatas.discountStartDate);
+        form.append("discountEndDate", productDatas.discountEndDate);
+      }
       form.append("minSalesQuantity", productDatas.minSalesQuantity);
       form.append("maxSalesQuantity", productDatas.maxSalesQuantity);
 

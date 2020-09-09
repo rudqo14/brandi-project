@@ -7,7 +7,7 @@
     <div class="inputPlace">
       <div class="radioContainer">
         <v-radio-group v-model="defaultValue" row>
-          <v-radio label="간편 업로드" value="radio-1"></v-radio>
+          <!-- <v-radio label="간편 업로드" value="radio-1"></v-radio> -->
           <v-radio label="에디터 사용 (html 가능)" value="에디터사용"></v-radio>
         </v-radio-group>
         <div>( 에디터에 따라 상세 내용 화면에 다소 차이가 있을 수 있습니다.)</div>
@@ -17,10 +17,10 @@
         Out으로 표시 됩니다.
       </div>
       <div class="imageInputBtn">
-        <v-btn normal>
+        <!-- <v-btn normal>
           <i class="far fa-image"></i>
           <span>사진 삽입</span>
-        </v-btn>
+        </v-btn>-->
         <span class="inputImageCheckMessage">이미지 확장자는 JPG, PNG만 등록 가능합니다.</span>
       </div>
       <div class="editorContainer">
@@ -64,17 +64,6 @@ export default {
 
         extraPlugins: "font,colorbutton,justify",
         filebrowserImageUploadUrl: `${SERVER_IP}/admin/product/detail-image`,
-
-        // filebrowserBrowseUrl: "/apps/ckfinder/3.4.5/ckfinder.html",
-        //filebrowserImageBrowseUrl:
-        //  "https://brandi-project.s3.ap-northeast-2.amazonaws.com/detail_2020_9_4_1599205694",
-
-        //  filebrowserUploadUrl : String
-        //  파일 업로드를 처리하는 스크립트의 위치 설정하면 업로드 탭이 링크 , 이미지 및 플래시 대화 상자 창에 나타남
-        //filebrowserUploadUrl:
-        //  "https://brandi-project.s3.ap-northeast-2.amazonaws.com/detail_2020_9_4_1599205694",
-        // uploadUrl:
-        //   "/apps/ckfinder/3.4.5/core/connector/php/connector.php?command=QuickUpload&type=Files&responseType=json",
       },
     };
   },

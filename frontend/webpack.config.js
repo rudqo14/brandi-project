@@ -1,5 +1,6 @@
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 const path = require("path");
+
 // 환경변수를 사용해서 개발모드와 배포모드 분리
 const env = process.env.ENV || "development";
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
