@@ -318,7 +318,8 @@ class ProductService:
             해당 상품의 이미지들
 
         Authors:
-            minho.lee0716@gmail.com(이민호)
+            minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기 생성
@@ -326,28 +327,33 @@ class ProductService:
             2020-08-31 (minho.lee0716@gmail.com) : 상품 옵션들을 details에 추가.
             2020-09-01 (minho.lee0716@gmail.com) : 상품 옵션들중 색상만 주는걸로 변경.
             2020-09-01 (minho.lee0716@gmail.com) : 이미지나 색상이 없을 경우 빈 배열을 리턴하도록 수정.
+            2020-09-09 (tnwjd060124@gmail.com) : 상품 id에 해당하는 제품이 없는 경우 다른 정보를 가져오지 않도록 처리
 
         """
 
         # 해당 상품의 아이디를 받아 상세정보들을 가져옴.
         # 상세정보중 이미지들과 옵션들은 따로 가져와서 details에 추가.
         details = self.product_dao.select_product_details(product_id, db_connection)
-        details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
-        details['colors']     = self.product_dao.select_product_option_colors(product_id, db_connection)
 
-        # 할인 가격 계산
-        details['sales_price'] = round(details['original_price'] * (100-details['discount_rate'])/ 100, -1)
+        # 상품 아이디에 해당하는 제품이 존재하는 경우
+        if details:
 
-        # 이미지가 없을 때, (배열 안에 null이 들어 있습니다.)
-        # 첫번째 요소가 null이면 빈 배열 반환
-        if not details['image_list'][0]:
-            details['image_list'] = []
+            details['image_list'] = self.product_dao.select_product_images(product_id, db_connection)
+            details['colors']     = self.product_dao.select_product_option_colors(product_id, db_connection)
 
-        # 마찬가지로 색상이 없을 경우, 빈 배열을 리턴
-        if not details['colors'][0]:
-            details['colors'] = []
+            # 할인 가격 계산
+            details['sales_price'] = round(details['original_price'] * (100-details['discount_rate'])/ 100, -1)
 
-        # 해당 상품의 상세정보들을 리턴
+            # 이미지가 없을 때, (배열 안에 null이 들어 있습니다.)
+            # 첫번째 요소가 null이면 빈 배열 반환
+            if not details['image_list'][0]:
+                details['image_list'] = []
+
+            # 마찬가지로 색상이 없을 경우, 빈 배열을 리턴
+            if not details['colors'][0]:
+                details['colors'] = []
+
+            # 해당 상품의 상세정보들을 리턴
         return details
 
     def get_etc_options(self, product_info, db_connection):

@@ -64,7 +64,7 @@ class OrderService:
         # offset 설정
         filter_info['offset'] = (filter_info['page']*filter_info['limit']) - filter_info['limit']
 
-        if not filter_info['from_date']:
+        if not (filter_info['from_date'] or filter_info['to_date']):
 
             # filter에 날짜 정보가 없으면 검색 조건 정보 존재 확인
             if not( filter_info['order_id']
@@ -132,9 +132,14 @@ class OrderService:
         # 주문 상세 정보 조회 메소드 실행
         order_detail = self.order_dao.get_detail(order_detail, db_connection)
 
-        order_detail['sales_price'] = round((order_detail['original_price'] * (100 - order_detail['discount_rate'])) / 100, -1)
+        # dao 메소드 실행결과가 존재하는 경우에만 할인 가격 계산
+        if order_detail:
 
-        return order_detail
+            order_detail['sales_price'] = round((order_detail['original_price'] * (100 - order_detail['discount_rate'])) / 100, -1)
+
+            return order_detail
+
+        return None
 
     def get_product_info_to_purchase(self, product_info, user_no, db_connection):
 
