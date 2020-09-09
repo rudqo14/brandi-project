@@ -308,10 +308,10 @@ class OrderService:
 
         """
 
-        
+        해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져오는 메소드입니다.
 
         Args:
-            order_info    : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
+            product_info  : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
             db_connection : 연결된 db 객체
 
         Returns:
@@ -320,14 +320,11 @@ class OrderService:
             minho.lee0716@gmail.com(이민호)
 
         History:
-            2020-09-09 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
 
         """
 
-        # 해당 옵션의 상품 재고를 가져오기 위해 먼저 해당 상품의 id를 가져오는 메소드를 실행해 줍니다.
-        product_option_no = self.order_dao.get_product_option_no(order_info, db_connection)
-
         # 해당 옵션의 상품 재고를 가져오기 위해 해당 상품 옵션의 id값을 인자로 넘겨주고 현재 재고를 받아옵니다.
-        current_quantity = self.order_dao.get_current_quantity(product_option_no, db_connection)
+        product_quantity_range = self.order_dao.select_product_quantity_range(product_info, db_connection)
 
-        return current_quantity
+        return product_quantity_range
