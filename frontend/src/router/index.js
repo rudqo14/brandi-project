@@ -17,6 +17,8 @@ import OrderManagement from "../BrandiAdmin/OrderManagement/OrderManagement.vue"
 import OrderDetail from "../BrandiService/OrderDetail/OrderDetail.vue";
 import ProductDetail from "../BrandiAdmin/ProductDetail/ProductDetail.vue";
 import UserManagement from "../BrandiAdmin/UserManagement/UserManagement.vue";
+import NetworkError from "../BrandiService/Components/NetworkError.vue";
+import NotFound from "../BrandiService/Components/NotFound.vue";
 
 Vue.use(VueAgile);
 Vue.use(VueRouter);
@@ -24,6 +26,18 @@ Vue.use(VueRouter);
 export const router = new VueRouter({
   mode: "hash",
   routes: [
+    {
+      path: "*",
+      redirect: "/404",
+    },
+    {
+      path: "/400",
+      component: NetworkError,
+    },
+    {
+      path: "/404",
+      component: NotFound,
+    },
     {
       path: "/main",
       component: Main,
