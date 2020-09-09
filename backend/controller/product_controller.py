@@ -725,7 +725,11 @@ def service_product_endpoint(product_service):
             if db_connection:
                 db_connection.close()
 
-    @service_product_app.route('/<int:product_id>', methods=['GET'])
+    @service_product_app.route('/<product_id>', methods=['GET'])
+    @catch_exception
+    @validate_params(
+        Param('product_id', PATH, int)
+    )
     def product_details(product_id):
 
         """
@@ -740,6 +744,7 @@ def service_product_endpoint(product_service):
         Returns:
             200 : 상품에 대한 상세정보
             400 : VALIDATION_ERROR
+            401 : product_id에 해당하는 상품이 없는경우
             500 : NO_DATABASE_CONNECTION_ERROR
 
         [ 서비스 > 상품 상세정보 > 나머지 옵션 ] 엔드포인트
@@ -760,6 +765,7 @@ def service_product_endpoint(product_service):
 
         Author:
             minho.lee0716@gmail.com (이민호)
+            tnwjd060124@gmail.com (손수정)
 
         History:
             2020-08-27 (minho.lee0716@gmail.com) : 초기생성
@@ -768,6 +774,8 @@ def service_product_endpoint(product_service):
             2020-09-02 (minho.lee0716@gmail.com) : 수정
                 product_etc_options 라는 함수를 없애고 이 엔드포인트에 query parameter로
                 색상의 조건이 들어올 시, 나머지 사이즈와 재고를 리턴
+            2020-09-09 (tnwjd060124@gmail.com) : 수정
+                path parameter로 들어온 product_id에 해당하는 제품이 없을 때 401에러 리턴
 
         """
 
@@ -783,25 +791,31 @@ def service_product_endpoint(product_service):
                 # service에서 상세정보, 이미지, 옵션을 묶은 정보들을 details에 저장
                 details = product_service.get_product_details(product_id, db_connection)
 
-                # Query Parameter의 요청이 존재할 경우
-                if request.args:
+                # 상품id에 해당하는 정보가 존재하는 경우에만 실행
+                if details:
 
-                    # color_id로 들어온 키의 값을 color_id라는 변수에 저장
-                    color_id = request.args['color_id']
+                    # Query Parameter의 요청이 존재할 경우
+                    if request.args:
 
-                    # 나머지 옵션을 가져오기 위해 딕셔너리를 생성
-                    product_info = {
-                        'product_id' : product_id,
-                        'color_id'   : color_id
-                    }
+                        # color_id로 들어온 키의 값을 color_id라는 변수에 저장
+                        color_id = request.args['color_id']
 
-                    # service에서 나머지 옵션(사이즈, 재고)을 묶은 정보들을 etc_options에 저장
-                    # 나머지 옵션들의 정보가 없다면 service에서 raise를 이용한 에러 처리
-                    etc_options = product_service.get_etc_options(product_info, db_connection)
+                        # 나머지 옵션을 가져오기 위해 딕셔너리를 생성
+                        product_info = {
+                            'product_id' : product_id,
+                            'color_id'   : color_id
+                        }
 
-                    return jsonify({'data' : etc_options}), 200
+                        # service에서 나머지 옵션(사이즈, 재고)을 묶은 정보들을 etc_options에 저장
+                        # 나머지 옵션들의 정보가 없다면 service에서 raise를 이용한 에러 처리
+                        etc_options = product_service.get_etc_options(product_info, db_connection)
 
-                return jsonify({'data' : details}), 200
+                        return jsonify({'data' : etc_options}), 200
+
+                    return jsonify({'data' : details}), 200
+
+                # 상품 id에 해당하는 data가 존재하지 않은 경
+                return jsonify({'message' : 'NON_EXISTING_DATA'}), 401
 
             # DB에 연결이 되지 않았을 경우, DB에 연결되지 않았다는 에러메시지를 보내줍니다.
             return jsonify({'message' : 'NO_DATABASE_CONNECTION'}), 500

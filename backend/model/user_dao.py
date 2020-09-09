@@ -348,7 +348,6 @@ class UserDao:
             OFFSET
                 %(offset)s
             """
-            print(select_user_query)
             cursor.execute(select_user_query, filter_info)
 
             users = cursor.fetchall()
