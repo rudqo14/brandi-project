@@ -26,22 +26,23 @@
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
-          <span v-if="detailData.discount_rate" class="percent">{{ detailData.discount_rate }}%</span>
+          <span v-if="detailData.discount_rate" class="percent"
+            >{{ detailData.discount_rate }}%</span
+          >
           <span class="price">
-            {{
-            parseInt(detailData.sales_price).toLocaleString() + "원"
-            }}
+            {{ parseInt(detailData.sales_price).toLocaleString() + "원" }}
           </span>
-          <span
-            v-if="detailData.discount_rate !== 0"
-            class="cost"
-          >{{ Math.floor(detailData.original_price).toLocaleString(5) + "원" }}</span>
+          <span v-if="detailData.discount_rate !== 0" class="cost">{{
+            Math.floor(detailData.original_price).toLocaleString(5) + "원"
+          }}</span>
         </div>
         <hr />
         <div v-on:click="onColorClick" class="option">
           <div>{{ colorToggleData }}</div>
           <div class="imgContainer">
-            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
           </div>
           <div
             v-bind:class="{
@@ -55,7 +56,9 @@
               class="colorToggle"
               v-bind:key="index"
               @click="colorClickHandler(item, index)"
-            >{{ item.color_name }}</div>
+            >
+              {{ item.color_name }}
+            </div>
           </div>
         </div>
         <!-- 사이즈 옵션 -->
@@ -65,9 +68,13 @@
               optionTitle: disabledSizeToggle,
               none: !disabledSizeToggle,
             }"
-          >{{ sizeToggleData }}</div>
+          >
+            {{ sizeToggleData }}
+          </div>
           <div class="imgContainer">
-            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
           </div>
           <div
             v-bind:class="{
@@ -81,7 +88,9 @@
               class="colorToggle"
               v-bind:key="index"
               @click="optionSizeHandler(colorData, index)"
-            >{{ item.size }}</div>
+            >
+              {{ item.size }}
+            </div>
           </div>
         </div>
         <div
@@ -93,19 +102,33 @@
           <div class="selectTitle">
             <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
             <div @click="removeSelectHandler()" class="imgContainer">
-              <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
+              <img
+                src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png"
+              />
             </div>
           </div>
           <div class="selectPrice">
             <div class="selectQuantity">
-              <button class="quantityControlBtn" name="minus" @click="selectQuantityHandler">-</button>
+              <button
+                class="quantityControlBtn"
+                name="minus"
+                @click="selectQuantityHandler"
+              >
+                -
+              </button>
               <input class="productQuantity" :value="input" readonly />
-              <button class="quantityControlBtn" name="plus" @click="selectQuantityHandler">+</button>
+              <button
+                class="quantityControlBtn"
+                name="plus"
+                @click="selectQuantityHandler"
+              >
+                +
+              </button>
             </div>
             <p>
               {{
-              (parseInt(detailData.sales_price) * input).toLocaleString() +
-              "원"
+                (parseInt(detailData.sales_price) * input).toLocaleString() +
+                  "원"
               }}
             </p>
           </div>
@@ -116,12 +139,15 @@
             총 금액
             <strong v-if="detailData">
               {{
-              (parseInt(detailData.sales_price) * input).toLocaleString() + "원"
+                (parseInt(detailData.sales_price) * input).toLocaleString() +
+                  "원"
               }}
             </strong>
           </p>
         </div>
-        <button @click="buyNowHandler" class="purchaseBtn">바로 구매하기</button>
+        <button @click="buyNowHandler" class="purchaseBtn">
+          바로 구매하기
+        </button>
       </div>
     </article>
     <article class="detailProduct">
@@ -240,10 +266,8 @@ export default {
       const isPlus = name === "plus";
 
       if (!isPlus && this.input <= 1) return;
-
       if (isPlus && this.input >= 20)
         return alert("최대 구매 수량은 20개 입니다.");
-
       if (isPlus && this.input >= this.productQuantity)
         return alert(`상품의 재고 수량은 ${this.productQuantity}개 입니다.`);
 
