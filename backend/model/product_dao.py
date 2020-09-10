@@ -73,6 +73,7 @@ class ProductDao:
             2020-08-25 (sincerity410@gmail.com) : 초기생성
             2020-08-26 (sincerity410@gmail.com) : model role 재정의에 따라 함수분리 생성
             2020-09-08 (sincerity410@gmail.com) : 선분정보 상세 관리를 위해 start_time insert 추가
+
         """
 
         try:
@@ -515,8 +516,10 @@ class ProductDao:
                     product_id,
                     color_id,
                     size_id,
+                    current_quantity,
                     is_deleted
                 ) VALUES (
+                    %s,
                     %s,
                     %s,
                     %s,
@@ -529,7 +532,8 @@ class ProductDao:
                     (
                         product_info['product_id'],
                         option['color_id'],
-                        option['size_id']
+                        option['size_id'],
+                        option['quantity']
                     )
                 )
 
@@ -692,6 +696,9 @@ class ProductDao:
 
                 cursor.execute(select_sub_categories_query, main_cetegory_id)
                 sub_categories = cursor.fetchall()
+
+                if len(sub_categories) ==0 :
+                    raise Exception('INVALID_MAIN_CATEGORY_ID')
 
                 return sub_categories
 
@@ -1114,6 +1121,9 @@ class ProductDao:
                 cursor.execute(select_product_code_query, product_id)
                 product_code = cursor.fetchone()
 
+                if product_code is None:
+                    raise Exception("INVALID_PRODUCT_ID")
+
                 return product_code
 
         except KeyError as e:
@@ -1159,6 +1169,9 @@ class ProductDao:
                 cursor.execute(select_color_id_query, option['color'])
                 color_id = cursor.fetchone()
 
+                if color_id is None:
+                    raise Exception('INVALID_COLOR_NAME')
+
                 return color_id['color_no']
 
         except KeyError as e:
@@ -1203,6 +1216,9 @@ class ProductDao:
 
                 cursor.execute(select_size_id_query, option['size'])
                 size_id = cursor.fetchone()
+
+                if size_id is None:
+                    raise Exception('INVALID_SIZE_NAME')
 
                 return size_id['size_no']
 
@@ -1284,6 +1300,9 @@ class ProductDao:
 
                 cursor.execute(select_product_detail_query, product_id)
                 product_detail = cursor.fetchone()
+
+                if product_detail is None:
+                    raise Exception("INVALID_PRODUCT_ID")
 
                 return product_detail
 
@@ -1573,6 +1592,9 @@ class ProductDao:
                 cursor.execute(select_product_detail_query, product_id)
                 product_detail = cursor.fetchone()
 
+                if product_detail is None:
+                    raise Exception("INVALID_PRODUCT_ID")
+
                 return product_detail
 
         except KeyError as e:
@@ -1779,6 +1801,97 @@ class ProductDao:
 
                 # 등록한 product_option 테이블의 row id Return
                 return product_option_id['product_option_no']
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def close_product_image(self, now, product_id, db_connection):
+        """
+
+        [상품 관리 >  상품 등록]
+        등록상품 수정 시, product_images (상품 이미지 Mapping Table) 테이블의 기존 선분이력을 close 합니다.
+
+        Args:
+            now        : 선분 close 시간
+            product_id : 상품 테이블(products) PK
+
+        Returns:
+            None
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-08 (sincerity410@gmail.com) : 초기생성
+
+        """
+        try:
+            with db_connection.cursor() as cursor:
+
+                update_previous_quantity_query = """
+                UPDATE
+                    product_images
+
+                SET
+                    close_time = %s
+
+                WHERE
+                    product_id = %s
+                    AND close_time = '9999-12-31 23:59:59'
+                """
+
+                cursor.execute(
+                    update_previous_quantity_query,
+                    (now, product_id)
+                )
+
+                return None
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def delete_image(self, product_id, db_connection):
+        """
+
+        [상품 관리 >  상품 등록]
+        상품 수정 시, 기존의 이미지를 제거해주는 함수
+        images 테이블의 기존사진을 제거합니다.(Soft Delete) - 향후 사진 비교를 통해 제거하는 방향으로 고도화 필요
+
+        Args:
+            product_id : 상품 테이블(products) PK
+            db_connection     : DATABASE Connection Instance
+
+        Returns:
+            None
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-09 (sincerity410@gmail.com) : 초기생성
+
+        """
+        try:
+            with db_connection.cursor() as cursor:
+
+                delete_previous_image_query = """
+                UPDATE images as I
+                	JOIN product_images as PI
+                    ON PI.image_id = I.image_no
+                    AND PI.product_id = %s
+                SET I.is_deleted = 1;
+                """
+
+                cursor.execute(
+                    delete_previous_image_query, product_id)
+
+                return None
 
         except KeyError as e:
             raise e

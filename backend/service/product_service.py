@@ -759,3 +759,75 @@ class ProductService:
 
         except Exception as e:
             raise e
+
+    def update_product_image(self, images, product_id, s3_connection, db_connection):
+
+        """
+
+        상품 이미지 등록 - Business Layer(service) function
+
+        Args:
+            images        : File Request(List)
+                [
+                    { 'product_image_<int>' : <FileStorage: {filename} ({content_type})>}
+                ]
+            s3_connection : S3 Connection Instance
+
+        Returns:
+            None
+
+        Author:
+            sincerity410@gmail.com (이곤호)
+
+        History:
+            2020-09-09 (sincerity410@gmail.com) : 초기생성
+
+        """
+
+        # product image
+        product_images = {}
+
+        try:
+            for idx in range(1,6):
+
+                # 대표사진 미등록 시 예외처리
+                if 'product_image_1' not in images :
+                    raise Exception('THUMBNAIL_IMAGE_IS_REQUIRED')
+
+                # 상품사진 미정렬 시 예외처리
+                if idx > 2  :
+                    if (f'product_image_{idx}' in images) and (f'product_image_{idx-1}' not in images) :
+                        raise Exception('IMAGE_CAN_ONLY_REGISTER_IN_ORDER')
+
+                # 상품사진 있는 경우 product_images Dictionary에 저장
+                if f'product_image_{idx}' in images :
+                    product_images[images[f'product_image_{idx}'].name] = images.get(f'product_image_{idx}', None)
+
+                    # 파일이 Image가 아닌 경우 Exception 발생
+                    image         = Image.open(product_images[f'product_image_{idx}'])
+                    width, height = image.size
+
+                    # 사이즈가 너무 작은 경우 예외처리
+                    if width < 640 or height < 720 :
+                        raise Exception('IMAGE_SIZE_IS_TOO_SMALL')
+
+            # image file name에 등록되는 product_code 조회
+            product_code = self.product_dao.select_product_code(product_id, db_connection)
+
+            # 상품 이미지 받아오기 및 유효성 검사 이후 S3 upload
+            resizing      = ResizeImage(product_code['product_code'], product_images, s3_connection)
+            resized_image = resizing()
+
+            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            self.product_dao.close_product_image(now, product_id, db_connection)
+            self.product_dao.delete_image(product_id, db_connection)
+
+            # 사진크기 별 product_image(최대 5개)에 대해 image URL insert & product_images(매핑테이블) insert
+            for product_image_no, image_url in resized_image.items() :
+                image_no = self.product_dao.insert_image(image_url, db_connection)
+                self.product_dao.insert_product_image(product_id, image_no, product_image_no, db_connection)
+
+            return None
+
+        except Exception as e:
+            raise e
