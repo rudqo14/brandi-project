@@ -656,32 +656,38 @@ INSERT INTO users
     user_no,
     name,
     email,
-    password
+    password,
+    created_at
 ) VALUES (
     1,
     '손수정',
     'soojung@soojung.com',
-    123456
+    123456,
+    '2020-03-01 12:00:00'
 ), (
     2,
     '이곤호',
     'gonho@gonho.com',
-    123456
+    123456,
+    '2020-03-01 12:00:00'
 ), (
     3,
     '이민호',
     'minho@minho.com',
-    123456
+    123456,
+    '2020-03-01 12:00:00'
 ), (
     4,
     '김경배',
     'rudqo@rudqo.com',
-    123456
+    123456,
+    '2020-03-01 12:00:00'
 ), (
     5,
     '배정규',
     'junggyoo@junggyoo.com',
-    123456
+    123456,
+    '2020-03-01 12:00:00'
 );
 
 -- main_categories Table Create SQL
