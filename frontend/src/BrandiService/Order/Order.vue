@@ -15,15 +15,17 @@
             </div>
             <div class="optionContainer">
               <h3>{{ detailData.name }}</h3>
-              <p class="option">{{ detailData.color_name }} / {{ detailData.size_name }}</p>
+              <p class="option">
+                {{ detailData.color_name }} / {{ detailData.size_name }}
+              </p>
               <p class="option">{{ detailData.quantity }}개</p>
             </div>
           </div>
           <div class="price">
             {{
-            (
-            parseInt(detailData.sales_price) * detailData.quantity
-            ).toLocaleString(5)
+              (
+                parseInt(detailData.sales_price) * detailData.quantity
+              ).toLocaleString(5)
             }}원
           </div>
         </div>
@@ -31,9 +33,9 @@
           총 주문금액
           <strong>
             {{
-            (
-            parseInt(detailData.sales_price) * detailData.quantity
-            ).toLocaleString(5)
+              (
+                parseInt(detailData.sales_price) * detailData.quantity
+              ).toLocaleString(5)
             }}원
           </strong>
         </p>
@@ -64,7 +66,12 @@
         </div>
         <div class="orderInfoContainer">
           <span class="name">이메일</span>
-          <input class="email" @keydown="emailKeyUpHandler" ref="email" v-model="email" />
+          <input
+            class="email"
+            @keydown="emailKeyUpHandler"
+            ref="email"
+            v-model="email"
+          />
         </div>
         <div class="emailCheck" v-if="emailCheck">
           <p class="emailCheckText">이메일 형식은 @와.(dot)이 포함됩니다.</p>
@@ -76,11 +83,20 @@
           <div class="text-center">
             <v-dialog v-model="dialog" width="500">
               <template v-slot:activator="{ on, attrs }">
-                <v-btn color="red lighten-2" ref="delivered" dark v-bind="attrs" v-on="on">입력하기</v-btn>
+                <v-btn
+                  color="red lighten-2"
+                  ref="delivered"
+                  dark
+                  v-bind="attrs"
+                  v-on="on"
+                  >입력하기</v-btn
+                >
               </template>
               <v-card>
                 <v-card-title class="headline black lighten-2"></v-card-title>
-                <v-card-title class="headline white lighten-2">배송지 추가</v-card-title>
+                <v-card-title class="headline white lighten-2"
+                  >배송지 추가</v-card-title
+                >
                 <v-divider />
                 <div class="addressContainer">
                   <div class="rowContainer">
@@ -115,10 +131,15 @@
                       readonly
                       :value="sigunguCode"
                     />
-                    <button @click="findAddressHandler" class="findAddress">우편번호 찾기</button>
+                    <button @click="findAddressHandler" class="findAddress">
+                      우편번호 찾기
+                    </button>
                   </div>
                   <div class="daumContainer">
-                    <vue-daum-postcode v-if="isDaumToggle" @complete="handleAddress" />
+                    <vue-daum-postcode
+                      v-if="isDaumToggle"
+                      @complete="handleAddress"
+                    />
                   </div>
                   <div class="rowContainer">
                     <div class="addressSecond">{{ daumAddress }}</div>
@@ -141,13 +162,15 @@
                       color="grey lighten-1"
                       dark
                       @click="(dialog = false), dialogCanceled()"
-                    >취소</v-btn>
+                      >취소</v-btn
+                    >
                     <v-btn
                       width="100"
                       color="black lighten-2"
                       dark
                       @click="deliveredCheckHandler"
-                    >확인</v-btn>
+                      >확인</v-btn
+                    >
                   </v-card-actions>
                 </div>
               </v-card>
@@ -156,7 +179,12 @@
         </div>
         <div class="orderInfoContainer">
           <span class="name">이름</span>
-          <input class="nameInput" placeholder="이름" disabled :value="detailData.receiver" />
+          <input
+            class="nameInput"
+            placeholder="이름"
+            disabled
+            :value="detailData.receiver"
+          />
         </div>
         <div class="orderInfoContainer">
           <span class="name">휴대폰</span>
@@ -168,7 +196,11 @@
             <input class="address" :value="detailData.zip_code" disabled />
             <br />
             <input class="address" :value="detailData.address" disabled />
-            <input class="address" :value="detailData.additional_address" disabled />
+            <input
+              class="address"
+              :value="detailData.additional_address"
+              disabled
+            />
             <p class="shippingMemo">
               * 제주도, 도서 산간 지역 등은 배송이 하루 이상 추가 소요될 수
               있습니다
@@ -191,12 +223,24 @@
                 noneToggle: !isToggleDelivered,
               }"
             >
-              <div class="orderChoice" @click="toggleDataHandler">배송시 요청사항을 선택해주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">문앞에 놓아주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">경비(관리)실에 맡겨주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">택배함에 넣어주세요.</div>
-              <div class="orderChoice" @click="toggleDataHandler">직접 받겠습니다.</div>
-              <div class="orderChoice" @click="toggleDataHandler">직접 입력</div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                배송시 요청사항을 선택해주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                문앞에 놓아주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                경비(관리)실에 맡겨주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                택배함에 넣어주세요.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 받겠습니다.
+              </div>
+              <div class="orderChoice" @click="toggleDataHandler">
+                직접 입력
+              </div>
             </div>
           </div>
         </div>
@@ -208,9 +252,9 @@
             <span>총 상품 금액</span>
             <span>
               {{
-              (
-              parseInt(detailData.sales_price) * detailData.quantity
-              ).toLocaleString(5)
+                (
+                  parseInt(detailData.sales_price) * detailData.quantity
+                ).toLocaleString(5)
               }}원
             </span>
           </div>
@@ -219,9 +263,9 @@
             <span class="totalPrice">
               <strong>
                 {{
-                (
-                parseInt(detailData.sales_price) * detailData.quantity
-                ).toLocaleString(5)
+                  (
+                    parseInt(detailData.sales_price) * detailData.quantity
+                  ).toLocaleString(5)
                 }}원
               </strong>
             </span>
@@ -276,12 +320,9 @@ export default {
         this.nameInput = this.detailData.orderer_name;
         this.email = this.detailData.orderer_email;
       })
-      .catch((error) => {});
-
-    localStorage.removeItem("purchaseId");
-    localStorage.removeItem("purchaseSize");
-    localStorage.removeItem("purchaseColor");
-    localStorage.removeItem("purchaseProductNumber");
+      .catch((error) => {
+        console.log(error);
+      });
   },
 
   data() {
@@ -486,13 +527,12 @@ export default {
           }
         )
         .then((res) => {
-          if (res.data.message === "ORDER_COMPLETED!!!") {
-            alert("결제가 완료되었습니다.");
-            this.$router.push("/main");
-          } else {
-            alert("통신실패");
-            this.$router.push("/main");
-          }
+          localStorage.removeItem("purchaseId");
+          localStorage.removeItem("purchaseSize");
+          localStorage.removeItem("purchaseColor");
+          localStorage.removeItem("purchaseProductNumber");
+          alert("결제가 완료되었습니다.");
+          this.$router.push("/main");
         });
     },
   },
