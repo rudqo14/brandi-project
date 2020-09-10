@@ -96,7 +96,7 @@ class LimitRule(AbstractRule):
         errors = []
 
         # limiit이 150 초과하는지 확인
-        if value > 150:
+        if value > 150 or value < 1:
             errors.append(value)
 
         return errors
