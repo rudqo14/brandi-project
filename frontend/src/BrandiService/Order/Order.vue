@@ -15,17 +15,27 @@
             </div>
             <div class="optionContainer">
               <h3>{{ detailData.name }}</h3>
-              <p class="option">{{ detailData.color_name }} / {{detailData.size_name}}</p>
+              <p class="option">{{ detailData.color_name }} / {{ detailData.size_name }}</p>
               <p class="option">{{ detailData.quantity }}개</p>
             </div>
           </div>
-          <div
-            class="price"
-          >{{(parseInt(detailData.sales_price)*detailData.quantity).toLocaleString(5)}}원</div>
+          <div class="price">
+            {{
+            (
+            parseInt(detailData.sales_price) * detailData.quantity
+            ).toLocaleString(5)
+            }}원
+          </div>
         </div>
         <p class="totalPrice">
           총 주문금액
-          <strong>{{(parseInt(detailData.sales_price)*detailData.quantity).toLocaleString(5)}}원</strong>
+          <strong>
+            {{
+            (
+            parseInt(detailData.sales_price) * detailData.quantity
+            ).toLocaleString(5)
+            }}원
+          </strong>
         </p>
       </article>
       <article class="orderInfo">
@@ -45,30 +55,19 @@
           <input
             class="phoneNumber"
             @keyup="onlyNumber"
+            v-mask="'###########'"
             maxlength="11"
             v-model="orderPhone"
+            placeholder="(-)없이 입력해주세요."
             ref="orderPhone"
           />
-          <!-- <p>-</p>
-          <input
-            class="phoneNumber"
-            @keyup="onlyNumber"
-            maxlength="4"
-            v-model="orderPhone"
-            ref="orderPhone"
-          />
-          <p>-</p>
-          <input
-            class="phoneNumber"
-            @keyup="onlyNumber"
-            maxlength="4"
-            v-model="orderPhoneThird"
-            ref="orderPhoneThird"
-          />-->
         </div>
         <div class="orderInfoContainer">
           <span class="name">이메일</span>
-          <input class="email" ref="email" v-model="email" />
+          <input class="email" @keydown="emailKeyUpHandler" ref="email" v-model="email" />
+        </div>
+        <div class="emailCheck" v-if="emailCheck">
+          <p class="emailCheckText">이메일 형식은 @와.(dot)이 포함됩니다.</p>
         </div>
       </article>
       <article class="orderInfo">
@@ -207,12 +206,24 @@
         <div class="priceContainer">
           <div class="detailPrice">
             <span>총 상품 금액</span>
-            <span>{{(parseInt(detailData.sales_price)*detailData.quantity).toLocaleString(5)}}원</span>
+            <span>
+              {{
+              (
+              parseInt(detailData.sales_price) * detailData.quantity
+              ).toLocaleString(5)
+              }}원
+            </span>
           </div>
           <div class="detailPrice">
             <span class="totalPrice">결제 예상 금액</span>
             <span class="totalPrice">
-              <strong>{{(parseInt(detailData.sales_price)*detailData.quantity).toLocaleString(5)}}원</strong>
+              <strong>
+                {{
+                (
+                parseInt(detailData.sales_price) * detailData.quantity
+                ).toLocaleString(5)
+                }}원
+              </strong>
             </span>
           </div>
         </div>
@@ -239,6 +250,11 @@ export default {
     this.purchaseProductNumber = localStorage.getItem("purchaseProductNumber");
     this.purchaseId = localStorage.getItem("purchaseId");
     const token = localStorage.getItem("access_token");
+    if (!token) {
+      alert("로그인 페이지로 이동합니다.");
+      this.$router.push("/login");
+      return;
+    }
 
     axios
       .get(
@@ -255,10 +271,17 @@ export default {
         this.detailAddress = this.detailData.additional_address;
         this.sigunguCode = this.detailData.zip_code;
         this.name = this.detailData.receiver;
-
         this.phoneNumber = this.detailData.phone_number;
         this.showPhoneNum = this.detailData.phone_number;
-      });
+        this.nameInput = this.detailData.orderer_name;
+        this.email = this.detailData.orderer_email;
+      })
+      .catch((error) => {});
+
+    localStorage.removeItem("purchaseId");
+    localStorage.removeItem("purchaseSize");
+    localStorage.removeItem("purchaseColor");
+    localStorage.removeItem("purchaseProductNumber");
   },
 
   data() {
@@ -283,6 +306,8 @@ export default {
       nameInput: "",
       token: "",
       email: "",
+      emailCheck: false,
+      noneDisplay: false,
     };
   },
   components: { Header, Footer, VueDaumPostcode },
@@ -305,11 +330,13 @@ export default {
     //클릭한 토글 데이터 보여주기
     //직접입력을 클릭한다면 인풋창 활성화
     toggleDataHandler(e) {
-      if (e.target.innerText === "직접 입력") {
-        this.toggleData = "";
-        this.isToggleDelivered = !this.isToggleDelivered;
-        this.directInput = true;
-        return;
+      if (e) {
+        if (e.target.innerText === "직접 입력") {
+          this.toggleData = "";
+          this.isToggleDelivered = !this.isToggleDelivered;
+          this.directInput = true;
+          return;
+        }
       }
 
       this.toggleData = e.target.innerText;
@@ -395,6 +422,17 @@ export default {
         alert("이름을 입력해주세요.");
         this.$refs.nameInput.focus();
         e.preventDefault();
+      }
+    },
+
+    //이메일 값이 눌릴때 형식 검사
+    emailKeyUpHandler() {
+      const regExp = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}";
+
+      if (this.email.match(regExp) === null) {
+        this.emailCheck = true;
+      } else {
+        this.emailCheck = false;
       }
     },
 
@@ -571,10 +609,20 @@ export default {
     }
   }
 
+  .emailCheck {
+    margin-left: 260px;
+    color: #e57373;
+    font-weight: 700;
+  }
+
   .orderInfoContainer {
     border-bottom: 1px solid #929292;
     display: flex;
     align-items: center;
+
+    &:nth-child(4) {
+      border: none;
+    }
 
     .name {
       width: 250px;

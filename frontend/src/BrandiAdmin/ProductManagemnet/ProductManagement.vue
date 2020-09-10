@@ -6,13 +6,7 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select
-            v-model="selectSearch"
-            class="select"
-            :items="items"
-            label="Select.."
-            dense
-          ></v-select>
+          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense></v-select>
           <input
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
@@ -46,22 +40,19 @@
           class="btnV"
           name="전체"
           v-bind:color="sellData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="판매"
           v-bind:color="sellData === '판매' ? 'primary' : 'white'"
-          >판매</v-btn
-        >
+        >판매</v-btn>
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="미판매"
           v-bind:color="sellData === '미판매' ? 'primary' : 'white'"
-          >미판매</v-btn
-        >
+        >미판매</v-btn>
       </div>
       <div class="filterContainer">
         <div class="filterDate">할인여부 :</div>
@@ -70,22 +61,19 @@
           class="btnV"
           name="전체"
           v-bind:color="saleData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="할인"
           v-bind:color="saleData === '할인' ? 'primary' : 'white'"
-          >할인</v-btn
-        >
+        >할인</v-btn>
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="미할인"
           v-bind:color="saleData === '미할인' ? 'primary' : 'white'"
-          >미할인</v-btn
-        >
+        >미할인</v-btn>
       </div>
       <div class="filterContainer">
         <div class="filterDate">진열여부 :</div>
@@ -94,38 +82,23 @@
           class="btnV"
           name="전체"
           v-bind:color="displayData === '전체' ? 'primary' : 'white'"
-          >전체</v-btn
-        >
+        >전체</v-btn>
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="진열"
           v-bind:color="displayData === '진열' ? 'primary' : 'white'"
-          >진열</v-btn
-        >
+        >진열</v-btn>
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="미진열"
           v-bind:color="displayData === '미진열' ? 'primary' : 'white'"
-          >미진열</v-btn
-        >
+        >미진열</v-btn>
       </div>
       <div class="centerContainer">
-        <v-btn
-          tile
-          @click="searchFilterHandler"
-          class="btnSearch"
-          color="primary"
-          >검색</v-btn
-        >
-        <v-btn
-          tile
-          v-on:click="filterResetHandler"
-          class="searchReset"
-          color="white"
-          >초기화</v-btn
-        >
+        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
+        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
       </div>
     </article>
     <div class="subTitle">
@@ -145,12 +118,8 @@
       </div>
     </div>
     <div class="excelContainer">
-      <v-btn class="excelBtn" color="success" small
-        >선택상품 엑셀다운로드</v-btn
-      >
-      <v-btn class="excelBtn" color="success" small
-        >전체상품 엑셀다운로드</v-btn
-      >
+      <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
+      <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
     </div>
     <article class="tableArticle">
       <div class="totalPageNumber">
@@ -179,12 +148,7 @@
           <tbody>
             <tr v-for="(item, i) in tableData" :key="i">
               <td class="checkboxContainer">
-                <input
-                  v-model="selected"
-                  :value="i"
-                  class="checkbox"
-                  type="checkbox"
-                />
+                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
               </td>
               <td>{{ item.productRegistDate }}</td>
               <td class="imgTd">
@@ -199,9 +163,7 @@
               >{{ item.productCode  }}</router-link></td>-->
               <td>{{ item.productNo }}</td>
               <td>{{ Math.floor(item.sellPrice).toLocaleString(5) + "원" }}</td>
-              <td>
-                {{ Math.floor(item.discountPrice).toLocaleString(5) + "원" }}
-              </td>
+              <td>{{ Math.floor(item.discountPrice).toLocaleString(5) + "원" }}</td>
               <td>{{ item.productSellYn }}</td>
               <td>{{ item.productExhibitYn }}</td>
               <td>{{ item.discountYn }}</td>
@@ -211,10 +173,7 @@
       </div>
       <template>
         <div class="text-center">
-          <v-pagination
-            v-model="page"
-            :length="Math.ceil(totalNumData / limit)"
-          />
+          <v-pagination v-model="page" :length="Math.ceil(totalNumData / limit)" />
         </div>
       </template>
     </article>
@@ -267,10 +226,12 @@ export default {
       //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면,
       //전체해제
       //getter를 통해 종속성을 추적
-      get: function() {
+      get() {
         if (!this.tableData.length) {
           return false;
         }
+
+        //테이블의 리스트가 없다면 false를 통하여 select 해제
         return this.tableData
           ? this.selected.length == this.tableData.length
           : false;
@@ -278,11 +239,12 @@ export default {
 
       //setter를 통해 변경을 알림
       //select한 체크박스값을 배열안에 넣어 적용
-      set: function(value) {
+      set(value) {
+        console.log("Test222");
         const selected = [];
 
         if (value) {
-          this.tableData.forEach(function(item, i) {
+          this.tableData.forEach(function (item, i) {
             selected.push(i);
           });
         }
@@ -292,7 +254,7 @@ export default {
   },
 
   watch: {
-    page: function() {
+    page() {
       this.axiosConnect();
     },
 

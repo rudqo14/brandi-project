@@ -1,29 +1,48 @@
 <template>
   <main>
     <article class="ProductInfo">
-      <agile class="agile" :dots="false">
-        <div class="imgContainer" v-for="(item, index) in detailData.image_list" v-bind:key="index">
-          <img alt="product  image" :src="item" />
+      <agile v-if="detailData.image_list[1]" class="agile" :dots="false">
+        <div class="imgContainer">
+          <img alt="product  image" :src="detailData.image_list[0]" />
         </div>
-        <div class="prevBtn" slot="prevButton"></div>
-        <div class="nextBtn" slot="nextButton"></div>
+        <div v-if="detailData.image_list[1]" class="imgContainer">
+          <img alt="product  image" :src="detailData.image_list[1]" />
+        </div>
+        <div v-if="detailData.image_list[2]" class="imgContainer">
+          <img alt="product  image" :src="detailData.image_list[2]" />
+        </div>
+        <div v-if="detailData.image_list[3]" class="imgContainer">
+          <img alt="product  image" :src="detailData.image_list[3]" />
+        </div>
+        <div v-if="detailData.image_list[4]" class="imgContainer">
+          <img alt="product  image" :src="detailData.image_list[4]" />
+        </div>
+        <div class="prevBtn" slot="prevButton" />
+        <div class="nextBtn" slot="nextButton" />
       </agile>
+      <div v-else class="imgContainer">
+        <img alt="product  image" :src="detailData.image_list[0]" />
+      </div>
       <div class="detailInfoContainer">
         <p class="title">{{ detailData.name }}</p>
         <div class="priceContainer">
-          <span v-if="detailData.discount_rate" class="percent">{{ detailData.discount_rate }}%</span>
-          <span class="price">{{parseInt(detailData.sales_price).toLocaleString()+"원"}}</span>
-          <span class="cost">
-            {{
-            Math.floor(detailData.original_price).toLocaleString(5) + "원"
-            }}
+          <span v-if="detailData.discount_rate" class="percent"
+            >{{ detailData.discount_rate }}%</span
+          >
+          <span class="price">
+            {{ parseInt(detailData.sales_price).toLocaleString() + "원" }}
           </span>
+          <span v-if="detailData.discount_rate !== 0" class="cost">{{
+            Math.floor(detailData.original_price).toLocaleString(5) + "원"
+          }}</span>
         </div>
         <hr />
         <div v-on:click="onColorClick" class="option">
           <div>{{ colorToggleData }}</div>
           <div class="imgContainer">
-            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
           </div>
           <div
             v-bind:class="{
@@ -37,7 +56,9 @@
               class="colorToggle"
               v-bind:key="index"
               @click="colorClickHandler(item, index)"
-            >{{ item.color_name }}</div>
+            >
+              {{ item.color_name }}
+            </div>
           </div>
         </div>
         <!-- 사이즈 옵션 -->
@@ -47,9 +68,13 @@
               optionTitle: disabledSizeToggle,
               none: !disabledSizeToggle,
             }"
-          >{{ sizeToggleData }}</div>
+          >
+            {{ sizeToggleData }}
+          </div>
           <div class="imgContainer">
-            <img src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png" />
+            <img
+              src="https://www.brandi.co.kr/static/3.49.1/images/ic-arrow-bl-down@3x.png"
+            />
           </div>
           <div
             v-bind:class="{
@@ -63,7 +88,9 @@
               class="colorToggle"
               v-bind:key="index"
               @click="optionSizeHandler(colorData, index)"
-            >{{ item.size }}</div>
+            >
+              {{ item.size }}
+            </div>
           </div>
         </div>
         <div
@@ -75,28 +102,52 @@
           <div class="selectTitle">
             <p>{{ purchaseColor }} / {{ purchaseSize }}</p>
             <div @click="removeSelectHandler()" class="imgContainer">
-              <img src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png" />
+              <img
+                src="https://www.brandi.co.kr/static/3.49.1/images/img_icon_x.png"
+              />
             </div>
           </div>
           <div class="selectPrice">
-            <div class="caculatar">
-              <button class="numberBtn" name="minus" @click="calculationHandler">-</button>
-              <span class="border"></span>
-              <input class="productNumber" :value="input" readonly />
-              <span class="border"></span>
-              <button class="numberBtn" name="plus" @click="calculationHandler">+</button>
+            <div class="selectQuantity">
+              <button
+                class="quantityControlBtn"
+                name="minus"
+                @click="selectQuantityHandler"
+              >
+                -
+              </button>
+              <input class="productQuantity" :value="input" readonly />
+              <button
+                class="quantityControlBtn"
+                name="plus"
+                @click="selectQuantityHandler"
+              >
+                +
+              </button>
             </div>
-            <p>{{(parseInt(detailData.sales_price)*input).toLocaleString()+"원"}}</p>
+            <p>
+              {{
+                (parseInt(detailData.sales_price) * input).toLocaleString() +
+                  "원"
+              }}
+            </p>
           </div>
         </div>
         <div class="detailpriceContainer">
           <p>총 {{ input }}개의 상품</p>
           <p class="totalPrice">
             총 금액
-            <strong>{{(parseInt(detailData.sales_price)*input).toLocaleString()+"원"}}</strong>
+            <strong v-if="detailData">
+              {{
+                (parseInt(detailData.sales_price) * input).toLocaleString() +
+                  "원"
+              }}
+            </strong>
           </p>
         </div>
-        <button @click="buyNowHandler" class="purchaseBtn">바로 구매하기</button>
+        <button @click="buyNowHandler" class="purchaseBtn">
+          바로 구매하기
+        </button>
       </div>
     </article>
     <article class="detailProduct">
@@ -117,15 +168,22 @@ import { VueAgile } from "vue-agile";
 
 export default {
   created() {
-    axios.get(`${SERVER_IP}/product/${this.$route.params.id}`).then((res) => {
-      this.detailData = res.data.data;
-      this.purchaseId = this.detailData.product_id;
-    });
+    axios
+      .get(`${SERVER_IP}/product/${this.$route.params.id}`)
+      .then((res) => {
+        this.detailData = res.data.data;
+        this.purchaseId = this.detailData.product_id;
+      })
+      .catch((error) => {
+        this.$router.push("/main");
+        alert("존재하지 않는 서비스 상품입니다.");
+        return;
+      });
   },
 
   data() {
     return {
-      detailData: [],
+      detailData: { image_list: [] },
       colorToggleData: "[색상]을 선택하세요.",
       isColorToggle: false,
       sizeToggleData: "[사이즈]를 선택하세요.",
@@ -140,7 +198,7 @@ export default {
       purchaseId: "",
       colorData: [],
       productQuantity: 0,
-      // detailHtml: detailOption.data.html,
+      noneDisplay: false,
     };
   },
   components: {
@@ -203,24 +261,22 @@ export default {
     //상품 수량 조절하여 갯수 띄워주기
     //+와 - 버튼을 클릭하여 조절한다.
     //최소,최대값 안의 input 값이라면 +, - 동작
-    calculationHandler(e) {
+    selectQuantityHandler(e) {
       const { name } = e.target;
       const isPlus = name === "plus";
 
-      if (!isPlus && this.input === 1)
-        return alert("최소 구매 수량은 1개 입니다.");
-
-      if (this.input === 20) return alert("최대 구매 수량은 20개 입니다.");
-
-      if (this.input >= this.productQuantity)
+      if (!isPlus && this.input <= 1) return;
+      if (isPlus && this.input >= 20)
+        return alert("최대 구매 수량은 20개 입니다.");
+      if (isPlus && this.input >= this.productQuantity)
         return alert(`상품의 재고 수량은 ${this.productQuantity}개 입니다.`);
 
-      input: isPlus ? (this.input += 1) : (this.input -= 1);
+      isPlus ? (this.input += 1) : (this.input -= 1);
     },
 
     //삭제하기 버튼 클릭시 상품 구매 박스를 안보이게 적용
     removeSelectHandler() {
-      if (confirm("정말 삭제하시겠습니까?") == true) {
+      if (confirm("정말 삭제하시겠습니까?")) {
         this.isPurchaseBox = false;
         this.input = 0;
       } else {
@@ -248,6 +304,12 @@ export default {
 </script>
 
 <style lang="scss">
+/* .noneDisplay {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+} */
+
 .ProductInfo {
   width: 1235px;
   margin: 140px auto 80px;
@@ -438,7 +500,7 @@ export default {
         display: flex;
         justify-content: space-between;
 
-        .caculatar {
+        .selectQuantity {
           height: 28px;
           border: 1px solid #cdcdcd;
 
@@ -448,7 +510,7 @@ export default {
             background-color: #cdcdcd;
           }
 
-          .numberBtn {
+          .quantityControlBtn {
             width: 28px;
             height: 28px;
             border: none;
@@ -461,9 +523,17 @@ export default {
             vertical-align: top;
             margin: 0;
             padding: 0;
+
+            &:first-child {
+              border-right: 2px solid #cdcdcd;
+            }
+
+            &:last-child {
+              border-left: 2px solid #cdcdcd;
+            }
           }
 
-          .productNumber {
+          .productQuantity {
             width: 35px;
             height: 28px;
             border: none;

@@ -103,7 +103,6 @@ export const router = new VueRouter({
       component: NotFound,
     },
     {
-      //초기 url을 main으로 적용
       path: "/admin",
       redirect: "/admin/productManagement",
     },
