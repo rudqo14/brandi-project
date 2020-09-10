@@ -5,7 +5,7 @@ const adminStore = {
     exhibitionYn: 1,
     mainCategoryId: null,
     subCategoryId: null,
-    productName: null,
+    productName: "",
     simpleDescription: null,
     product_image_1: null,
     product_image_2: null,
