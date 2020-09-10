@@ -826,6 +826,7 @@ def service_product_endpoint(product_service):
 
                 # 상품이 1개라도 존재하지 않을 경우 json 리턴값이 null 인걸 확인하였고, 그럴 경우엔
                 if not products:
+
                     # 빈 배열을 리턴해줍니다.
                     return jsonify({'data' : []}), 200
 
