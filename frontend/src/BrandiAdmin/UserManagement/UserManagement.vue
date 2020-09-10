@@ -316,6 +316,7 @@ export default {
             this.offset = this.getOffset();
           })
           .catch((error) => {
+            this.isLoadingScreen = false;
             if (error.response) {
               if (error.response.status === 400) {
                 this.userTotal = 0;
