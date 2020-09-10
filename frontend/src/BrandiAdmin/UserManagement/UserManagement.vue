@@ -23,7 +23,10 @@
         <div class="connectionError" v-if="this.errorStatus">
           <div>
             <i class="fas fa-exclamation-triangle"></i>
-            <span>Could not complete request. Please check yout internet connection</span>
+            <span
+              >Could not complete request. Please check yout internet
+              connection</span
+            >
           </div>
           <div class="closeIcon" @click="closeError">
             <i class="fas fa-times"></i>
@@ -32,12 +35,19 @@
         <div class="filterContainer" v-if="this.userTotal">
           <div class="pageInfo">
             <span>Page</span>
-            <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
+            <button
+              @click="movePage('minus')"
+              :class="[this.page === 1 ? 'prevent' : '']"
+            >
+              <
+            </button>
             <input v-model="page" />
             <button
               @click="movePage('plus')"
-              :class="[ this.page === getTotalPage ? 'prevent' : '']"
-            >></button>
+              :class="[this.page === getTotalPage ? 'prevent' : '']"
+            >
+              >
+            </button>
             <span>of {{ getTotalPage }} | View</span>
             <select v-model="selectedLimit">
               <option value="1">1</option>
@@ -158,14 +168,38 @@
               </td>
             </tr>
           </thead>
-          <tbody class="noData" v-if="this.userTotal">
+          <tbody v-if="this.isLoadingScreen">
+            <tr>
+              <td colspan="12">
+                <div class="loadingContainer">
+                  <v-progress-circular
+                    class="progress"
+                    :size="70"
+                    :width="7"
+                    color="primary"
+                    indeterminate
+                  >
+                    <img src="/Images/favicon-32x32.png" />
+                  </v-progress-circular>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tbody class="noData" v-else-if="this.userTotal">
             <tr v-for="(user, i) in tableData.data" :key="i">
               <td class="check">
-                <input type="checkbox" v-model="selected" :value="i" class="checkbox" />
+                <input
+                  type="checkbox"
+                  v-model="selected"
+                  :value="i"
+                  class="checkbox"
+                />
               </td>
               <td class="userNo">{{ user.user_no }}</td>
               <td class="userName">{{ user.name }}</td>
-              <td class="socialNetwork">{{ user.social_name ? user.social_name : "브랜디" }}</td>
+              <td class="socialNetwork">
+                {{ user.social_name ? user.social_name : "브랜디" }}
+              </td>
               <td class="phoneNumber">{{ user.phone_number }}</td>
               <td class="email">{{ user.email }}</td>
               <td class="event">동의</td>
@@ -177,7 +211,9 @@
                 <button class="detail">
                   <i class="fas fa-search"></i>Detail
                 </button>
-                <button class="changePW" v-if="user.social_name === null">비번변경</button>
+                <button class="changePW" v-if="user.social_name === null">
+                  비번변경
+                </button>
                 <button class="toBrandi" v-else>브랜디 계정으로 전환</button>
               </td>
             </tr>
@@ -191,12 +227,19 @@
         <div class="filterContainer" v-if="this.userTotal">
           <div class="pageInfo">
             <span>Page</span>
-            <button @click="movePage('minus')" :class="[ this.page === 1 ? 'prevent' : '']"><</button>
+            <button
+              @click="movePage('minus')"
+              :class="[this.page === 1 ? 'prevent' : '']"
+            >
+              <
+            </button>
             <input v-model="page" />
             <button
               @click="movePage('plus')"
-              :class="[ this.page === getTotalPage ? 'prevent' : '']"
-            >></button>
+              :class="[this.page === getTotalPage ? 'prevent' : '']"
+            >
+              >
+            </button>
             <span>of {{ getTotalPage }} | View</span>
             <select name="page" v-model="selectedLimit">
               <option value="1">1</option>
@@ -245,7 +288,7 @@ export default {
         userName: null,
         socialNetwork: null,
         phoneNumber: null,
-        email: null
+        email: null,
       },
       page: 1,
       selectedLimit: 10,
@@ -253,31 +296,37 @@ export default {
       lastAccessFrom: null,
       lastAccessTo: null,
       createdAtFrom: null,
-      createdAtTo: null
+      createdAtTo: null,
+      isLoadingScreen: false,
     };
   },
   methods: {
     getUserData() {
-      axios
-        .get(
-          `${SERVER_IP}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
-        )
-        .then(res => {
-          this.tableData = res.data;
-          this.userTotal = res.data.total_user_number;
-          this.offset = this.getOffset();
-        })
-        .catch(error => {
-          if (error.response) {
-            if (error.response.status === 400) {
-              this.userTotal = 0;
-            } else if (error.response.status === 500) {
+      this.isLoadingScreen = true;
+
+      setTimeout(() => {
+        axios
+          .get(
+            `${SERVER_IP}/admin/user/userlist?page=${this.page}&limit=${this.selectedLimit}&sort=${this.sort}${this.query}`
+          )
+          .then((res) => {
+            this.isLoadingScreen = false;
+            this.tableData = res.data;
+            this.userTotal = res.data.total_user_number;
+            this.offset = this.getOffset();
+          })
+          .catch((error) => {
+            if (error.response) {
+              if (error.response.status === 400) {
+                this.userTotal = 0;
+              } else if (error.response.status === 500) {
+                this.errorStatus = true;
+              }
+            } else {
               this.errorStatus = true;
             }
-          } else {
-            this.errorStatus = true;
-          }
-        });
+          });
+      }, 400);
     },
 
     movePage(value) {
@@ -349,9 +398,8 @@ export default {
         this.query = this.newQuery;
         this.page = 1;
         this.selectedLimit = 10;
+        this.getUserData();
       }
-
-      this.getUserData();
     },
     disabledAccessFrom(lastAccessFrom) {
       const endValue = this.lastAccessTo;
@@ -395,7 +443,7 @@ export default {
     },
     closeError() {
       this.errorStatus = false;
-    }
+    },
   },
   computed: {
     getTotalPage() {
@@ -431,8 +479,8 @@ export default {
           });
         }
         this.selected = selected;
-      }
-    }
+      },
+    },
   },
   watch: {
     selectedLimit: {
@@ -440,7 +488,7 @@ export default {
         this.page = Math.ceil(this.offset / this.selectedLimit);
         this.getUserData();
       },
-      deep: true
+      deep: true,
     },
     page: {
       handler: function(val, oldvalue) {
@@ -453,13 +501,13 @@ export default {
         } else if (oldvalue === "") {
           this.page = 1;
         }
-      }
+      },
     },
     sort: {
       handler: function(val, oldvalue) {
         this.getUserData();
       },
-      deep: true
+      deep: true,
     },
     lastAccessFrom(val) {
       if (val) {
@@ -488,8 +536,8 @@ export default {
       } else {
         this.filters.createdAtTo = null;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
@@ -521,6 +569,15 @@ header {
 .pageContents {
   padding: 20px;
   overflow: scroll;
+
+  .loadingContainer {
+    height: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: lightgray;
+  }
 
   .userTableContainer {
     min-width: 1554px;
