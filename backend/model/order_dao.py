@@ -1387,3 +1387,53 @@ class OrderDao:
 
         except  Exception as e:
             raise e
+
+    def select_user_existence(self, user_no, db_connection):
+
+        """
+
+        해당 유저의 정보를 찾아주는 메소드입니다.
+
+        Args:
+            user_no       : 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            유저의 존재 유무를 리턴해 줍니다.
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # 유저의 id를 검색해 존재하는 유저인지 확인해주는 쿼리입니다.
+                select_user_existence_query = """
+                SELECT
+                    user_no
+
+                FROM
+                    users
+
+                WHERE
+                    is_deleted = False
+                    AND user_no = %s
+                """
+
+                # 쿼리문을 실행하고,
+                cursor.execute(select_user_existence_query, user_no)
+
+                # 유저의 정보를 가져와 user_existence라는 변수에 담아줍니다.
+                user_existence = cursor.fetchone()
+
+                # 존재하는 유저라면 유저의 번호를, 존재하지 않는 유저라면 None(Null)을 리턴합니다.
+                return user_existence
+
+        except  Exception as e:
+            raise e
