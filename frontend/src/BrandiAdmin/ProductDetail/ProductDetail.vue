@@ -113,7 +113,7 @@
           </div>
           <div class="infoRow">
             <div class="rowTitle">수령자명:</div>
-            <div class="rowTitle">{{ detailData.orderer }}</div>
+            <div class="rowTitle">{{ detailData.receiver }}</div>
           </div>
         </div>
         <div class="infoBorder" />

@@ -397,13 +397,16 @@ export default {
           .then((res) => {
             this.orderData = res.data.data;
             this.totalNumData = res.data.total_number;
-            this.isLoadingScreen = false;
+
+            this.searchFilter = "";
           })
           .catch((error) => {
-            console.log(error);
-
-            this.$router.push("/admin");
+            if (error.response.status === 400) {
+              this.detailData = "";
+              return;
+            }
           });
+        this.isLoadingScreen = false;
       }, 400);
     },
 
@@ -605,8 +608,6 @@ export default {
       }
 
       this.axiosConnect();
-
-      this.searchFilter = "";
     },
   },
 
