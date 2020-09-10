@@ -6,7 +6,13 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense></v-select>
+          <v-select
+            v-model="selectSearch"
+            class="select"
+            :items="items"
+            label="Select.."
+            dense
+          ></v-select>
           <input
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
@@ -40,19 +46,22 @@
           class="btnV"
           name="전체"
           v-bind:color="sellData === '전체' ? 'primary' : 'white'"
-        >전체</v-btn>
+          >전체</v-btn
+        >
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="판매"
           v-bind:color="sellData === '판매' ? 'primary' : 'white'"
-        >판매</v-btn>
+          >판매</v-btn
+        >
         <v-btn
           v-on:click="sellHandler"
           class="btnV"
           name="미판매"
           v-bind:color="sellData === '미판매' ? 'primary' : 'white'"
-        >미판매</v-btn>
+          >미판매</v-btn
+        >
       </div>
       <div class="filterContainer">
         <div class="filterDate">할인여부 :</div>
@@ -61,19 +70,22 @@
           class="btnV"
           name="전체"
           v-bind:color="saleData === '전체' ? 'primary' : 'white'"
-        >전체</v-btn>
+          >전체</v-btn
+        >
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="할인"
           v-bind:color="saleData === '할인' ? 'primary' : 'white'"
-        >할인</v-btn>
+          >할인</v-btn
+        >
         <v-btn
           v-on:click="saleHandler"
           class="btnV"
           name="미할인"
           v-bind:color="saleData === '미할인' ? 'primary' : 'white'"
-        >미할인</v-btn>
+          >미할인</v-btn
+        >
       </div>
       <div class="filterContainer">
         <div class="filterDate">진열여부 :</div>
@@ -82,23 +94,38 @@
           class="btnV"
           name="전체"
           v-bind:color="displayData === '전체' ? 'primary' : 'white'"
-        >전체</v-btn>
+          >전체</v-btn
+        >
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="진열"
           v-bind:color="displayData === '진열' ? 'primary' : 'white'"
-        >진열</v-btn>
+          >진열</v-btn
+        >
         <v-btn
           v-on:click="displayHandler"
           class="btnV"
           name="미진열"
           v-bind:color="displayData === '미진열' ? 'primary' : 'white'"
-        >미진열</v-btn>
+          >미진열</v-btn
+        >
       </div>
       <div class="centerContainer">
-        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
-        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
+        <v-btn
+          tile
+          @click="searchFilterHandler"
+          class="btnSearch"
+          color="primary"
+          >검색</v-btn
+        >
+        <v-btn
+          tile
+          v-on:click="filterResetHandler"
+          class="searchReset"
+          color="white"
+          >초기화</v-btn
+        >
       </div>
     </article>
     <div class="subTitle">
@@ -118,16 +145,31 @@
       </div>
     </div>
     <div class="excelContainer">
-      <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-      <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+      <v-btn class="excelBtn" color="success" small
+        >선택상품 엑셀다운로드</v-btn
+      >
+      <v-btn class="excelBtn" color="success" small
+        >전체상품 엑셀다운로드</v-btn
+      >
     </div>
     <article class="tableArticle">
       <div class="totalPageNumber">
         전체 조회건 수 :
         <strong>{{ totalNumData }} 건</strong>
       </div>
-      <div class="scollcontainer">
-        <table class="dataTable">
+      <div class="scollContainer">
+        <div v-if="isLoadingScreen" class="loadingContainer">
+          <v-progress-circular
+            class="progress"
+            :size="70"
+            :width="7"
+            color="primary"
+            indeterminate
+          >
+            <img src="/Images/favicon-32x32.png" />
+          </v-progress-circular>
+        </div>
+        <table v-else class="dataTable">
           <thead class="tableTitle">
             <tr>
               <th class="checkboxContainer">
@@ -148,7 +190,12 @@
           <tbody>
             <tr v-for="(item, i) in tableData" :key="i">
               <td class="checkboxContainer">
-                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
+                <input
+                  v-model="selected"
+                  :value="i"
+                  class="checkbox"
+                  type="checkbox"
+                />
               </td>
               <td>{{ item.productRegistDate }}</td>
               <td class="imgTd">
@@ -163,7 +210,9 @@
               >{{ item.productCode  }}</router-link></td>-->
               <td>{{ item.productNo }}</td>
               <td>{{ Math.floor(item.sellPrice).toLocaleString(5) + "원" }}</td>
-              <td>{{ Math.floor(item.discountPrice).toLocaleString(5) + "원" }}</td>
+              <td>
+                {{ Math.floor(item.discountPrice).toLocaleString(5) + "원" }}
+              </td>
               <td>{{ item.productSellYn }}</td>
               <td>{{ item.productExhibitYn }}</td>
               <td>{{ item.discountYn }}</td>
@@ -173,7 +222,10 @@
       </div>
       <template>
         <div class="text-center">
-          <v-pagination v-model="page" :length="Math.ceil(totalNumData / limit)" />
+          <v-pagination
+            v-model="page"
+            :length="Math.ceil(totalNumData / limit)"
+          />
         </div>
       </template>
     </article>
@@ -217,6 +269,7 @@ export default {
       selectSearch: "",
       searchInputContents: "",
       searchFilter: "",
+      isLoadingScreen: false,
     };
   },
 
@@ -233,18 +286,17 @@ export default {
 
         //테이블의 리스트가 없다면 false를 통하여 select 해제
         return this.tableData
-          ? this.selected.length == this.tableData.length
+          ? this.selected.length === this.tableData.length
           : false;
       },
 
       //setter를 통해 변경을 알림
       //select한 체크박스값을 배열안에 넣어 적용
       set(value) {
-        console.log("Test222");
         const selected = [];
 
         if (value) {
-          this.tableData.forEach(function (item, i) {
+          this.tableData.forEach((item, i) => {
             selected.push(i);
           });
         }
@@ -285,14 +337,31 @@ export default {
 
   methods: {
     axiosConnect() {
-      axios
-        .get(
-          `${SERVER_IP}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
-        )
-        .then((res) => {
-          this.tableData = res.data.data[0];
-          this.totalNumData = res.data.data[1].total;
-        });
+      this.isLoadingScreen = true;
+
+      setTimeout(() => {
+        if (!this.startDate || !this.endDate) {
+          axios
+            .get(
+              `${SERVER_IP}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
+            )
+            .then((res) => {
+              this.tableData = res.data.data[0];
+              this.totalNumData = res.data.data[1].total;
+              this.isLoadingScreen = false;
+            });
+        } else {
+          axios
+            .get(
+              `${SERVER_IP}/admin/product?${this.sellDataUrl}${this.saleDataUrl}${this.displayDataUrl}${this.startDate}${this.endDate}&page=${this.page}&limit=${this.limit}${this.searchFilter}`
+            )
+            .then((res) => {
+              this.tableData = res.data.data[0];
+              this.totalNumData = res.data.data[1].total;
+              this.isLoadingScreen = false;
+            });
+        }
+      }, 400);
     },
 
     searchFilterHandler() {
@@ -391,12 +460,15 @@ export default {
     //판매여부 클릭 이벤트
     //v-btn 클릭시 여백부분 클릭할때와 글씨부분 클릭할때가 다르다.
     sellHandler(e) {
-      if (e.target.name) {
-        this.sellData = e.target.name;
-      } else {
-        this.sellData = e.target.innerText;
+      if (e) {
+        if (e.target.name) {
+          this.sellData = e.target.name;
+        } else {
+          this.sellData = e.target.innerText;
+        }
       }
     },
+
     saleHandler(e) {
       if (e.target.name) {
         this.saleData = e.target.name;
@@ -424,18 +496,6 @@ export default {
       this.endDate = null;
       this.selectSearch = "";
       this.searchInputContents = "";
-    },
-
-    //테이블에 있는 체크버튼중 최상단 체크박스 클릭시
-    //모든 체크버튼 ON/OFF 시킴
-    totalCheckedHandler() {
-      this.totalChecked = !this.totalChecked;
-
-      if (this.totalChecked) {
-        for (let key in this.tableData) {
-          this.checked.push(this.tableData[key]);
-        }
-      }
     },
   },
 
@@ -624,8 +684,17 @@ export default {
     }
   }
 
-  .scollcontainer {
+  .scollContainer {
     overflow-x: scroll;
+
+    .loadingContainer {
+      height: 100px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: lightgray;
+    }
 
     .dataTable {
       display: table;

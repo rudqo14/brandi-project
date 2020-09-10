@@ -183,7 +183,18 @@ export default {
 
   data() {
     return {
-      detailData: { image_list: [] },
+      detailData: {
+        colors: [],
+        discount_rate: 0,
+        html: "",
+        image_list: [],
+        max_sales_quantity: 20,
+        min_sales_quantity: 1,
+        name: "",
+        original_price: 0,
+        product_id: 0,
+        sales_price: 0,
+      },
       colorToggleData: "[색상]을 선택하세요.",
       isColorToggle: false,
       sizeToggleData: "[사이즈]를 선택하세요.",
@@ -220,7 +231,6 @@ export default {
           `${SERVER_IP}/product/${this.$route.params.id}?color_id=${item.color_id}`
         )
         .then((res) => {
-          // this.productQuantity = res.data.data[index].quantity;
           this.colorData = res.data.data;
         });
     },
