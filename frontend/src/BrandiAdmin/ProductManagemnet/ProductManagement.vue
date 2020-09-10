@@ -348,7 +348,12 @@ export default {
             .then((res) => {
               this.tableData = res.data.data[0];
               this.totalNumData = res.data.data[1].total;
-              this.isLoadingScreen = false;
+            })
+            .catch((error) => {
+              if (error.response.status === 400) {
+                this.tableData = "";
+                return;
+              }
             });
         } else {
           axios
@@ -358,9 +363,15 @@ export default {
             .then((res) => {
               this.tableData = res.data.data[0];
               this.totalNumData = res.data.data[1].total;
-              this.isLoadingScreen = false;
+            })
+            .catch((error) => {
+              if (error.response.status === 400 || 401) {
+                this.tableData = "";
+                return;
+              }
             });
         }
+        this.isLoadingScreen = false;
       }, 400);
     },
 
