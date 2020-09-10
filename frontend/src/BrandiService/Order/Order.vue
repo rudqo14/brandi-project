@@ -533,6 +533,9 @@ export default {
           localStorage.removeItem("purchaseProductNumber");
           alert("결제가 완료되었습니다.");
           this.$router.push("/main");
+        })
+        .catch((error) => {
+          console.log(error);
         });
     },
   },
