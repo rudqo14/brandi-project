@@ -394,6 +394,8 @@ class OrderDao:
 
             INNER JOIN product_details P7
             ON P5.product_id = P7.product_id
+            AND P1.start_time >= P7.start_time
+            AND P7.close_time >= P1.start_time
 
             INNER JOIN colors P8
             ON P5.color_id = P8.color_no
