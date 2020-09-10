@@ -82,6 +82,11 @@ export default {
         })
         .then(res => {
           this.order = res.data;
+        })
+        .catch(error => {
+          if (error.response.status === 401) {
+            this.$router.push("/error/400");
+          }
         });
     },
     // 2020-08-29 형태로 변환
