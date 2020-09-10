@@ -51,7 +51,7 @@ if (env === "development") {
     historyApiFallback: true,
   };
 
-  // 배포환경에서만 css 를 style.css 로 따로 번들링한다.
+  // 배포환경에서 js와 css 를 dist 폴더에 app.js 와 style.css 로 번들링한다.
 } else if (env === "production") {
   config.module.rules = [
     {

@@ -43,12 +43,15 @@
                       class="colorSelect"
                       value="defaultColorValue"
                     >
-                      <option value="0" selected>색상 옵션을 선택해 주세요</option>
+                      <option value="0" selected
+                        >색상 옵션을 선택해 주세요</option
+                      >
                       <option
                         v-for="list in option.data.color"
                         :value="list.name"
                         :key="list.color_no"
-                      >{{ list.name }}</option>
+                        >{{ list.name }}</option
+                      >
                     </select>
                   </td>
                   <div class="colorButtonBox">
@@ -63,7 +66,9 @@
                         v-if="colorSelectList.length > 1"
                         :value="list"
                         @click="colorSelectDelete"
-                      >-</button>
+                      >
+                        -
+                      </button>
                     </td>
                   </div>
                 </tr>
@@ -81,7 +86,8 @@
                         v-for="list in option.data.size"
                         :key="list.size_no"
                         :value="list.name"
-                      >{{ list.name }}</option>
+                        >{{ list.name }}</option
+                      >
                     </select>
                   </td>
                   <div class="sizeButtonBox">
@@ -96,7 +102,9 @@
                         v-if="sizeSelectList.length > 1"
                         :value="list"
                         @click="sizeSelectDelete"
-                      >-</button>
+                      >
+                        -
+                      </button>
                     </td>
                   </div>
                 </tr>
@@ -119,7 +127,9 @@
               </thead>
               <tbody class="secondBody">
                 <tr>
-                  <td colspan="4">옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.</td>
+                  <td colspan="4">
+                    옵션 정보를 입력 후 [적용] 버튼을 눌러주세요.
+                  </td>
                 </tr>
                 <tr
                   v-if="applyOn"
@@ -280,8 +290,8 @@ export default {
     },
 
     // 적용 버튼을 눌렀을 때 선택한 옵션들이 아래 테이블로 적용되는 메소드
-    //
     clickApply() {
+      // applyAddClicks 기본값은 0 이고 적용 버튼을 클릭할 때마다 +1을 해줍니다.
       this.applyAddClicks++;
       if (this.applyAddClicks === 1) {
         this.applyOptions();

@@ -89,7 +89,9 @@ export default {
         JSON.stringify(productDatas.optionQuantity)
       );
       form.append("price", productDatas.price);
-      form.append("discountRate", productDatas.discountRate);
+      if (("discountRate", productDatas.discountRate !== null)) {
+        form.append("discountRate", productDatas.discountRate);
+      }
       if (productDatas.discountStartDate !== null) {
         form.append("discountStartDate", productDatas.discountStartDate);
         form.append("discountEndDate", productDatas.discountEndDate);
