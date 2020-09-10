@@ -223,6 +223,15 @@ def create_service_order_endpoints(order_service):
                 # 받아온 user_info객체에서 유저의 id를 가져옵니다.
                 user_no = user_info['user_no']
 
+                # 해당 유저의 정보가 올바른 유저인지 검사해줍니다.
+                user_existence = order_service.check_user_existence(user_no, db_connection)
+
+                # 해당 유저의 정보가 없다면,
+                if user_existence is None:
+
+                    # UNAUTHORIZED 에러 메세지를 보내줍니다.
+                    return jsonify({'message' : 'UNAUTHORIZED'}), 401
+
                 # 해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져옵니다.
                 product_quantity_range = order_service.get_product_quantity_range(product_info, db_connection)
 
@@ -303,6 +312,7 @@ def create_service_order_endpoints(order_service):
             400 : VALIDATION_ERROR
             400 : The maximum/minimum number of products that can be purchased is 'quantity' or more/less.
             400 : The number of products available for purchase has been exceeded.
+            400 : Total price is incorrect.
             500 : NO_DATABASE_CONNECTION_ERROR
 
         Author:
@@ -315,6 +325,9 @@ def create_service_order_endpoints(order_service):
             2020-09-10 (minho.lee0716@gmail.com) : 추가
                 해당 상품의 구매 가능한 최소, 최대 수량을 가져와 받아온 수량을 확인하여
                 최소 구매 수량보다 적게 샀을 경우와 최대 구매 수량보다 많이 샀을 경우에 대한 에러처리를 하였습니다.
+            2020-09-10 (minho.lee0716@gmail.com) : 추가
+                프론트에서 받아온 구매할 상품에 대한 총 가격에이 DB에 있는 상품의 정보를 이용한 총 가격과 일치하는지
+                검사를 하였고, 일치해야만 주문이 진행되게 하였습니다.
 
         """
 
@@ -342,22 +355,38 @@ def create_service_order_endpoints(order_service):
                     "delivery_request"   : args[10]
                 }
 
-                # 데코레이터에서 받아온 user_no의 값을 쓰기 편하도록 order_info에 넣어줍니다.
-                order_info['user_no'] = user_info['user_no']
+                # 데코레이터에서 받은 user_info객체에서 user_no을 가져옵니다.
+                user_no = user_info['user_no']
 
-                # 해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져옵니다.
+                # 해당 유저의 정보가 올바른 유저인지 검사해줍니다.
+                user_existence = order_service.check_user_existence(user_no, db_connection)
+
+                # 해당 유저의 정보가 없다면,
+                if user_existence is None:
+
+                    # UNAUTHORIZED 에러 메세지를 보내줍니다.
+                    return jsonify({'message' : 'UNAUTHORIZED'}), 401
+
+                # user_no의 값을 쓰기 편하도록 order_info에 넣어줍니다.
+                order_info['user_no'] = user_no
+
+                # 해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져와 product_quantity_range라는 변수에 담아줍니다.
                 product_quantity_range = order_service.get_product_quantity_range(order_info, db_connection)
 
                 # 가져온 최소, 최대 구매 가능한 상품의 수량을 각 변수에 담아줍니다.
                 min_q = product_quantity_range['min_sales_quantity']
                 max_q = product_quantity_range['max_sales_quantity']
 
-                # 구매하려고 하는 상품의 수량이 최소 구매 가능한 수량보다 작을 때
+                # 구매하려고 하는 상품의 수량이 최소 구매 가능한 수량보다 적을 때
                 if order_info['quantity'] < min_q:
+
+                    # 최소한 n개 이상의 수량을 구매해야 한다고 에러 메세지를 보내줍니다.
                     return jsonify({'message' : f"The minimum number of products that can be purchased is {min_q} or more."}), 400
 
                 # 구매하려고 하는 상품의 수량이 최대 구매 가능한 수량보다 많을 때
                 if order_info['quantity'] > max_q:
+
+                    # 최대 n개 이하의 수량을 구매해야 한다고 에러 메세지를 보내줍니다.
                     return jsonify({'message' : f"The maximum number of products that can be purchased is {max_q} or less."}), 400
 
                 # 상품을 주문하기 전, 현재 선택한 옵션의 상품 재고를 가져오는 메소드를 실행 후, 변수에 담아줍니다.

@@ -363,3 +363,29 @@ class OrderService:
 
         # 프론트에서 받아오는 총 가격을 int타입으로 유효성 검사를 진행 하였기에, int타입으로 리턴을 해줍니다.
         return int(total_price)
+
+    def check_user_existence(self, user_no, db_connection):
+
+        """
+
+        Access_Token에서 얻어온 유저의 정보가 올바른 유저인지 판단해주는 메소드입니다.
+
+        Args:
+            user_no       : 유저의 id
+            db_connection : 연결된 db 객체
+
+        Returns:
+            유저의 정보가 있다면 user_no를, 없다면 None(Null)을 리턴해 줍니다.
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 총 가격을 계산하기 위해, 해당 상품에 대한 원 가격과, 할인율을 가져옵니다.
+        user_existence = self.order_dao.select_user_existence(user_no, db_connection)
+
+        return user_existence
