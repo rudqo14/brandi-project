@@ -12,7 +12,7 @@
         </div>
         <div class="inputPlace">
           <div>
-            <input @input="getInputPrice" placeholder="0" />
+            <input @input="getInputPrice" placeholder="0" ref="price" />
             <div class="price">원</div>
           </div>
           <div class="alertMessage">
@@ -38,7 +38,11 @@
               <tr>
                 <td class="tableName">
                   <div>
-                    <input @input="getInputRate" placeholder="0" />
+                    <input
+                      @input="getInputRate"
+                      placeholder="0"
+                      ref="discountRate"
+                    />
                     <div class="percent">%</div>
                   </div>
                 </td>
@@ -252,12 +256,14 @@ export default {
       const price = this.getPrice;
       if (price === 0) {
         alert("할인 적용 전에 판매가 입력이 필수입니다");
+        this.$refs.price.focus();
       } else {
         const discountRate = this.getDiscountRate;
         if (discountRate < 0 || discountRate > 99) {
           alert(
             "올바른 할인율을 입력해주세요 \n할인율 범위는 0~99 까지 가능합니다."
           );
+          this.$refs.discountRate.focus();
         } else {
           const discountPrice = price * (discountRate / 100);
           this.discountSellingPrice =
