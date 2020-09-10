@@ -1,4 +1,4 @@
-import requests
+import requests, math
 from flask                  import request, Blueprint, jsonify
 from flask_request_validator import (
     validate_params,
@@ -370,10 +370,16 @@ def create_admin_user_endpoints(user_service):
                 # 총 유저가 존재할 경우에만 유저리스트 가져옴
                 if total_user['total_number']:
 
-                    # 유저 리스트 가져와서 result에 저장
-                    result = user_service.get_user_list(filter_info, db_connection)
+                    # 요청으로 들어온 페이지가 총 유저수 / limit 한 페이지보다 작은 경우에만 유저리스트 가져옴
+                    if math.ceil(total_user['total_number']/filter_info['limit']) >= filter_info['page']:
 
-                    return jsonify({"total_user_number" : total_user['total_number'], "data" : result}), 200
+                        # 유저 리스트 가져와서 result에 저장
+                        result = user_service.get_user_list(filter_info, db_connection)
+
+                        return jsonify({"total_user_number" : total_user['total_number'], "data" : result}), 200
+
+                    # 요청으로 들어온 page가 바르지 않은 경우
+                    return jsonify({"message" : "INVALID_PAGE"}), 400
 
                 # 총 유저가 없을 경우 빈 배열 리턴
                 return jsonify({"total_user_number" : 0, "data" : []}), 200
