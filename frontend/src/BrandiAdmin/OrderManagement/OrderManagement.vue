@@ -122,7 +122,7 @@
       </div>
     </div>
     <article class="tableArticle">
-      <div class="scrollcontainer">
+      <div class="scrollContainer">
         <div v-if="isLoadingScreen" class="loadingContainer">
           <v-progress-circular
             class="progress"
@@ -806,7 +806,7 @@ export default {
       font-weight: bold;
     }
   }
-  .scrollcontainer {
+  .scrollContainer {
     overflow-x: scroll;
 
     .loadingContainer {
