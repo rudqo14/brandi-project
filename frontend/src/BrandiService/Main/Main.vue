@@ -32,7 +32,11 @@
                     noneDisCountPrice: !product.discount_rate,
                     price: product.discount_rate,
                   }"
-                  >{{ numberWithCommas(product.original_price) }}</span
+                  >{{
+                    numberWithCommas(
+                      Math.round(product.original_price / 10) * 10
+                    )
+                  }}</span
                 >
               </div>
             </div>
