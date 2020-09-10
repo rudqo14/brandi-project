@@ -18,67 +18,88 @@ CREATE TABLE products
 INSERT INTO products
 (
     product_no,
-    product_code
+    product_code,
+    created_at
 ) VALUES (
     1,
-   '447acee5-1a6f-45d3-a630-fa9db6cec51a' 
+    '447acee5-1a6f-45d3-a630-fa9db6cec51a',
+    '2020-04-20 12:00:00'
 ), (
     2,
-    'cd998fc3-43cc-4f3b-9a70-b2ad67fde612'
+    'cd998fc3-43cc-4f3b-9a70-b2ad67fde612',
+    '2020-04-20 12:00:00'
 ), (
     3,
-    '34059e97-775d-4176-8b9c-467687e28fa6'
+    '34059e97-775d-4176-8b9c-467687e28fa6',
+    '2020-04-20 12:00:00'
 ), (
     4,
-    'cd5c18b2-ffba-4b70-98a5-1ff76c9b4cf8'
+    'cd5c18b2-ffba-4b70-98a5-1ff76c9b4cf8',
+    '2020-04-20 12:00:00'
 ), (
     5,
-    'd2be6842-23c4-48af-b667-32046585b292'
+    'd2be6842-23c4-48af-b667-32046585b292',
+    '2020-04-20 12:00:00'
 ), (
     6,
-    '63caf721-0bcb-415d-80b5-7fc6852f9e5e'
+    '63caf721-0bcb-415d-80b5-7fc6852f9e5e',
+    '2020-04-20 12:00:00'
 ), (
     7,
-    '7ac1f9c4-e34e-4013-a8ff-fd7e8d34cb8a'
+    '7ac1f9c4-e34e-4013-a8ff-fd7e8d34cb8a',
+    '2020-04-20 12:00:00'
 ), (
     8,
-    '8d0e3b90-2a27-40af-8a2a-92e14b05402d'
+    '8d0e3b90-2a27-40af-8a2a-92e14b05402d',
+    '2020-04-20 12:00:00'
 ), (
     9,
-    '0839b2c9-e741-41d6-bed8-eb10c034478d'
+    '0839b2c9-e741-41d6-bed8-eb10c034478d',
+    '2020-04-20 12:00:00'
 ), (
     10,
-    'edbdbe99-2011-4d4b-ac1d-6b24b25b01b6'
+    'edbdbe99-2011-4d4b-ac1d-6b24b25b01b6',
+    '2020-04-20 12:00:00'
 ), (
     11,
-    '5ae73934-d0e4-4cff-8785-d973f7ec0553'
+    '5ae73934-d0e4-4cff-8785-d973f7ec0553',
+    '2020-04-20 12:00:00'
 ), (
     12,
-    'd75475e3-4a30-43b6-96b2-a9e71e23044c'
+    'd75475e3-4a30-43b6-96b2-a9e71e23044c',
+    '2020-04-20 12:00:00'
 ), (
     13,
-    'd5549f63-48fd-4c0c-b70d-521a677d7bae'
+    'd5549f63-48fd-4c0c-b70d-521a677d7bae',
+    '2020-04-20 12:00:00'
 ), (
     14,
-    '715fbe44-7109-48c1-83c6-7f55789a44ea'
+    '715fbe44-7109-48c1-83c6-7f55789a44ea',
+    '2020-04-20 12:00:00'
 ), (
     15,
-    '0a8ed894-7489-4bfb-9b28-88aa8a760e80'
+    '0a8ed894-7489-4bfb-9b28-88aa8a760e80',
+    '2020-04-20 12:00:00'
 ), (
     16,
-    '7b12a5a3-99c2-4f36-b8dc-c2ceb764cd4e'
+    '7b12a5a3-99c2-4f36-b8dc-c2ceb764cd4e',
+    '2020-04-20 12:00:00'
 ), (
     17,
-    '0d5ed9ae-bd8d-4974-907c-927d1858fd2e'
+    '0d5ed9ae-bd8d-4974-907c-927d1858fd2e',
+    '2020-04-20 12:00:00'
 ), (
     18,
-    'cc0bc286-f632-438a-8117-f6e106c61ca3'
+    'cc0bc286-f632-438a-8117-f6e106c61ca3',
+    '2020-04-20 12:00:00'
 ), (
     19,
-    'aa616244-ec2c-4d0e-8d37-595b238df355'
+    'aa616244-ec2c-4d0e-8d37-595b238df355',
+    '2020-04-20 12:00:00'
 ), (
     20,
-    '5ca04d97-8178-40ea-8cc8-d3f20a5640d4'
+    '5ca04d97-8178-40ea-8cc8-d3f20a5640d4',
+    '2020-04-20 12:00:00'
 );
 
 -- colors Table Create SQL
@@ -746,7 +767,7 @@ CREATE TABLE product_options
     `product_id`         INT         NOT NULL    COMMENT '상품_id', 
     `color_id`           INT         NOT NULL    COMMENT '색상_id', 
     `size_id`            INT         NOT NULL    COMMENT '사이즈_id', 
-    `current_quantity`           INT         NOT NULL    COMMENT '재고',
+    `current_quantity`   INT         NOT NULL    COMMENT '재고',
     `created_at`         DATETIME    NOT NULL    DEFAULT CURRENT_TIMESTAMP COMMENT '생성일시', 
     `deleted_at`         DATETIME    NULL        COMMENT '삭제일시',
     `is_deleted`         TINYINT     NOT NULL    DEFAULT FALSE COMMENT '삭제여부', 
@@ -942,6 +963,18 @@ INSERT INTO product_options
     3,
     3,
     20
+), (
+    29,
+    6,
+    3,
+    3,
+    100
+), (
+    30,
+    6,
+    3,
+    4,
+    200
 );
 
 -- user_shipping_details Table Create SQL
@@ -2330,4 +2363,12 @@ INSERT INTO quantities
     28,
     28,
     20
+), (
+    29,
+    29,
+    100
+), (
+    30,
+    30,
+    200
 );

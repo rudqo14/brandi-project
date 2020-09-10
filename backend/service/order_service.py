@@ -164,6 +164,8 @@ class OrderService:
                 (구매하려는 상품의 정보 + 주문자의 정보 + 주문자의 배송지 정보)를 합쳤습니다.
             2020-09-03 (minho.lee0716@gmail.com) : 수정
                 상품을 주문할 수 있게 프론트에게 option_detail_id를 리턴해 줍니다.
+            2020-09-10 (minho.lee0716@gmail.com) : 수정
+                테이블 변경으로 인해 option_detail_id의 정보는 주지 않습니다.
 
         """
 
