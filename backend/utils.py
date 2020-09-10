@@ -137,7 +137,11 @@ def login_required(func):
             # header에 access_token이 없는경우
             return jsonify({"message" : "UNAUTHORIZED"}), 401
 
+        # 서버에서 발행한 토큰이 아닌경우
         except jwt.exceptions.InvalidSignatureError:
+            return jsonify({"message" : "INVALID_TOKEN"}), 400
+
+        except jwt.exceptions.DecodeError:
             return jsonify({"message" : "INVALID_TOKEN"}), 400
 
     return wrapper
