@@ -103,7 +103,7 @@ export default {
           alert("1차 카테고리를 선택해주세요.");
         } else if (productDatas.subCategoryId === null) {
           alert("2차 카테고리를 선택해주세요.");
-        } else if (productDatas.productName === null) {
+        } else if (productDatas.productName === "") {
           alert("상품명을 입력해주세요.");
         } else if (productDatas.product_image_1 === null) {
           alert("대표이미지를 등록해주세요.");
