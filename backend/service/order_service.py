@@ -328,3 +328,38 @@ class OrderService:
         product_quantity_range = self.order_dao.select_product_quantity_range(product_info, db_connection)
 
         return product_quantity_range
+
+    def check_total_price(self, order_info, db_connection):
+
+        """
+
+        프론트에서 받아온 주문 정보를 통해, 구매하고자 하는 상품의 총 가격에 대한 검사를 진행하는 메소드 입니다.
+
+        Args:
+            order_info    : 주문 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+            total_price : 구매하고자 하는 상품 * 수량을 한 총 가격.
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 총 가격을 계산하기 위해, 해당 상품에 대한 원 가격과, 할인율을 가져옵니다.
+        product_info = self.order_dao.select_product_info(order_info, db_connection)
+
+        # 가져온 해당 상품에 대한 원 가격과, 할인율 그리고 유저가 구매하고자 하는 수량을 받아온 후,
+        original_price = product_info['original_price']
+        discount_rate  = product_info['discount_rate']
+        quantity       = order_info['quantity']
+
+        # 총 가격을 계산해 줍니다.
+        total_price = round(original_price * (100 - discount_rate) / 100, -1) * quantity
+
+        # 프론트에서 받아오는 총 가격을 int타입으로 유효성 검사를 진행 하였기에, int타입으로 리턴을 해줍니다.
+        return int(total_price)

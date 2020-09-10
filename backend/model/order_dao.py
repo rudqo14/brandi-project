@@ -1322,3 +1322,68 @@ class OrderDao:
 
         except Exception as e:
             raise e
+
+    def select_product_info(self, order_info, db_connection):
+
+        """
+
+        구매하고자 하는 상품의 정보들을 리턴해 줍니다.
+
+        Args:
+            order_info  : 주문 정보가 들어있습니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+            product_info : 구매하고자 하는 상품의 정보를 리턴해줍니다. (product_details 테이블의 정보)
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                select_product_info_query = """
+                SELECT
+                    PD.price AS original_price,
+                    PD.discount_rate,
+                    CASE
+                        WHEN PD.discount_rate IS NULL THEN 0
+                        ELSE CASE
+                            WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                            WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                            ELSE 0
+                            END
+                        END
+                    AS discount_rate
+
+                FROM products AS P
+
+                LEFT JOIN product_details AS PD
+                ON P.product_no = PD.product_id
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+                AND PD.close_time = '9999-12-31 23:59:59'
+
+                WHERE
+                    P.is_deleted = False
+                    AND P.product_no = %(product_id)s
+                """
+
+                # 상품 번호만 받아와 해당 상품의 정보들을 seller_product에 담아줍니다.
+                cursor.execute(select_product_info_query, order_info)
+                product_info = cursor.fetchone()
+
+                # 셀러의 상품이(구매하려는 상품) 존재하지 않을 경우 예외처리
+                if not product_info:
+                    raise Exception('THIS_PRODUCT_DOES_NOT_EXISTS')
+
+                return product_info
+
+        except  Exception as e:
+            raise e

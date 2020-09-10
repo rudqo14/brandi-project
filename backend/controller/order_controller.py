@@ -369,6 +369,17 @@ def create_service_order_endpoints(order_service):
                     # 구매 가능한 상품의 수가 초과되었다고 에러를 보내줍니다.
                     return jsonify({'message' : 'The number of products available for purchase has been exceeded.'}), 400
 
+                # 구매하고자 하는 수량에 문제가 없다면, 유저가 구매하고자 하는 수량에 대해 총 가격에 대한 검사를 해줍니다.
+                # 먼저 주문 정보를 알려준 후, 총 가격을 계산해주는 메소드를 실행하여 total_price라는 변수에 넣어줍니다.
+                total_price = order_service.check_total_price(order_info, db_connection)
+
+                # 만약 프론트에서 계산한 총 가격과, DB에서 계산한 총 가격이 다르다면,
+                if order_info['total_price'] != total_price:
+
+                    # 결제를 진행하지 않고 에러 메세지를 보내줍니다.
+                    return jsonify({'message' : 'Total price is incorrect.'}), 400
+
+                # 프론트에서 계산한 총 가격이 문제가 없다면 결제를 이어서 진행합니다.
                 # 만약 사용자가 구매하려는 상품의 개수가 현재 재고와 작거나 같다면 이어서 결제를 진행합니다.
                 # 구매하기전, 해당 유저의 배송지 정보를 추가 또는 변경해주는 메소드를 호출합니다.
                 order_service.modify_user_shipping_details(order_info, db_connection)
