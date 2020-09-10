@@ -1,18 +1,28 @@
 <template>
   <div v-if="order.data.length">
     <div class="container">
-      <div class="orderContainer" v-for="order in order.data" v-bind:key="order.order_detail_no">
+      <div
+        class="orderContainer"
+        v-for="order in order.data"
+        v-bind:key="order.order_detail_no"
+      >
         <div class="orderTop">
           <div class="topLeft">
             <div>{{ getDate(order.start_time) }}</div>
             <div class="divider"></div>
-            <div
-              class="orderDetailNo"
-            >{{ getOrderDetailNo(order.start_time, order.order_detail_no) }}</div>
+            <div class="orderDetailNo">
+              {{ getOrderDetailNo(order.start_time, order.order_detail_no) }}
+            </div>
           </div>
-          <div class="toDetail" @click="linkToOrderDetail(order.order_detail_no)">
+          <div
+            class="toDetail"
+            @click="linkToOrderDetail(order.order_detail_no)"
+          >
             <span>주문상세보기</span>
-            <img src="/Images/ic-titleic-detailpage-moreaction@3x.png" alt=">" />
+            <img
+              src="/Images/ic-titleic-detailpage-moreaction@3x.png"
+              alt=">"
+            />
           </div>
         </div>
         <div class="orderMid">판매자 배송 상품</div>
@@ -38,11 +48,17 @@
                 class="productName"
                 @click="linkToProductDetail"
                 :value="order.product_no"
-              >{{ order.product_name}}</div>
-              <div class="productOption">{{ order.color }} / {{ order.size }}</div>
+              >
+                {{ order.product_name }}
+              </div>
+              <div class="productOption">
+                {{ order.color }} / {{ order.size }}
+              </div>
               <div class="orderQuantity">{{ order.quantity }} 개</div>
             </div>
-            <div class="orderPrice">{{ numberWithCommas(order.total_price) }} 원</div>
+            <div class="orderPrice">
+              {{ numberWithCommas(order.total_price) }} 원
+            </div>
             <div class="orderStatus">{{ order.order_status }}</div>
           </div>
         </div>
@@ -68,7 +84,7 @@ export default {
   data() {
     return {
       order: { data: [] },
-      orderData: false
+      orderData: false,
     };
   },
   methods: {
@@ -77,14 +93,16 @@ export default {
       axios
         .get(`${SERVER_IP}/user/mypage/orderlist`, {
           headers: {
-            Authorization: token
-          }
+            Authorization: token,
+          },
         })
-        .then(res => {
+        .then((res) => {
           this.order = res.data;
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.response.status === 401) {
+            this.$router.push("/error/400");
+          } else if (error.response.status === 400) {
             this.$router.push("/error/400");
           }
         });
@@ -119,11 +137,11 @@ export default {
 
     getDiscountPrice(price, discountRate) {
       return price * ((100 - discountRate) / 100);
-    }
+    },
   },
   computed: {
-    ...mapGetters(serviceStore, ["getToken"])
-  }
+    ...mapGetters(serviceStore, ["getToken"]),
+  },
 };
 </script>
 
