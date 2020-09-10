@@ -863,7 +863,7 @@ INSERT INTO product_options
     15,
     3,
     3,
-    1
+    100
 ), (
     16,
     16,
@@ -923,7 +923,7 @@ INSERT INTO product_options
     1,
     2,
     3,
-    0
+    77
 ), (
     26,
     1,
@@ -2277,7 +2277,7 @@ INSERT INTO quantities
 ), (
     15,
     15,
-    1
+    100
 ), (
     16,
     16,
@@ -2317,7 +2317,7 @@ INSERT INTO quantities
 ), (
     25,
     25,
-    0
+    77
 ), (
     26,
     26,

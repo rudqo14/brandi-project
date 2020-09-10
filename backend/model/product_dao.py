@@ -317,7 +317,8 @@ class ProductDao:
                 P.product_no DESC;
             """
 
-            # 상품을 등록하고, row를 고려해 전체 리스트에서는 상품 id의 역순으로 리턴해줍니다.
+            # 상품을 등록하고, row의 id를 고려해 전체 리스트에서는 상품 id의 역순으로 리턴해줍니다.
+            # 그러면 상품이 등록된 최신 순으로 전체 리스트에서 볼 수 있습니다.
             cursor.execute(select_products_query)
             products = cursor.fetchall()
 
@@ -354,6 +355,7 @@ class ProductDao:
 
         with db_connection.cursor() as cursor:
 
+            # 해당 상품의 상세정보들을 검색해주는 쿼리문입니다.
             select_product_details_query = """
             SELECT
                 P.product_no AS product_id,
@@ -758,7 +760,7 @@ class ProductDao:
 
             # 이미지를 순서대로(이미지 id의 오름차순) 정렬해줍니다
 
-            # 데이터들을 가져온 후, product_images라는 변수에 담은 후,
+            # 쿼리문을 실행한 후,  가져온 모든 이미지의 데이터들을 product_images라는 변수에 담아줍니다.
             cursor.execute(select_product_images_query, product_id)
             product_images = cursor.fetchall()
 
@@ -796,6 +798,7 @@ class ProductDao:
 
         with db_connection.cursor() as cursor:
 
+            # 해당 상품에 대한 컬러들을 검색해주는 쿼리문입니다.
             select_product_options_query = """
             SELECT DISTINCT
                 C.color_no AS color_id,
@@ -815,13 +818,13 @@ class ProductDao:
                 AND P.is_deleted = False
 
             ORDER BY
-                color_id ASC;
+                color_id ASC; -- color_id를 오름차순으로 정렬해줍니다.
             """
 
-            # color_id를 오름차순으로 정렬해줍니다.
-
-            # 가져온 데이터들을 product_details라는 변수에 담은 후,
+            # 쿼리문을 실행한 후,
             cursor.execute(select_product_options_query, product_id)
+
+            # 받아온 모든 컬러의 정보를 colors라는 변수에 담습니다.
             colors = cursor.fetchall()
 
             return colors
@@ -860,6 +863,7 @@ class ProductDao:
 
         with db_connection.cursor() as cursor:
 
+            # color_id를 주고 해당 컬러의 size들과 수량을 검색해주는 쿼리문 입니다.
             select_product_etc_options_query = """
             SELECT
                 S.name AS size,
@@ -889,13 +893,13 @@ class ProductDao:
                 AND Q.quantity > 0
 
             ORDER BY
-                S.size_no DESC;
+                S.size_no DESC; -- 사이즈는 큰 순서로 넣어줬기 때문에 역순으로 정렬하였습니다.
             """
 
-            # 사이즈는 큰 순서로 넣어줬기 때문에 역순으로 정렬하였습니다.
-
-            # 불러온 데이터를 etc_options 라는 변수에 담아온 후, 리턴을 해줍니다.
+            # 쿼리문을 실행한 후
             cursor.execute(select_product_etc_options_query, product_info)
+
+            # 받아온 size와 수량에 대한 모든 데이터들을 etc_options라는 변수에 담아줍니다.
             etc_options = cursor.fetchall()
 
             return etc_options

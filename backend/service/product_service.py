@@ -111,8 +111,10 @@ class ProductService:
         """
 
         # 상품의 기준은 진열여부=True, 판매여부=True
+        # 최신으로 등록된 상품을 볼 수 있게 상품의 id를 내림차순으로 정렬.
         products = self.product_dao.select_product_list(db_connection)
 
+        # 상품마다 할인율이 존재할 경우, 할인가를 추가해 줍니다.
         for product in products:
             product['sales_price'] = round(product['original_price'] * (100-product['discount_rate'])/ 100, -1)
 
