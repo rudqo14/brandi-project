@@ -271,11 +271,17 @@ export default {
         this.detailAddress = this.detailData.additional_address;
         this.sigunguCode = this.detailData.zip_code;
         this.name = this.detailData.receiver;
-
         this.phoneNumber = this.detailData.phone_number;
         this.showPhoneNum = this.detailData.phone_number;
+        this.nameInput = this.detailData.orderer_name;
+        this.email = this.detailData.orderer_email;
       })
       .catch((error) => {});
+
+    localStorage.removeItem("purchaseId");
+    localStorage.removeItem("purchaseSize");
+    localStorage.removeItem("purchaseColor");
+    localStorage.removeItem("purchaseProductNumber");
   },
 
   data() {
