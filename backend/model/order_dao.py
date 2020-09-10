@@ -1353,7 +1353,6 @@ class OrderDao:
                 select_product_info_query = """
                 SELECT
                     PD.price AS original_price,
-                    PD.discount_rate,
                     CASE
                         WHEN PD.discount_rate IS NULL THEN 0
                         ELSE CASE
