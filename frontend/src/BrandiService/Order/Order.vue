@@ -535,7 +535,9 @@ export default {
           this.$router.push("/main");
         })
         .catch((error) => {
-          console.log(error);
+          if (error.response.status === 401) {
+            this.$router.push("/error/400");
+          }
         });
     },
   },

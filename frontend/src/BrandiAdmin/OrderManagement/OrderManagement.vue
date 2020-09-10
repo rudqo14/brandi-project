@@ -7,7 +7,13 @@
     <article class="filterArticle">
       <div class="filterContainer">
         <div class="filterDate">
-          <v-select v-model="selectSearch" class="select" :items="items" label="Select.." dense />
+          <v-select
+            v-model="selectSearch"
+            class="select"
+            :items="items"
+            label="Select.."
+            dense
+          />
           <input
             @keyup.enter="searchFilterHandler"
             v-model="searchInputContents"
@@ -27,7 +33,8 @@
             class="btnV"
             name="전체"
             v-bind:color="sellData === item ? 'primary' : 'white'"
-          >{{ item }}</v-btn>
+            >{{ item }}</v-btn
+          >
         </div>
         <div>
           <a-date-picker
@@ -48,8 +55,20 @@
         </div>
       </div>
       <div class="centerContainer">
-        <v-btn tile @click="searchFilterHandler" class="btnSearch" color="primary">검색</v-btn>
-        <v-btn tile v-on:click="filterResetHandler" class="searchReset" color="white">초기화</v-btn>
+        <v-btn
+          tile
+          @click="searchFilterHandler"
+          class="btnSearch"
+          color="primary"
+          >검색</v-btn
+        >
+        <v-btn
+          tile
+          v-on:click="filterResetHandler"
+          class="searchReset"
+          color="white"
+          >초기화</v-btn
+        >
       </div>
     </article>
     <div class="subTitle">
@@ -63,8 +82,12 @@
             </div>
           </div>
           <div v-if="isToggleOrder === true" class="toggleDataContainer">
-            <div class="toggleList" v-on:click="orderToggleClick">최신주문일순</div>
-            <div class="toggleList" v-on:click="orderToggleClick">주문일의 역순</div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              최신주문일순
+            </div>
+            <div class="toggleList" v-on:click="orderToggleClick">
+              주문일의 역순
+            </div>
           </div>
         </div>
         <div class="toggleContainer">
@@ -90,13 +113,28 @@
         <v-btn color="primary" small>주문취소처리</v-btn>
       </div>
       <div class="excelContainer">
-        <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-        <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+        <v-btn class="excelBtn" color="success" small
+          >선택상품 엑셀다운로드</v-btn
+        >
+        <v-btn class="excelBtn" color="success" small
+          >전체상품 엑셀다운로드</v-btn
+        >
       </div>
     </div>
     <article class="tableArticle">
       <div class="scrollcontainer">
-        <table class="dataTable">
+        <div v-if="isLoadingScreen" class="loadingContainer">
+          <v-progress-circular
+            class="progress"
+            :size="70"
+            :width="7"
+            color="primary"
+            indeterminate
+          >
+            <img src="/Images/favicon-32x32.png" />
+          </v-progress-circular>
+        </div>
+        <table v-else class="dataTable">
           <thead class="tableTitle">
             <tr>
               <th class="checkboxContainer">
@@ -117,21 +155,29 @@
           <tbody>
             <tr v-for="(item, i) in orderData" :key="i">
               <td class="checkboxContainer">
-                <input v-model="selected" :value="i" class="checkbox" type="checkbox" />
+                <input
+                  v-model="selected"
+                  :value="i"
+                  class="checkbox"
+                  type="checkbox"
+                />
               </td>
               <td>{{ item.order_time }}</td>
               <td>{{ item.order_no }}</td>
               <td class="linkDetail">
                 <router-link
                   :to="`/admin/productDetail/${item.order_detail_no}`"
-                >{{ item.order_detail_no }}</router-link>
+                  >{{ item.order_detail_no }}</router-link
+                >
               </td>
               <td class="productName">{{ item.product_name }}</td>
               <td>{{ item.color }} / {{ item.size }}</td>
               <td>{{ item.quantity }}</td>
               <td>{{ item.user_name }}</td>
               <td>{{ item.phone_number }}</td>
-              <td>{{ Math.floor(item.total_price).toLocaleString(5) + "원" }}</td>
+              <td>
+                {{ Math.floor(item.total_price).toLocaleString(5) + "원" }}
+              </td>
               <td>{{ item.order_status }}</td>
             </tr>
           </tbody>
@@ -142,13 +188,20 @@
           <v-btn color="primary" small>주문취소처리</v-btn>
         </div>
         <div class="excelContainer">
-          <v-btn class="excelBtn" color="success" small>선택상품 엑셀다운로드</v-btn>
-          <v-btn class="excelBtn" color="success" small>전체상품 엑셀다운로드</v-btn>
+          <v-btn class="excelBtn" color="success" small
+            >선택상품 엑셀다운로드</v-btn
+          >
+          <v-btn class="excelBtn" color="success" small
+            >전체상품 엑셀다운로드</v-btn
+          >
         </div>
       </div>
       <template>
         <div class="text-center">
-          <v-pagination v-model="page" :length="Math.ceil(totalNumData / toggleNumber)" />
+          <v-pagination
+            v-model="page"
+            :length="Math.ceil(totalNumData / toggleNumber)"
+          />
         </div>
       </template>
     </article>
@@ -174,30 +227,28 @@ export default {
       //체크박스가 선택되어있는지 확인 후 전체선택되어 있으면, 전체해제
       //getter를 통해 종속성을 추적
       get() {
-        console.log(this.orderData);
-        console.log(this.selected.length);
-        console.log(this.orderData.length);
+        //테이블의 리스트의 갯수가 0개일때 th-checkbox 해제
         if (!this.orderData.length) {
           return false;
         }
+        //th-checkbox와 리스트의 배열길이
         return this.orderData
           ? this.selected.length == this.orderData.length
           : false;
       },
 
       //setter를 통해 변경을 알림
-      //select한 체크박스값을 배열안에 넣어 적용
+      //th-checkbox 클릭시 전체선택 및 해제
       set(value) {
-        const selected = [];
-        console.log("value: ", value);
+        const selectItem = [];
 
         if (value) {
-          this.orderData.forEach(function (item, i) {
-            selected.push(i);
+          this.orderData.forEach((item, i) => {
+            selectItem.push(i);
           });
         }
-        this.selected = selected;
-        console.log("set", this.selected);
+
+        this.selected = selectItem;
       },
     },
   },
@@ -244,7 +295,7 @@ export default {
   },
 
   watch: {
-    page: function () {
+    page() {
       this.axiosConnect();
     },
     startValue(val) {
@@ -336,19 +387,24 @@ export default {
     },
 
     axiosConnect() {
-      axios
-        .get(
-          `${SERVER_IP}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
-        )
-        .then((res) => {
-          this.orderData = res.data.data;
-          this.totalNumData = res.data.total_number;
-        })
-        .catch((error) => {
-          console.log(error);
+      this.isLoadingScreen = true;
 
-          this.$router.push("/admin");
-        });
+      setTimeout(() => {
+        axios
+          .get(
+            `${SERVER_IP}/admin/order/orderCompletedList?limit=${this.toggleNumber}&sort=${this.isOrderFilter}&page=${this.page}${this.startDate}${this.endDate}${this.searchFilter}`
+          )
+          .then((res) => {
+            this.orderData = res.data.data;
+            this.totalNumData = res.data.total_number;
+            this.isLoadingScreen = false;
+          })
+          .catch((error) => {
+            console.log(error);
+
+            this.$router.push("/admin");
+          });
+      }, 400);
     },
 
     //페이지의 아이템을 몇개씩 보여줄껀지에 대한 토글 기능
@@ -360,13 +416,11 @@ export default {
       this.isToggleOrder = !this.isToggleOrder;
     },
 
+    //토글이 열리고 닫히는 것과 함께 백엔드에 보내줄 boolean값 data 적용
     orderToggleClick(e) {
       this.orderToggle = e.target.innerHTML;
-      this.isToggleOrder = false;
-
-      this.orderToggle === "최신주문일순"
-        ? (this.isOrderFilter = false)
-        : (this.isOrderFilter = true);
+      this.isToggleOrder = !this.isToggleOrder;
+      this.isOrderFilter = !this.isOrderFilter;
 
       this.axiosConnect();
     },
@@ -754,6 +808,15 @@ export default {
   }
   .scrollcontainer {
     overflow-x: scroll;
+
+    .loadingContainer {
+      height: 100px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: lightgray;
+    }
 
     .dataTable {
       display: table;
