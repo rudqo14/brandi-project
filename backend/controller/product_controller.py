@@ -1,6 +1,7 @@
 from utils import ResizeImage, login_required
 from decimal import *
 from datetime import *
+import pymysql, json
 
 from flask import (
     request,
@@ -30,22 +31,25 @@ def create_admin_product_endpoints(product_service):
     admin_product_app = Blueprint('product_app', __name__, url_prefix='/admin/product')
 
     @admin_product_app.route('', methods=['POST'])
-    #@catch_exception
+    @catch_exception
     @validate_params(
-        Param('mainCategoryId', FORM, int),
-        Param('subCategoryId', FORM, int),
-        Param('sellYn', FORM, bool),
-        Param('exhibitionYn', FORM, bool),
+        Param('mainCategoryId', FORM, str, rules = [Pattern(r'^([1-9]|1[0-1])$')]),
+        Param('subCategoryId', FORM, str, rules = [Pattern(r'^([1-9]|[1-5][0-9]|6[0-2])$')]),
+        Param('sellYn', FORM, str, rules = [Pattern(r'^([0-1])$')]),
+        Param('exhibitionYn', FORM, str, rules = [Pattern(r'^([0-1])$')]),
         Param('productName', FORM, str),
         Param('simpleDescription', FORM, str, required=False),
         Param('detailInformation', FORM, str),
         Param('price', FORM, float),
-        Param('discountRate', FORM, int, required=False),
-        Param('discountStartDate', FORM, str, required=False),
-        Param('discountEndDate', FORM, str, required=False),
-        Param('minSalesQuantity', FORM, int),
-        Param('maxSalesQuantity', FORM, int),
-        Param('optionQuantity', FORM, str, required=False)
+        Param('discountRate', FORM, str, required=False,
+             rules = [Pattern(r"^(0|[1-9][0-9]?|100)$")]),
+        Param('discountStartDate', FORM, str, required=False,
+             rules = [Pattern(r"^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$")]),
+        Param('discountEndDate', FORM, str, required=False,
+             rules = [Pattern(r"^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$")]),
+        Param('minSalesQuantity', FORM, str, rules = [Pattern(r"^([1-9]|1[0-9]|20)$")]),
+        Param('maxSalesQuantity', FORM, str, rules = [Pattern(r"^([1-9]|1[0-9]|20)$")]),
+        Param('optionQuantity', FORM, str)
     )
     def product_register(*args):
 
@@ -94,6 +98,7 @@ def create_admin_product_endpoints(product_service):
             2020-08-30 (sincerity410@gmail.com) : product option 별 재고수량 저장 기능추가
             2020-09-02 (sincerity410@gmail.com) : product_code column 추가에 따른 구조 수정
             2020-09-08 (sincerity410@gmail.com) : request Validation Check 추가
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -123,20 +128,15 @@ def create_admin_product_endpoints(product_service):
                     'optionQuantity'    : args[13]
                 }
 
-                product_info_process = {}
-
-                for key, value in product_info.items():
-                    if value != 'null':
-                        product_info_process[key] = value
-                    else:
-                        product_info_process[key] = None
+                if product_info['minSalesQuantity'] > product_info['maxSalesQuantity']:
+                    product_info['minSalesQuantity'] = product_info['maxSalesQuantity']
 
                 # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
                 s3_connection = get_s3_connection()
                 images        = request.files
 
                 # 상품정보를 DB에 저장하는 Function 실행
-                product_id = product_service.create_product(product_info_process, db_connection)
+                product_id = product_service.create_product(product_info, db_connection)
 
                 # 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
                 product_service.upload_product_image(
@@ -151,9 +151,29 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'message' : 'SUCCESS'}), 200
 
-        #except Exception as e:
-        #    db_connection.rollback()
-        #    return jsonify({"message" : f'{e}'}), 400
+        except pymysql.err.InternalError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            db_connection.rollback()
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATA_ERROR'}), 400
+        except KeyError:
+            db_connection.rollback()
+            return jsonify({'message' 'KEY_ERROR'}), 400
+        except json.decoder.JSONDecodeError as e:
+            db_connection.rollback()
+            return jsonify({'message' : 'optionQuantity_VALUE_INVALID_JSON'}), 400
+        except Exception as e:
+            db_connection.rollback()
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
@@ -192,6 +212,7 @@ def create_admin_product_endpoints(product_service):
         History:
             2020-08-29 (sincerity410@gmail.com) : 초기생성
             2020-09-02 (sincerity410@gmail.com) : 옵션(색상, 사이즈) 통합 형태로 제공
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -207,8 +228,18 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : options}), 200
 
+        except pymysql.err.InternalError:
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            return jsonify({'message' : 'DATA_ERROR'}), 400
         except Exception as e:
-            return jsonify({'message' : f"{e}"}), 400
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
@@ -238,6 +269,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-30 (sincerity410@gmail.com) : 초기생성
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -254,8 +286,18 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : main_category}), 200
 
+        except pymysql.err.InternalError:
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            return jsonify({'message' : 'DATA_ERROR'}), 400
         except Exception as e:
-            return jsonify({'message' : f"{e}"}), 400
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
@@ -293,6 +335,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-30 (sincerity410@gmail.com) : 초기생성
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -311,19 +354,31 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : sub_category}), 200
 
+        except pymysql.err.InternalError:
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            return jsonify({'message' : 'DATA_ERROR'}), 400
+        except KeyError:
+            return jsonify({'message' 'KEY_ERROR'}), 400
         except Exception as e:
-            return jsonify({'message' : f"{e}"}), 400
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
                 db_connection.close()
 
     @admin_product_app.route('', methods=['GET'])
-    #catch_exception
+    @catch_exception
     @validate_params(
-        Param('sellYn', GET, bool, required=False),
-        Param('discountYn', GET, bool, required=False),
-        Param('exhibitionYn', GET, bool, required=False),
+        Param('sellYn', GET, str, required=False, rules = [Pattern(r'^([0-1])$')]),
+        Param('discountYn', GET, str, required=False, rules = [Pattern(r'^([0-1])$')]),
+        Param('exhibitionYn', GET, str, required=False, rules = [Pattern(r'^([0-1])$')]),
         Param('startDate', GET, int, required=False, rules=[DatetimeRule()]),
         Param('endDate', GET, int, required=False, rules=[DatetimeRule()]),
         Param('productName', GET, str, required=False),
@@ -386,6 +441,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-08-31 (sincerity410@gmail.com) : 초기생성
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -415,8 +471,20 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : product_list}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : f"{e}"}), 400
+        except pymysql.err.InternalError:
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            return jsonify({'message' : 'DATA_ERROR'}), 400
+        except KeyError:
+            return jsonify({'message' 'KEY_ERROR'}), 400
+        except Exception as e:
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
@@ -465,7 +533,7 @@ def create_admin_product_endpoints(product_service):
             return jsonify({'message' : f"{e}"}), 400
 
     @admin_product_app.route('/<product_id>', methods=['GET'])
-    #@catch_exception
+    @catch_exception
     @validate_params(
         Param('product_id', PATH, int)
     )
@@ -496,6 +564,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-09-05 (sincerity410@gmail.com) : 초기생성
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -514,31 +583,46 @@ def create_admin_product_endpoints(product_service):
 
                 return jsonify({'data' : product_info}), 200
 
-        #except Exception as e:
-        #    return jsonify({'message' : f"{e}"}), 400
+        except pymysql.err.InternalError:
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            return jsonify({'message' : 'DATA_ERROR'}), 400
+        except KeyError:
+            return jsonify({'message' 'KEY_ERROR'}), 400
+        except Exception as e:
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
                 db_connection.close()
 
     @admin_product_app.route('/<product_id>', methods=['PUT'])
-    #@catch_exception
+    @catch_exception
     @validate_params(
         Param('product_id', PATH, int),
-        Param('mainCategoryId', FORM, int),
-        Param('subCategoryId', FORM, int),
-        Param('sellYn', FORM, int, required=False),
-        Param('exhibitionYn', FORM, int, required=False),
-        Param('productName', FORM, str, required=False),
+        Param('mainCategoryId', FORM, str, rules = [Pattern(r'^([1-9]|1[0-1])$')]),
+        Param('subCategoryId', FORM, str, rules = [Pattern(r'^([1-9]|[1-5][0-9]|6[0-2])$')]),
+        Param('sellYn', FORM, str, rules = [Pattern(r'^([0-1])$')]),
+        Param('exhibitionYn', FORM, str, rules = [Pattern(r'^([0-1])$')]),
+        Param('productName', FORM, str),
         Param('simpleDescription', FORM, str, required=False),
-        Param('detailInformation', FORM, str, required=False),
+        Param('detailInformation', FORM, str),
         Param('price', FORM, float),
-        Param('discountRate', FORM, int),
-        Param('discountStartDate', FORM, str, required=False),
-        Param('discountEndDate', FORM, str, required=False),
-        Param('minSalesQuantity', FORM, int),
-        Param('maxSalesQuantity', FORM, int),
-        Param('optionQuantity', FORM, str, required=False)
+        Param('discountRate', FORM, str, required=False,
+             rules = [Pattern(r"^(0|[1-9][0-9]?|100)$")]),
+        Param('discountStartDate', FORM, str, required=False,
+             rules = [Pattern(r"^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$")]),
+        Param('discountEndDate', FORM, str, required=False,
+             rules = [Pattern(r"^\d\d\d\d-(0?[1-9]|1[0-2])-(0?[1-9]|[12][0-9]|3[01]) (00|[0-9]|1[0-9]|2[0-3]):([0-9]|[0-5][0-9])$")]),
+        Param('minSalesQuantity', FORM, str, rules = [Pattern(r"^([1-9]|1[0-9]|20)$")]),
+        Param('maxSalesQuantity', FORM, str, rules = [Pattern(r"^([1-9]|1[0-9]|20)$")]),
+        Param('optionQuantity', FORM, str)
     )
     def product_modify(*args):
 
@@ -582,6 +666,7 @@ def create_admin_product_endpoints(product_service):
 
         History:
             2020-09-06 (sincerity410@gmail.com) : 초기생성
+            2020-09-09 (sincerity410@gmail.com) : Validation Check 고도화
 
         """
 
@@ -596,30 +681,33 @@ def create_admin_product_endpoints(product_service):
 
                 product_id   = args[0]
                 product_info = {
-                    'mainCategoryId'    : args[1],
-                    'subCategoryId'     : args[2],
-                    'sellYn'            : args[3],
-                    'exhibitionYn'      : args[4],
+                    'mainCategoryId'    : int(args[1]),
+                    'subCategoryId'     : int(args[2]),
+                    'sellYn'            : int(args[3]),
+                    'exhibitionYn'      : int(args[4]),
                     'productName'       : args[5],
                     'simpleDescription' : args[6],
                     'detailInformation' : args[7],
                     'price'             : args[8],
-                    'discountRate'      : args[9],
+                    'discountRate'      : int(args[9]),
                     'discountStartDate' : args[10],
                     'discountEndDate'   : args[11],
-                    'minSalesQuantity'  : args[12],
-                    'maxSalesQuantity'  : args[13],
+                    'minSalesQuantity'  : int(args[12]),
+                    'maxSalesQuantity'  : int(args[13]),
                     'optionQuantity'    : args[14]
                 }
+
+                if product_info['minSalesQuantity'] > product_info['maxSalesQuantity']:
+                    product_info['minSalesQuantity'] = product_info['maxSalesQuantity']
 
                 # DB 저장 내역과 비교를 위한 price value Decimal 변경
                 product_info['price'] = round(Decimal(product_info['price']),2)
 
                 # DB 저장 내역과 비교를 위한 discountStartDate, discountEndDate datetime 형태로 변경
                 if product_info['discountStartDate'] is not None:
-                    product_info['discountStartDate'] = datetime.strptime(product_info['discountStartDate'], '%Y-%m-%d')
+                    product_info['discountStartDate'] = datetime.strptime(product_info['discountStartDate'], '%Y-%m-%d %H:%M')
                 if product_info['discountEndDate'] is not None:
-                    product_info['discountEndDate'] = datetime.strptime(product_info['discountEndDate'], '%Y-%m-%d')
+                    product_info['discountEndDate'] = datetime.strptime(product_info['discountEndDate'], '%Y-%m-%d %H:%M')
 
                 # 사이즈 별(Large, Medium, Small) 상품이미지 저장 위한 S3 Connection Instance 생성
                 s3_connection = get_s3_connection()
@@ -628,22 +716,43 @@ def create_admin_product_endpoints(product_service):
                 # 상품정보를 DB에 저장하는 Function 실행
                 product_service.update_product(product_id, product_info, db_connection)
 
-                # 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
-                #product_service.upload_product_image(
-                #    images,
-                #    product_id,
-                #    s3_connection,
-                #    db_connection
-                #)
+                # 기존 상품 이미지(product_images, images)를 제거하고
+                # 업데이트한 상품이미지를 사이즈 별로 S3에 저장 및 URL을 DB에 Insert 하는 Function 실행
+                product_service.update_product_image(
+                    images,
+                    product_id,
+                    s3_connection,
+                    db_connection
+                )
 
                 # Exception이 발생하지 않았다면, commit 처리
                 db_connection.commit()
 
                 return jsonify({'message' : 'SUCCESS'}), 200
 
-        #except Exception as e:
-        #    db_connection.rollback()
-        #    return jsonify({"message" : f'{e}'}), 400
+        except pymysql.err.InternalError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATABASE_DOES_NOT_EXIST'}), 500
+        except pymysql.err.OperationalError:
+            return jsonify({'message' : 'DATABASE_AUTHORIZATION_DENIED'}), 500
+        except pymysql.err.ProgrammingError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATABASE_SYNTAX_ERROR'}), 500
+        except pymysql.err.IntegrityError:
+            db_connection.rollback()
+            return jsonify({'message' : 'FOREIGN_KEY_CONSTRAINT_ERROR'}), 500
+        except pymysql.err.DataError:
+            db_connection.rollback()
+            return jsonify({'message' : 'DATA_ERROR'}), 400
+        except KeyError:
+            db_connection.rollback()
+            return jsonify({'message' 'KEY_ERROR'}), 400
+        except json.decoder.JSONDecodeError as e:
+            db_connection.rollback()
+            return jsonify({'message' : 'optionQuantity_VALUE_INVALID_JSON'}), 400
+        except Exception as e:
+            db_connection.rollback()
+            return jsonify({'message' : f'{e}'}), 500
 
         finally:
             if db_connection:
