@@ -27,18 +27,6 @@ export const router = new VueRouter({
   mode: "hash",
   routes: [
     {
-      path: "*",
-      redirect: "/404",
-    },
-    {
-      path: "/400",
-      component: NetworkError,
-    },
-    {
-      path: "/404",
-      component: NotFound,
-    },
-    {
       path: "/main",
       component: Main,
     },
@@ -103,7 +91,18 @@ export const router = new VueRouter({
       redirect: "/main",
     },
     {
-      //초기 url을 admin으로 적용
+      path: "*",
+      redirect: "/error/404",
+    },
+    {
+      path: "/error/400",
+      component: NetworkError,
+    },
+    {
+      path: "/error/404",
+      component: NotFound,
+    },
+    {
       path: "/admin",
       redirect: "/admin/productManagement",
     },
@@ -136,6 +135,18 @@ export const router = new VueRouter({
           path: "userManagement",
           component: UserManagement,
           name: "userManagement",
+        },
+        {
+          path: "error/404",
+          component: NotFound,
+        },
+        {
+          path: "error/400",
+          component: NetworkError,
+        },
+        {
+          path: "*",
+          redirect: "/admin/error/404",
         },
       ],
     },

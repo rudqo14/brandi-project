@@ -20,6 +20,15 @@
           <i class="fas fa-users"></i>
           <span>회원 리스트</span>
         </div>
+        <div class="connectionError" v-if="this.errorStatus">
+          <div>
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Could not complete request. Please check yout internet connection</span>
+          </div>
+          <div class="closeIcon" @click="closeError">
+            <i class="fas fa-times"></i>
+          </div>
+        </div>
         <div class="filterContainer" v-if="this.userTotal">
           <div class="pageInfo">
             <span>Page</span>
@@ -217,6 +226,7 @@ export default {
   },
   data() {
     return {
+      errorStatus: false,
       checked: [],
       selected: [],
       totalChecked: false,
@@ -224,6 +234,7 @@ export default {
       sort: true,
       dateFormat: "YYYY/MM/DD",
       userTotal: 0,
+      newQuery: "",
       query: "",
       filters: {
         lastAccessFrom: null,
@@ -257,7 +268,15 @@ export default {
           this.offset = this.getOffset();
         })
         .catch(error => {
-          console.log(error);
+          if (error.response) {
+            if (error.response.status === 400) {
+              this.userTotal = 0;
+            } else if (error.response.status === 500) {
+              this.errorStatus = true;
+            }
+          } else {
+            this.errorStatus = true;
+          }
         });
     },
 
@@ -267,12 +286,14 @@ export default {
           event.prevent;
         } else {
           this.page++;
+          this.getUserData();
         }
       } else {
         if (this.page === 1) {
           event.prevent;
         } else {
           this.page--;
+          this.getUserData();
         }
       }
     },
@@ -292,6 +313,7 @@ export default {
       return `${newDate.getFullYear()}${month}${date}`;
     },
     resetFilter() {
+      this.newQuery = "";
       this.query = "";
       this.filters.lastAccessFrom = null;
       this.filters.lastAccessTo = null;
@@ -317,14 +339,18 @@ export default {
       this.getUserData();
     },
     searchData() {
-      this.query = "";
+      this.newQuery = "";
       for (const key in this.filters) {
         if (this.filters[key]) {
-          this.query += `&${key}=${this.filters[key]}`;
+          this.newQuery += `&${key}=${this.filters[key]}`;
         }
       }
-      this.page = 1;
-      this.selectedLimit = 10;
+      if (this.query !== this.newQuery) {
+        this.query = this.newQuery;
+        this.page = 1;
+        this.selectedLimit = 10;
+      }
+
       this.getUserData();
     },
     disabledAccessFrom(lastAccessFrom) {
@@ -366,6 +392,9 @@ export default {
           this.checked.push(this.tableData[key]);
         }
       }
+    },
+    closeError() {
+      this.errorStatus = false;
     }
   },
   computed: {
@@ -415,9 +444,16 @@ export default {
     },
     page: {
       handler: function(val, oldvalue) {
-        this.getUserData();
-      },
-      deep: true
+        if (val > this.getTotalPage || val < 0) {
+          if (oldvalue === "") {
+            this.page = 1;
+          } else {
+            this.page = oldvalue;
+          }
+        } else if (oldvalue === "") {
+          this.page = 1;
+        }
+      }
     },
     sort: {
       handler: function(val, oldvalue) {
@@ -490,6 +526,20 @@ header {
     min-width: 1554px;
     border: 1px solid lightgray;
     border-radius: 5px;
+
+    .connectionError {
+      margin: 5px;
+      display: flex;
+      justify-content: space-between;
+      border-radius: 5px;
+      padding: 10px;
+      background-color: rgb(255, 196, 196);
+      color: rgb(255, 74, 74);
+
+      .closeIcon {
+        cursor: pointer;
+      }
+    }
 
     .containerTitle {
       border-radius: 5px 0 0 0;
@@ -650,6 +700,7 @@ header {
         }
       }
       .actions {
+        width: 200;
         padding: 0 5px;
         button {
           margin: 5px;
@@ -707,7 +758,7 @@ header {
       }
       .event,
       .night {
-        width: 150;
+        width: 140;
         padding: 0 10px;
       }
       .accessOS {

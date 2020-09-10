@@ -101,19 +101,6 @@
                   </div>
                 </tr>
               </tbody>
-              <tfoot>
-                <tr class="footerTable">
-                  <td class="optionCate">재고관리여부</td>
-                  <td colspan="2">
-                    <div class="radioContainer">
-                      <v-radio-group v-model="stockQuantityDefaultValue" row>
-                        <v-radio label="재고수량관리안함" :value="1"></v-radio>
-                        <v-radio label="재고수량관리" :value="2"></v-radio>
-                      </v-radio-group>
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
             </table>
             <div class="applyBtn">
               <v-btn @click="clickApply" color="primary" large>적용</v-btn>
@@ -152,9 +139,9 @@
                   </td>
                   <td>
                     <div class="radioContainer">
-                      <v-radio-group v-model="defaultRadio" row>
-                        <v-radio label="재고관리안함"></v-radio>
-                        <v-radio value="1" label="재고관리"></v-radio>
+                      <v-radio-group row v-model="defaultRadio">
+                        <!-- <v-radio v-model="changeRadio" :value="defaultRadio" label="재고관리안함"></v-radio> -->
+                        <v-radio value="재고관리" label="재고관리"></v-radio>
                         <div class="stockInputContainer">
                           <input
                             @input="updateQuantity"
@@ -206,21 +193,16 @@ export default {
     return {
       optionDefaultValue: "기본옵션",
       stockQuantityDefaultValue: 1,
-      defaultRadio: "1",
-      stockManageRadio: "0",
-      stockQuantity: "",
+      defaultRadio: "재고관리",
       colorListSize: 1,
       sizeListSize: 1,
       option: {},
-      optionData: [{ color: [], size: [], quantity: [] }],
       updateOptionData: [{ color: [], size: [], quantity: [] }],
       applyOptionData: [],
       colorSelectList: [1],
       sizeSelectList: [1],
       applyOn: false,
-      hasFocus: false,
       defaultColorValue: 0,
-      changeColor: 0,
       applyAddClicks: 0,
     };
   },
@@ -228,20 +210,23 @@ export default {
   methods: {
     ...mapMutations(AdminStore, ["upDateAllOptions"]),
 
-    // 컬러, 사이즈 옵션 데이터 불러오는 메소드
+    // 색상, 사이즈 옵션 데이터를 옵션 API 에서 가져와서 옵션항목에 각각 넣어줍니다.
     getOptionData() {
       axios.get(`${SERVER_IP}/admin/product/option`).then((res) => {
         this.option = res.data;
       });
     },
 
-    // 컬러 옵션 열을 추가하는 메소드
+    // 색상 옵션 열을 추가하는 메소드
+    // 색상 옵션값 추가 버튼을 누르면 색상 옵션 열이 추가됩니다.
     colorSelectAdd() {
       this.colorListSize++;
       this.colorSelectList.push(this.colorListSize);
     },
 
-    // 컬로 옵셔느 열을 삭제하는 메소드
+    // 색상 옵션 열을 삭제하는 메소드
+    // 색상 옵션값 삭제 버튼을 누르면 색상 옵션 열이 삭제됩니다.
+    // 열이 삭제되면 선택했던 색상 옵션 데이터도 updateOptionData 에서 삭제됩니다.
     colorSelectDelete(e) {
       let colorSelectId = parseInt(e.target.value);
       const idx = this.colorSelectList.indexOf(colorSelectId);
@@ -250,12 +235,15 @@ export default {
     },
 
     // 사이즈 옵션 열을 추가하는 메소드
+    // 사이즈 옵션 추가 버튼을 누르면 사이즈 옵션 열이 추가됩니다.
     sizeSelectAdd() {
       this.sizeListSize++;
       this.sizeSelectList.push(this.sizeListSize);
     },
 
     // 사이즈 옵션 열을 삭제하는 메소드
+    // 사이즈 옵션 삭제 버튼을 누르면 사이즈 옵션 열이 삭제됩니다.
+    // 열이 삭제되면 선택했던 사이즈 옵션 데이터도 updateOptionData 에서 삭제됩니다.
     sizeSelectDelete(e) {
       let sizeSelectId = parseInt(e.target.value);
       const idx = this.sizeSelectList.indexOf(sizeSelectId);
@@ -263,7 +251,9 @@ export default {
       this.updateOptionData[0].size.splice(idx, 1);
     },
 
-    // 선택한 컬러를 업데이트옵션 데이터에 넣어주는 메소드
+    // 선택한 색상을 updateOptionData 에 넣어주는 메소드
+    // 이미 선택한 색상을 다시 선택하면 "이미 선택된 옵션입니다" 라고 알람 메세지를 띄워줍니다.
+    // 새로운 색상을 선택하면 updateOptionData 에 추가합니다.
     selectColors(e) {
       let colorName = e.target.value;
 
@@ -271,13 +261,13 @@ export default {
         alert("이미 선택된 옵션입니다.");
         e.target.value = this.defaultColorValue;
       } else {
-        this.optionData[0].color.splice(0, 1);
-        this.optionData[0].color.push(colorName);
         this.updateOptionData[0].color.push(colorName);
       }
     },
 
     // 선택한 사이즈를 업데이트옵션 데이터에 넣어주는 메소드
+    // 이미 선택한 사이즈를 다시 선택하면 "이미 선택된 옵션입니다" 라고 알람 메세지를 띄워줍니다.
+    // 새로운 사이즈를 선택하면 updateOptionData 에 추가합니다.
     selectSizes(e) {
       let sizeName = e.target.value;
 
@@ -285,13 +275,12 @@ export default {
         alert("이미 선택된 옵션입니다.");
         e.target.value = this.defaultColorValue;
       } else {
-        this.optionData[0].size.splice(0, 1);
-        this.optionData[0].size.push(sizeName);
         this.updateOptionData[0].size.push(sizeName);
       }
     },
 
     // 적용 버튼을 눌렀을 때 선택한 옵션들이 아래 테이블로 적용되는 메소드
+    //
     clickApply() {
       this.applyAddClicks++;
       if (this.applyAddClicks === 1) {
@@ -563,11 +552,6 @@ export default {
 
       .radioContainer {
         margin-left: 20px;
-
-        .stockQuantity:disabled {
-          cursor: not-allowed;
-          background-color: lightgray;
-        }
 
         .stockInputContainer {
           margin-left: -10px;

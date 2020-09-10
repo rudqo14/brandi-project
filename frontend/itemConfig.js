@@ -1,9 +1,15 @@
 export const items = [
   {
     listIcon: "fas fa-home",
+    iconToggle: "fas fa-angle-left",
     text: "홈",
     model: false,
-    children: [],
+    children: [
+      {
+        text: "브랜디 서비스",
+        path: "main",
+      },
+    ],
   },
   {
     listIcon: "fas fa-shopping-cart",
@@ -18,7 +24,7 @@ export const items = [
     ],
   },
   {
-    listIcon: "fas fa-home",
+    listIcon: "fas fa-shopping-bag",
     iconToggle: "fas fa-angle-left",
     text: "상품 관리",
     model: false,

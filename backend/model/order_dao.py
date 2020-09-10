@@ -578,14 +578,14 @@ class OrderDao:
         except Exception as e:
             raise e
 
-    def insert_orders(self, user_no, db_connection):
+    def insert_orders(self, order_info, db_connection):
 
         """
 
         user의 id를 받아와 orders라는 주문 테이블의 행을 추가합니다.
 
         Args:
-            user_no       : 토큰에서 부터 받아온 해당 유저의 id
+            order_info    : 주문 정보, 유저 id에 관한 정보도 있음.
             db_connection : 연결된 db 객체
 
         Returns:
@@ -609,11 +609,11 @@ class OrderDao:
                 INSERT INTO orders (
                     user_id
                 ) VALUES (
-                    %s
+                    %(user_no)s
                 );
                 """
 
-                new_orders_row = cursor.execute(insert_orders_query, user_no)
+                new_orders_row = cursor.execute(insert_orders_query, order_info)
 
                 if new_orders_row <= 0:
                     raise Exception('QUERY_FAILED')
@@ -739,14 +739,14 @@ class OrderDao:
         except Exception as e:
             raise e
 
-    def update_quantities(self, data, db_connection):
+    def update_quantities(self, update_quantity_info, db_connection):
 
         """
 
         원래 quantity row의 close_time을 업데이트 합니다..
 
         Args:
-            data:
+            current_quantity_info:
                 quantity_no : 변경하려는 quantity_pk
                 start_time : 새로운 이력의 start_time
             db_connection : 연결된 db 객체
@@ -770,19 +770,17 @@ class OrderDao:
                 UPDATE
                     quantities
                 SET
-                    close_time = %(close_time)s
+                    close_time = %(start_time)s
                 WHERE
-                    quantity_no = %(quantity_no)s
+                    quantity_no = %(origin_quantity_no)s
                 """
 
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-                affected_row = cursor.execute(update_quantities_query, data)
+                affected_row = cursor.execute(update_quantities_query, update_quantity_info)
 
                 if affected_row < 0:
                     raise Exception("Query Failed")
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
-                return cursor.lastrowid
+                return 1
 
         except KeyError as e:
             raise e
@@ -808,6 +806,10 @@ class OrderDao:
 
         History:
             2020-09-07 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                테이블 변경으로 인해, 새로운 선분을 추가하는 테이블에 수량은
+                product_options  테이블의 수량을 가져오는 것으로 변경하였습니다.
+                (현재 product_options 테이블에는, 원래의 재고에서 유저가 구매한 만큼의 재고가 빠져있기 때문입니다.)
 
         """
 
@@ -815,33 +817,33 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
-                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # 새로운 선분이력을 생성하는 quantities테이블의 row를 생성하는 쿼리입니다.
                 insert_quantities_query = """
                 INSERT INTO quantities (
                     product_option_id,
                     quantity
                 ) VALUES (
-                %(product_option_no)s,
-                (
+                    %(product_option_no)s,
+                    (
                     SELECT
-                        Q.quantity
+                        current_quantity
 
-                    FROM quantities AS Q
+                    FROM
+                        product_options
 
                     WHERE
-                        Q.close_time = '9999-12-31 23:59:59'
-                        AND Q.product_option_id =  %(product_option_no)s
-                ) - %(quantity)s
+                    product_option_no = %(product_option_no)s
+                    )
                 )
                 """
 
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-                new_quantities_row = cursor.execute(insert_quantities_query, order_info)
+                # quantities테이블에 row를 생성하는 쿼리와 quantity관련 정보를 인자로 주어 row를 생성합니다.
+                affected_row = cursor.execute(insert_quantities_query, order_info)
 
-                if new_quantities_row <= 0:
+                if affected_row <= 0:
                     raise Exception('QUERY_FAILED')
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                # 생성된 quantities테이블의 row id를 리턴해 줍니다.
                 return cursor.lastrowid
 
         except KeyError as e:
@@ -850,24 +852,27 @@ class OrderDao:
         except Exception as e:
             raise e
 
-    def get_current_quantity(self, order_info, db_connection):
+    def get_current_quantity(self, product_option_no, db_connection):
 
         """
 
-        user의 id를 받아와 orders라는 주문 테이블의 컬럼을 추가합니다.
+        해당 옵션에 해당하는 product_option테이블의 id를 가져와 그 옵션의 현재 재고를 리턴해주는 메소드입니다.
 
         Args:
-            user_no       : 토큰에서 부터 받아온 해당 유저의 id
-            db_connection : 연결된 db 객체
+            product_option_no : 구매하려는 옵션의 id
+            db_connection     : 연결된 db 객체
 
         Returns:
-            order_no : insert한 해당 orders라는 테이블의 id(pk)
+            {"current_quantity" : 해당 옵션의 현재 재고 }
 
         Authors:
             minho.lee0716@gmail.com (이민호)
 
         History:
             2020-09-07 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                테이블 변경으로 인해 Quantities테이블에서 가져오던 현재 재고를
+                Product_options라는 테이블에서 가져오는걸로 변경하였습니다.
 
         """
 
@@ -875,23 +880,23 @@ class OrderDao:
 
             with db_connection.cursor() as cursor:
 
-                # U라는 테이블이 '주문자 정보'에 관한 정보입니다.
+                # 현재 상품의 재고를 가져오는 쿼리문 입니다.
                 select_quantities_query = """
                 SELECT
-                    Q.quantity_no
+                    PO.current_quantity
 
                 FROM
-                quantities AS Q
+                product_options AS PO
 
                 WHERE
-                Q.product_option_id = %(product_option_no)s
-                AND Q.close_time = '9999-12-31 23:59:59'
+                PO.product_option_no = %(product_option_no)s
+                AND PO.is_deleted = False
                 """
 
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
-                cursor.execute(select_quantities_query, order_info)
+                # 어떤 옵션의 재고인지 product_option_no을 인자로 받아와,
+                cursor.execute(select_quantities_query, product_option_no)
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.
+                # 해당 옵션의 재고를 반환해 줍니다.
                 return cursor.fetchone()
 
         except KeyError as e:
@@ -942,10 +947,10 @@ class OrderDao:
                 AND product_id = %(product_id)s
                 """
 
+                # 쿼리문과 필요한 정보를 인자로 넘겨주어 메소드를 실행하고,
                 cursor.execute(select_product_option_no_query, order_info)
 
-                # orders_details의 생성된 테이블의 pk를 반환해줍니다.(타입은 딕셔너리 입니다.)
-                # 한 유저당 하나의 배송지 정보를 저장할 수 있으므로 하나만 가져옵니다.
+                # 해당 옵션의 id 값을 리턴해 줍니다.
                 return cursor.fetchone()
 
         except KeyError as e:
@@ -992,7 +997,7 @@ class OrderDao:
 
             return start_time['start_time'].strftime('%Y-%m-%d %H:%M:%S')
 
-    def update_user_shipping_details_info(self, order_info, db_connection):
+    def select_user_shipping_details_info(self, order_info, db_connection):
 
         """
 
@@ -1004,12 +1009,13 @@ class OrderDao:
 
         Returns:
 
-
         Authors:
             minho.lee0716@gmail.com (이민호)
 
         History:
             2020-09-08 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                select, insert, update 쿼리문 분리
 
         """
 
@@ -1033,6 +1039,42 @@ class OrderDao:
                 USD.user_id = %(user_no)s
                 """
 
+                cursor.execute(select_user_shipping_details_query, order_info)
+
+                return cursor.fetchone()
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def insert_user_shipping_details_info(self, order_info, db_connection):
+
+        """
+
+        order_info의 객체에서 배송지 정보를 받아와 해당 유저의 새로운 배송지 정보를 생성해주는 메소드입니다.
+
+        Args:
+            order_info    : 해당 유저가 입력한 배송지 정보.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-08 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                select, insert, update 쿼리문 분리
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
                 # 유저의 id를 확인후, 해당 유저의 배송지 정보를 추가하는 쿼리문 입니다
                 insert_user_shipping_details_query = """
                 INSERT INTO user_shipping_details (
@@ -1052,6 +1094,45 @@ class OrderDao:
                 )
                 """
 
+                user_shipping_details_info = cursor.execute(insert_user_shipping_details_query, order_info)
+
+                if user_shipping_details_info <= 0:
+                    raise Exception('QUERY_FAILED')
+
+                return 1
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def update_user_shipping_details_info(self, order_info, db_connection):
+
+        """
+
+        order_info의 객체에서 배송지 정보를 받아와 해당 유저의 새로운 배송지 정보로 업데이트 해주는 메소드입니다.
+
+        Args:
+            order_info    : 해당 유저가 입력한 배송지 정보.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-08 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                select, insert, update 쿼리문 분리
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
                 # 유저의 id를 확인후, 해당 유저의 배송지 정보를 업데이트하는 쿼리문 입니다.
                 update_user_shipping_details_query = """
                 UPDATE
@@ -1068,19 +1149,7 @@ class OrderDao:
                 user_id = %(user_no)s
                 """
 
-                user_shipping_info = cursor.execute(select_user_shipping_details_query, order_info)
-
-                # 사용자의 배송지 정보가 존재한다면,
-                if user_shipping_info:
-
-                    # 들어온 배송지의 정보로 Update를 해줍니다.
-                    cursor.execute(update_user_shipping_details_query, order_info)
-
-                # 사용자의 배송지 정보가 존재하지 않는다면,,
-                else:
-
-                    # 사용자의 배송지 정보가 존재하지 않았다면, 들어온 배송지의 정보를 Insert 해줍니다.
-                    cursor.execute(insert_user_shipping_details_query, order_info)
+                cursor.execute(update_user_shipping_details_query, order_info)
 
                 return 1
 
@@ -1088,4 +1157,233 @@ class OrderDao:
             raise e
 
         except Exception as e:
+            raise e
+
+    def update_current_quantity(self, order_info, db_connection):
+
+        """
+
+        product_options 테이블에있는 재고에서 받아온 주문 정보에 대한 수량을 빼주는 메소드입니다.
+
+        Args:
+            order_info    : 주문 정보
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-09 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # 현재 재고에서 받아온 수량을 빼주는 update 쿼리입니다.
+                update_current_quantities_query = """
+                UPDATE
+                    product_options
+                SET
+                current_quantity = current_quantity - %(quantity)s
+
+                WHERE
+                product_option_no = %(product_option_no)s
+                """
+
+                # update쿼리문과 주문 정보를 인자로 주어 현재 재고를 업데이트 해줍니다.
+                affected_row = cursor.execute(update_current_quantities_query, order_info)
+
+                # 변경된 사항이 없다면 에러를 보내줍니다.
+                if affected_row < 0:
+                    raise Exception("Query Failed")
+
+                return 1
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def get_origin_quantity_no(self, order_info, db_connection):
+
+        """
+
+        quantities테이블의 원래 선분이력의 row id를 가져오는 메소드
+
+        Args:
+            order_info    : 주문 정보
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-09 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # 현재 재고에서 받아온 수량을 빼주는 update 쿼리입니다.
+                get_origin_quantity_query = """
+                SELECT
+                quantity_no
+
+                FROM quantities
+
+                WHERE
+                product_option_id = %(product_option_no)s
+                AND close_time = '9999-12-31 23:59:59'
+                """
+
+                # update쿼리문과 주문 정보를 인자로 주어 현재 재고를 업데이트 해줍니다.
+                affected_row = cursor.execute(get_origin_quantity_query, order_info)
+
+                # 변경된 사항이 없다면 에러를 보내줍니다.
+                if affected_row < 0:
+                    raise Exception("Query Failed")
+
+                return cursor.fetchone()
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def select_product_quantity_range(self, product_info, db_connection):
+
+        """
+
+        해당 상품의 최소구매 수량, 최대구매 수량의 개수를 가져오는 메소드입니다.
+
+        Args:
+            product_info  : 상품 정보
+            db_connection : 연결된 db 객체
+
+        Returns:
+            {
+                "min_sales_quantity" : 1,
+                "max_sales_quantity" : 20
+            }
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                # 해당 상품에 대한 최소, 최대 구매 가능한 개수를 가져오는 쿼리문 입니다.
+                select_sales_quantity = """
+                SELECT
+                    PD.min_sales_quantity,
+                    PD.max_sales_quantity
+
+                FROM
+                    products AS P
+
+                LEFT JOIN product_details AS PD
+                ON P.product_no = PD.product_id
+                AND PD.close_time = '9999-12-31 23:59:59'
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+
+                WHERE
+                    P.is_deleted = False
+                    AND P.product_no = %(product_id)s
+                """
+
+                # update쿼리문과 주문 정보를 인자로 주어 현재 재고를 업데이트 해줍니다.
+                affected_row = cursor.execute(select_sales_quantity, product_info)
+
+                # 변경된 사항이 없다면 에러를 보내줍니다.
+                if affected_row < 0:
+                    raise Exception("Query Failed")
+
+                return cursor.fetchone()
+
+        except KeyError as e:
+            raise e
+
+        except Exception as e:
+            raise e
+
+    def select_product_info(self, order_info, db_connection):
+
+        """
+
+        구매하고자 하는 상품의 정보들을 리턴해 줍니다.
+
+        Args:
+            order_info  : 주문 정보가 들어있습니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+            product_info : 구매하고자 하는 상품의 정보를 리턴해줍니다. (product_details 테이블의 정보)
+
+        Authors:
+            minho.lee0716@gmail.com (이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        try:
+
+            with db_connection.cursor() as cursor:
+
+                select_product_info_query = """
+                SELECT
+                    PD.price AS original_price,
+                    PD.discount_rate,
+                    CASE
+                        WHEN PD.discount_rate IS NULL THEN 0
+                        ELSE CASE
+                            WHEN PD.discount_start_date IS NULL THEN PD.discount_rate
+                            WHEN NOW() BETWEEN PD.discount_start_date AND PD.discount_end_date THEN PD.discount_rate
+                            ELSE 0
+                            END
+                        END
+                    AS discount_rate
+
+                FROM products AS P
+
+                LEFT JOIN product_details AS PD
+                ON P.product_no = PD.product_id
+                AND PD.is_activated = True
+                AND PD.is_displayed = True
+                AND PD.close_time = '9999-12-31 23:59:59'
+
+                WHERE
+                    P.is_deleted = False
+                    AND P.product_no = %(product_id)s
+                """
+
+                # 상품 번호만 받아와 해당 상품의 정보들을 seller_product에 담아줍니다.
+                cursor.execute(select_product_info_query, order_info)
+                product_info = cursor.fetchone()
+
+                # 셀러의 상품이(구매하려는 상품) 존재하지 않을 경우 예외처리
+                if not product_info:
+                    raise Exception('THIS_PRODUCT_DOES_NOT_EXISTS')
+
+                return product_info
+
+        except  Exception as e:
             raise e

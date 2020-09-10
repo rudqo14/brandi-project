@@ -75,7 +75,9 @@ export default {
       form.append("mainCategoryId", productDatas.mainCategoryId);
       form.append("subCategoryId", productDatas.subCategoryId);
       form.append("productName", productDatas.productName);
-      form.append("simpleDescription", productDatas.simpleDescription);
+      if (productDatas.simpleDescription !== null) {
+        form.append("simpleDescription", productDatas.simpleDescription);
+      }
       form.append("product_image_1", productDatas.product_image_1);
       form.append("product_image_2", productDatas.product_image_2);
       form.append("product_image_3", productDatas.product_image_3);
@@ -88,8 +90,10 @@ export default {
       );
       form.append("price", productDatas.price);
       form.append("discountRate", productDatas.discountRate);
-      form.append("discountStartDate", productDatas.discountStartDate);
-      form.append("discountEndDate", productDatas.discountEndDate);
+      if (productDatas.discountStartDate !== null) {
+        form.append("discountStartDate", productDatas.discountStartDate);
+        form.append("discountEndDate", productDatas.discountEndDate);
+      }
       form.append("minSalesQuantity", productDatas.minSalesQuantity);
       form.append("maxSalesQuantity", productDatas.maxSalesQuantity);
 
@@ -99,7 +103,7 @@ export default {
           alert("1차 카테고리를 선택해주세요.");
         } else if (productDatas.subCategoryId === null) {
           alert("2차 카테고리를 선택해주세요.");
-        } else if (productDatas.productName === null) {
+        } else if (productDatas.productName === "") {
           alert("상품명을 입력해주세요.");
         } else if (productDatas.product_image_1 === null) {
           alert("대표이미지를 등록해주세요.");

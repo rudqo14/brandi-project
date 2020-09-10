@@ -179,7 +179,7 @@ class OrderService:
         # 셀러 상품의 정보와 주문자의 정보, 주문자의 배송지 정보까지 한번에 리턴해 줍니다.
         return {**seller_product_info, **orderer_info}
 
-    def create_order_completed(self, order_info, user_no, db_connection):
+    def create_order_completed(self, order_info, db_connection):
 
         """
 
@@ -201,42 +201,165 @@ class OrderService:
 
         """
 
-        # orders_details테이블과 user_shipping_details테이블에 필요한 user_no의 정보를 order_info에 넣어줍니다.
-        order_info['user_no'] = user_no
+        # 유저의 id를 넘겨주고, orders 테이블에 insert하는 메소드를 실행 후, 해당 order_no의 id(pk)를 가져옵니다.
+        order_info['order_no'] = self.order_dao.insert_orders(order_info, db_connection)
 
-        # 해당 유저의 배송지 정보가 없었으면, 새로 받아온 후, 그 배송지 정보를 넣어주고,
-        # 만약 유저의 배송지 정보가 있었는데, 새로운 정보가 들어왔다면 그 정보로 UPDATE를 해줍니다.
-        self.order_dao.update_user_shipping_details_info(order_info, db_connection)
-
-
-        # 유저의 id를 넘겨주고, orders 테이블에 insert후, 해당 order_no의 id(pk)를 가져옵니다.
-        order_info['order_no'] = self.order_dao.insert_orders(user_no, db_connection)
-
-        # orders_details에서 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
-        order_info['order_detail_no']  = self.order_dao.insert_orders_details(order_info, db_connection)
+        # orders_details를 insert하는 메소드를 실행 후, 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
+        order_info['order_detail_no'] = self.order_dao.insert_orders_details(order_info, db_connection)
 
         # 서브쿼리를 줄이기 위해 메소드를 실행하여 product_option_no을 가져와 order_info에 넣어줍니다.
         product_option_no = self.order_dao.get_product_option_no(order_info, db_connection)
 
-        # 위에서 반환된 product_option_no은 딕셔너리이므로, order_info와 병합해 줍니다.
+        # 위에서 반환된 product_option_no 타입은 딕셔너리이므로, order_info와 병합해 줍니다.
         order_info = {**order_info, **product_option_no}
 
-        # order_product에서 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
+        # order_product를 insert하는 메소드를 실행 후, 생성된 테이블의 id(pk)를 order_info에 넣어줍니다.
         order_info['order_product_no'] = self.order_dao.insert_order_product(order_info, db_connection)
 
-        # 현재 제품의 재고의 수량을 가져오는 메소드 실행하여 id(pk)를 반환해 줍니다.
-        current_quantity_info = self.order_dao.get_current_quantity(order_info, db_connection)
+        # 주문 정보에서 받아온 상품의 개수를 현재 재고에서 빼주는 메소드 입니다.
+        self.order_dao.update_current_quantity(order_info, db_connection)
 
-        # 현재 제품의 새로운 재고를 생성하는 메소드 실행하여 id(pk)를 반홥해 줍니다.
+        # 원래 선분이력의 row id를 가져오는 메소드입니다.
+        origin_quantity_info = self.order_dao.get_origin_quantity_no(order_info, db_connection)
+
+        # 현재 옵션에 대한 재고의 선분이력을 관리해주는 quantities테이블을 생성하는 메소드 실행하여 id(pk)를 반홥해 줍니다.
         new_quantity_no = self.order_dao.insert_quantities(order_info, db_connection)
 
-        # 현재 제품의 새로운 재고가 생성된 테이블의 선분이력 생성시간을 가져옵니다.
+        # 선분이력을 관리하는 최신 재고에 대한 생성이력을 가져오는 메소드를 실행하여 start_time이라는 변수에 넣어줍니다.
         start_time = self.order_dao.get_quantity_start_time(new_quantity_no, db_connection)
 
-        # 원래 재고의 선분이력 종료시간을 update해주기 위해 새로운 테이블의 생성시간은 딕셔너리에 넣어줍니다.
-        current_quantity_info['close_time'] = start_time
-
-        # 원래 재고의 선분이력 종료시간에 새롭게 생성된 재고의 생성성시간을 넣어줍니다.
-        updated_quantity = self.order_dao.update_quantities(current_quantity_info, db_connection)
+        # quantities테이블에 선분이력 관리를 위해 새로 만들어준 선분에 해당하는 row의 정보 객체를 만들어줍니다.
+        # 원래 재고의 선분이력 종료시간을 update해주기 위해 새로운 테이블의 생성시간을 가져옵니다.
+        update_quantity_info = {
+            "origin_quantity_no" : origin_quantity_info['quantity_no'], # 원래 있었던 선분의 no
+            "start_time"         : start_time                           # 새로 생긴 선분의 start_time입니다.
+        }
+        # 선분이력을 관리하는 quantities 테이블의 종료시간에 새롭게 생성된 재고의 생성성시간을 넣어주는 메소드를 실행합니다.
+        self.order_dao.update_quantities(update_quantity_info, db_connection)
 
         return 1
+
+    def modify_user_shipping_details(self, order_info, db_connection):
+
+        """
+
+        상품 결제 시, 해당 유저의 배송지 정보가 없었다면, 받아온 배송지 정보를 Insert해주고,
+        배송지 정보가 있었다면, 받아온 배송지 정보로 Update해줍니다.
+
+        Args:
+            order_info    : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-06 (minho.lee0716@gmail.com) : 초기 생성
+            2020-09-09 (minho.lee0716@gmail.com) : 수정
+                user_shipping_details 테이블과 주문관련 테이블을 따로 작업하도록 메소드를 분리하였습니다.
+
+        """
+
+        # 해당 유저의 배송지 정보를 찾는 메소드를 실행하고, 먄악 배송지 정보가 존재 할 경우,
+        if self.order_dao.select_user_shipping_details_info(order_info, db_connection):
+
+            # 받아온 정보를 유저의 배송지 정보에 Update 해줍니다.
+            self.order_dao.update_user_shipping_details_info(order_info, db_connection)
+
+        # 해당 유저의 배송지 정보가 존재하지 않을 경우,
+        else:
+
+            # 받아온 정보를 유저의 배송지 정보에 Insert 해줍니다.
+            self.order_dao.insert_user_shipping_details_info(order_info, db_connection)
+
+        return 1
+
+    def get_current_quantity(self, order_info, db_connection):
+
+        """
+
+        상품을 구매하기 전, 구매하려는 상품의 개수와 현재 상품의 재고를 비교해주는 메소드 입니다.
+
+        Args:
+            order_info    : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-09 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 해당 옵션의 상품 재고를 가져오기 위해 먼저 해당 상품의 id를 가져오는 메소드를 실행해 줍니다.
+        product_option_no = self.order_dao.get_product_option_no(order_info, db_connection)
+
+        # 해당 옵션의 상품 재고를 가져오기 위해 해당 상품 옵션의 id값을 인자로 넘겨주고 현재 재고를 받아옵니다.
+        current_quantity = self.order_dao.get_current_quantity(product_option_no, db_connection)
+
+        return current_quantity
+
+    def get_product_quantity_range(self, product_info, db_connection):
+
+        """
+
+        해당 상품의 구매가능한 최소수량과 최대수량의 개수를 가져오는 메소드입니다.
+
+        Args:
+            product_info  : 유저의 id와 배송지 관련 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 해당 옵션의 상품 재고를 가져오기 위해 해당 상품 옵션의 id값을 인자로 넘겨주고 현재 재고를 받아옵니다.
+        product_quantity_range = self.order_dao.select_product_quantity_range(product_info, db_connection)
+
+        return product_quantity_range
+
+    def check_total_price(self, order_info, db_connection):
+
+        """
+
+        프론트에서 받아온 주문 정보를 통해, 구매하고자 하는 상품의 총 가격에 대한 검사를 진행하는 메소드 입니다.
+
+        Args:
+            order_info    : 주문 정보가 들어있는 객체입니다.
+            db_connection : 연결된 db 객체
+
+        Returns:
+            total_price : 구매하고자 하는 상품 * 수량을 한 총 가격.
+
+        Authors:
+            minho.lee0716@gmail.com(이민호)
+
+        History:
+            2020-09-10 (minho.lee0716@gmail.com) : 초기 생성
+
+        """
+
+        # 총 가격을 계산하기 위해, 해당 상품에 대한 원 가격과, 할인율을 가져옵니다.
+        product_info = self.order_dao.select_product_info(order_info, db_connection)
+
+        # 가져온 해당 상품에 대한 원 가격과, 할인율 그리고 유저가 구매하고자 하는 수량을 받아온 후,
+        original_price = product_info['original_price']
+        discount_rate  = product_info['discount_rate']
+        quantity       = order_info['quantity']
+
+        # 총 가격을 계산해 줍니다.
+        total_price = round(original_price * (100 - discount_rate) / 100, -1) * quantity
+
+        # 프론트에서 받아오는 총 가격을 int타입으로 유효성 검사를 진행 하였기에, int타입으로 리턴을 해줍니다.
+        return int(total_price)

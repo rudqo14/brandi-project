@@ -3,12 +3,12 @@
     <div class="menu homeMenu">
       <div class="MC homeContainer">
         <div class="iconBox">
-          <i class="fas fa-home"></i>
+          <!-- <i class="fas fa-home"></i> -->
         </div>
         <span>홈</span>
       </div>
       <div class="menuToggle homeToggle">
-        <i class="fas fa-angle-left"></i>
+        <!-- <i class="fas fa-angle-left"></i> -->
         <!-- <i class="fas fa-angle-down"></i> -->
       </div>
     </div>
@@ -47,9 +47,7 @@
     </ul>
     <div class="menu productMenu" @click="productToggleHandler">
       <div class="MC productContainer">
-        <div class="iconBox">
-          <i class="fas fa-shopping-bag"></i>
-        </div>
+        <div class="iconBox"></div>
         <span>상품 관리</span>
       </div>
       <div :class="{productToggle: !productToggle, productToggleChange: productToggle}">
